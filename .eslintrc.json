@@ -1,0 +1,126 @@
+{
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "airbnb-base"
+    ],
+    "ignorePatterns": "node_modules",
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "prefer-arrow-callback": [
+            "error",
+            {
+                "allowNamedFunctions": false
+            }
+        ],
+        "spaced-comment": "warn",
+        "prefer-const": "warn",
+        "no-empty": "warn",
+        "import/no-unresolved": "off",
+        "import/extensions": "off",
+        "import/prefer-default-export": "off",
+        "prefer-template": "off",
+        "prefer-destructuring": "off",
+        "no-constant-condition": "off",
+        "max-classes-per-file": "off",
+        "no-lonely-if": "off",
+        "no-else-return": "off",
+        "class-methods-use-this": "off",
+        "no-restricted-syntax": "off",
+        "no-confusing-arrow": "off",
+        "no-param-reassign": "off",
+        // Does not allow operator short-circuit
+        "no-unused-expressions": "off",
+        "no-use-before-define": "off",
+        // Not sure, isn't it better to allow a dependency to specify the exact version it needs?
+        "import/no-extraneous-dependencies": "off",
+        // This is to allow export declare namespace + export const in TypeScript.
+        // We used this syntax because Babel didn't support TypeScript namespaces.
+        // Check: https://github.com/babel/babel/issues/8244
+        // We might be able to turn it on if this is fixed.
+        "import/export": "off",
+        // Makes sense, but arguments are used only in specific circumstances already
+        "prefer-rest-params": "off",
+        "no-unused-vars": "off",
+        "no-shadow": "off",
+        "no-unneeded-ternary": "off",
+        "no-console": "off",
+        "operator-assignment": "off",
+        "no-plusplus": "off",
+        "no-floating-decimal": "off",
+        "func-names": "off",
+        "react/prefer-stateless-function": "off",
+        "no-undef": "off",
+        "consistent-return": "off",
+        "default-case": "off",
+        "react/prop-types": "off",
+        "global-require": "off",
+        // Style rules we don't want
+        "quote-props": "off",
+        "camelcase": "off",
+        "no-underscore-dangle": "off",
+        "linebreak-style": "off",
+        "no-tabs": "off",
+        "max-len": "off",
+        "object-curly-newline": "off",
+        "arrow-body-style": "off",
+        "lines-between-class-members": "off",
+        "operator-linebreak": "off",
+        "quotes": "error",
+        // These are formatting rules that we currently don't enforce. Ideally we want formatter to take care of it.
+        "function-paren-newline": "off",
+        "object-shorthand": "off",
+        "arrow-parens": "off",
+        "comma-dangle": "off",
+        // Auto complete doesn't work well with default exports
+        "import/no-default-export": "error",
+        "padded-blocks": [
+            "warn",
+            {
+                "blocks": "never"
+            }
+        ],
+        "no-multiple-empty-lines": [
+            "warn",
+            {
+                "max": 1
+            }
+        ],
+        "curly": [
+            "error",
+            "all"
+        ],
+        "brace-style": [
+            "error",
+            "1tbs"
+        ],
+        "max-statements-per-line": "error",
+        "semi": [
+            1,
+            "never"
+        ],
+        "no-trailing-spaces": "off",
+        "comma-spacing": "off",
+        "no-multi-spaces": "off",
+        "space-before-function-paren": "off",
+        "no-mixed-operators": "off",
+        "no-redeclare": "off",
+        "@typescript-eslint/no-namespace": "off",
+        "indent": "off",
+        "no-await-in-loop": "off",
+        "radix": "off"
+    }
+}
