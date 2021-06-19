@@ -15,5 +15,13 @@ export const Config = {
 	HOME_PATH: process.cwd(),
 	NODE_ENV: process.env.NODE_ENV!,
 	IP: process.env.IP!,
-	PORT: process.env.PORT!
+	PORT: process.env.PORT!,
+	GATEWAY: {
+		HOST: process.env.GTW_HOST!,
+		PORT: process.env.GTW_PORT!,
+		ROUTE: process.env.GTW_ROUTE!,
+		CALLBACK_ROUTE: process.env.GTW_CALLBACK_ROUTE!,
+		ID: process.env.GTW_ID!,
+		PASSWORD: process.env.GTW_PWD!
+	}
 }
