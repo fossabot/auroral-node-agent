@@ -23,5 +23,12 @@ export const Config = {
 		CALLBACK_ROUTE: process.env.GTW_CALLBACK_ROUTE!,
 		ID: process.env.GTW_ID!,
 		PASSWORD: process.env.GTW_PWD!
+	},
+	DB: {
+		HOST: process.env.DB_HOST!,
+		PORT: process.env.DB_PORT!,
+		CACHE: process.env.DB_CACHE === 'enabled',
+		CACHE_TTL: process.env.DB_CACHE_TTL!
 	}
+
 }
