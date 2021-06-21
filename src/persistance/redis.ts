@@ -7,6 +7,7 @@
  import { Request, Response, NextFunction } from 'express'
  import { Config } from '../config'
  import { logger } from '../utils/logger'
+import { JsonType } from '../types/misc-types'
 
 const redisOptions = {
     port: Number(Config.DB.PORT), 
@@ -83,7 +84,7 @@ export const redisDb = {
     * @async
     * @returns {boolean}
     */
-   health: () => {
+   health: (): Promise<boolean> => {
      return new Promise((resolve, reject) => {
        client.ping((err, reply) => {
          if (err) {
@@ -104,7 +105,7 @@ export const redisDb = {
     * @async
     * @returns {string}
     */
-   save: () => {
+   save: (): Promise<string | boolean> => {
      return new Promise((resolve, reject) => {
        client.save((err, reply) => {
          if (err) {
@@ -128,7 +129,7 @@ export const redisDb = {
     * @param {integer} ttl
     * @returns {boolean}
     */
-   set: (key: string, item: string, ttl: number) => {
+   set: (key: string, item: string, ttl: number): Promise<boolean> => {
      return new Promise((resolve, reject) => {
        client.set(key, item, 'EX', ttl, (err, reply) => {
          if (err) {
@@ -148,7 +149,7 @@ export const redisDb = {
     * @param {string} key
     * @returns {boolean}
     */
-   remove: (key: string) => {
+   remove: (key: string): Promise<boolean> => {
      return new Promise((resolve, reject) => {
        client.del(key, (err, reply) => {
          if (err) {
@@ -168,7 +169,7 @@ export const redisDb = {
     * @param {string} key
     * @returns {string}
     */
-   get: (key: string) => {
+   get: (key: string): Promise<string | null> => {
      return new Promise((resolve, reject) => {
        client.get(key, (err, reply) => {
          if (err) {
@@ -191,7 +192,7 @@ export const redisDb = {
     * @param {string} item
     * @returns {boolean}
     */
-   sadd: (key: string, item: string) => {
+   sadd: (key: string, item: string): Promise<number> => {
      return new Promise((resolve, reject) => {
        client.sadd(key, item, (err, reply) => {
          if (err) {
@@ -213,7 +214,7 @@ export const redisDb = {
     * @param {string} item
     * @returns {boolean}
     */
-   srem: (key: string, item: string) => {
+   srem: (key: string, item: string): Promise<number> => {
      return new Promise((resolve, reject) => {
        client.srem(key, item, (err, reply) => {
          if (err) {
@@ -234,7 +235,7 @@ export const redisDb = {
     * @param {*} item
     * @returns {boolean}
     */
-   sismember: (key: string, item: string) => {
+   sismember: (key: string, item: string): Promise<number> => {
      return new Promise((resolve, reject) => {
        client.sismember(key, item, (err, reply) => {
          if (err) {
@@ -254,7 +255,7 @@ export const redisDb = {
     * @param {string} key
     * @returns {integer}
     */
-   scard: (key: string) => {
+   scard: (key: string): Promise<number> => {
      return new Promise((resolve, reject) => {
        client.scard(key, (err, reply) => {
          if (err) {
@@ -274,7 +275,7 @@ export const redisDb = {
     * @param {string} key
     * @returns {array of strings}
     */
-   smembers: (key: string) => {
+   smembers: (key: string): Promise<string[]> => {
      return new Promise((resolve, reject) => {
        client.smembers(key, (err, reply) => {
          if (err) {
@@ -296,7 +297,7 @@ export const redisDb = {
     * @param {string} key
     * @returns {*}
     */
-   hget: (hkey: string, key: string) => {
+   hget: (hkey: string, key: string): Promise<string> => {
      return new Promise((resolve, reject) => {
        client.hget(hkey, key, (err, reply) => {
          if (err) {
@@ -318,7 +319,7 @@ export const redisDb = {
     * @param {*} value
     * @returns {boolean}
     */
-   hset: (hkey: string, key: string, value: string) => {
+   hset: (hkey: string, key: string, value: string): Promise<number> => {
      return new Promise((resolve, reject) => {
        client.hset(hkey, key, value, (err, reply) => {
          if (err) {
@@ -339,7 +340,7 @@ export const redisDb = {
     * @param {string} key
     * @returns {boolean}
     */
-   hdel: (hkey: string, key: string) => {
+   hdel: (hkey: string, key: string): Promise<number> => {
      return new Promise((resolve, reject) => {
        client.hdel(hkey, key, (err, reply) => {
          if (err) {
@@ -360,7 +361,7 @@ export const redisDb = {
     * @param {string} key
     * @returns {boolean}
     */
-   hexists: (hkey: string, key: string) => {
+   hexists: (hkey: string, key: string): Promise<number> => {
      return new Promise((resolve, reject) => {
        client.hexists(hkey, key, (err, reply) => {
          if (err) {
@@ -380,7 +381,7 @@ export const redisDb = {
     * @param {string} hkey
     * @returns {object}
     */
-   hgetall: (hkey: string) => {
+   hgetall: (hkey: string): Promise<JsonType> => {
      return new Promise((resolve, reject) => {
        client.hgetall(hkey, (err, reply) => {
          if (err) {
