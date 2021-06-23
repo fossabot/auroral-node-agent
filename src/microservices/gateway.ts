@@ -9,7 +9,8 @@ import got, { Method, Headers } from 'got'
 import { JsonType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger } from '../utils/logger'
-import { BasicResponse, TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse } from '../types/gateway-types'
+import { BasicResponse, TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody } from '../types/gateway-types'
+import { Registration } from '../persistance/models/registrations'
 
 // CONSTANTS 
 
@@ -42,7 +43,7 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    login: async function(oid: string): Promise<BasicResponse> {
+    login: async function(oid?: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
             return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
@@ -59,7 +60,7 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    logout: async function(oid: string): Promise<BasicResponse> {
+    logout: async function(oid?: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
             return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization })
@@ -94,7 +95,10 @@ export const gateway = {
      * @param {body: Array of TDs}
      * @returns {error: boolean, message: array of TDs} 
      */
-    postRegistrations: async function(body: JsonType[]): Promise<TdsResponse> {
+    postRegistrations: async function(body: {
+        agid: string,
+        thingDescriptions: Registration[]
+    }): Promise<TdsResponse> {
         try {
             const Authorization = await getAuthorization()
             return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization })
@@ -110,7 +114,7 @@ export const gateway = {
      * @param {body: Array of OIDs}
      * @returns {error: boolean, message: [{value: string, result: string, error: string}]} 
      */
-    removeRegistrations: async function(body: string[]): Promise<DeleteResponse> {
+    removeRegistrations: async function(body: RemovalBody): Promise<DeleteResponse> {
         try {
             const Authorization = await getAuthorization()
             return request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', body, { ...ApiHeader, Authorization })

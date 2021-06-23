@@ -30,7 +30,7 @@ type RegistrationOrInteractionEnum = InteractionsEnum | RegistrationsType
  * @param {string} type 
  * @returns array
  */  
-export const loadConfigurationFile = async function(type: RegistrationOrInteractionEnum): Promise<Registration[] | Interaction[] | []> {
+export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum): Promise<Registration[] | Interaction[] | []> => {
     try { 
         const file = await fileSystem.read(`${Config.HOME_PATH}/agent/imports/${type}.json`)
         const array = JSON.parse(file)
@@ -66,7 +66,7 @@ export const loadConfigurationFile = async function(type: RegistrationOrInteract
  * @param {string} type 
  * @returns boolean
  */
- export const saveConfigurationFile = async function(type: RegistrationOrInteractionEnum): Promise<boolean> {
+ export const saveConfigurationFile = async (type: RegistrationOrInteractionEnum): Promise<boolean> => {
     try { 
         let data
         if (type === REGISTRATIONS) {
@@ -91,7 +91,7 @@ export const loadConfigurationFile = async function(type: RegistrationOrInteract
  * @param {object} data 
  * @returns boolean 
  */
- module.exports.addItem = async function(type: RegistrationOrInteractionEnum, data: RegistrationOrInteractionBody): Promise<boolean> {
+ export const addItem = async (type: RegistrationOrInteractionEnum, data: RegistrationOrInteractionBody): Promise<boolean> => {
     try {
         let result
         if (type === REGISTRATIONS && determineIfIsRegistration(data)) {
@@ -115,7 +115,7 @@ export const loadConfigurationFile = async function(type: RegistrationOrInteract
  * @param {string} id 
  * @returns boolean  
  */
-module.exports.removeItem = async function(type: RegistrationOrInteractionEnum, ids: string | string[]): Promise<boolean> {
+ export const removeItem = async (type: RegistrationOrInteractionEnum, ids: string | string[]): Promise<boolean> => {
     try {
         let result
         if (type === REGISTRATIONS) {
@@ -139,7 +139,7 @@ module.exports.removeItem = async function(type: RegistrationOrInteractionEnum, 
  * @param {string} id [OPTIONAL]
  * @returns object 
  */
-module.exports.getItem = async function(type: RegistrationOrInteractionEnum, id?: string): Promise<Registration | Interaction | string[]>  {
+ export const getItem = async (type: RegistrationOrInteractionEnum, id?: string): Promise<Registration | Interaction | string[]>  => {
     try {
         let result
         if (type === REGISTRATIONS) {
@@ -160,7 +160,7 @@ module.exports.getItem = async function(type: RegistrationOrInteractionEnum, id?
  * @param {string} type
  * @returns integer
  */
-module.exports.getCountOfItems = async function(type: RegistrationOrInteractionEnum): Promise<number> {
+ export const getCountOfItems = async (type: RegistrationOrInteractionEnum): Promise<number> => {
     try {
         let result
         if (type === REGISTRATIONS) {
@@ -175,6 +175,129 @@ module.exports.getCountOfItems = async function(type: RegistrationOrInteractionE
     }
 }
 
+// Useful functionalities
+
+/**
+ * Get credentials for one OID;
+ * From memory;
+ * on error rejects boolean false;
+ * @async
+ * @param {string} oid
+ * @returns string
+ */
+export const getCredentials = async (oid: string) => {
+    try { 
+        const credentials = await redisDb.hget(oid, 'credentials')
+        return Promise.resolve(credentials)
+    } catch (err) {
+        return Promise.reject(err)
+    }
+}
+
+/**
+ * Check if incoming request is valid;
+ * Oid exists in infrastructure and has pid;
+ * on error rejects error object;
+ * @async
+ * @param {string} oid
+ * @param {string} pid
+ * @param boolean
+ */
+export const combinationExists = async (oid: string, pid: string) => {
+    try {
+        const exists = await redisDb.sismember('registrations', oid)
+        if (!exists) {
+            throw new Error(`Object ${oid} does not exist in infrastructure`)
+        }
+        const type = await redisDb.hget(oid, 'type')
+        const properties = await redisDb.hget(oid, 'properties')
+        if (type !== 'core:Service') {
+            const p = properties != null ? properties.split(',') : []
+            if (p.indexOf(pid) === -1) {
+                throw new Error(`Object ${oid} does not have property ${pid}`)
+            }
+        }
+        return Promise.resolve(true)
+    } catch (err) {
+        return Promise.reject(err)
+    }    
+}
+
+// Configuration info MANAGEMENT
+
+/**
+ * Store configuration information;
+ * Needs to be removed first;
+ * on error rejects error string;
+ * @async
+ * @returns boolean
+ */
+export const reloadConfigInfo = async function() {
+    try { 
+        await removeConfigurationInfo()
+        await addConfigurationInfo()
+        return Promise.resolve(true)
+    } catch (err) {
+        throw new Error('Problem storing configuration information...')
+    }
+}
+
+/**
+ * Get configuration information;
+ * From memory;
+ * on error rejects error string;
+ * @async
+ * @returns object
+ */
+module.exports.getConfigInfo = async function() {
+    try {
+        await removeConfigurationInfo()
+        await addConfigurationInfo()
+        const result = await redisDb.hgetall('configuration')
+        return Promise.resolve(result)
+    } catch (err) {
+        logger.error(err.message, 'PERSISTANCE')
+        throw new Error('Problem storing configuration information...')
+    }
+}
+
+// CACHE
+
+/**
+ * Add property request to cache
+ * Support for caching incoming requests
+ * on error resolves false;
+ * @async
+ * @param {string} key path requested
+ * @param {string} data data requested
+ * @returns boolean
+ */
+module.exports.addToCache = async function(key: string, data: string) {
+    try {
+        redisDb.caching(key, data)
+        return Promise.resolve(true)
+    } catch (err) {
+        return Promise.reject(err)
+    }
+}
+
+// System Health
+
+/**
+ * Check Redis availability
+ * on error resolves false;
+ * @async
+ * @returns string
+ */
+module.exports.redisHealth = async function() {
+    try {
+        await redisDb.health()
+        return Promise.resolve('OK')
+    } catch (err) {
+        return Promise.resolve(false)
+    }
+}
+
 // Private functions
 
 const determineIfIsRegistration = (toBeDetermined: RegistrationOrInteractionBody): toBeDetermined is Registration => {
@@ -183,3 +306,42 @@ const determineIfIsRegistration = (toBeDetermined: RegistrationOrInteractionBody
     }
     return false
   }
+
+  /**
+ * Adds configuration of agent info
+ * To memory
+ */
+const addConfigurationInfo = async () => {
+    try { 
+        const d = new Date()
+        const numregis = await redisDb.scard('registrations')
+        const numprops = await redisDb.scard('properties')
+        const numactions = await redisDb.scard('actions')
+        const numevents = await redisDb.scard('events')
+        await redisDb.hset('configuration', 'date', d.toISOString())
+        await redisDb.hset('configuration', 'registrations', String(numregis))
+        await redisDb.hset('configuration', 'properties', String(numprops))
+        await redisDb.hset('configuration', 'actions', String(numactions))
+        await redisDb.hset('configuration', 'events', String(numevents))
+        return Promise.resolve(true)
+    } catch (err) {
+        return Promise.reject(err)
+    }
+}
+
+ /**
+ * Removes configuration of agent info
+ * From memory
+ */
+const removeConfigurationInfo = async () => {
+    try { 
+        await redisDb.hdel('configuration', 'date')
+        await redisDb.hdel('configuration', 'registrations')
+        await redisDb.hdel('configuration', 'properties')
+        await redisDb.hdel('configuration', 'actions')
+        await redisDb.hdel('configuration', 'events')
+        return Promise.resolve(true)
+    } catch (err) {
+        return Promise.reject(err)
+    }
+}

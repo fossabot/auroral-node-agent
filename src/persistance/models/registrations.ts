@@ -2,6 +2,7 @@
 import { JsonType } from '../../types/misc-types'
 import { logger } from '../../utils/logger'
 import { redisDb } from '../redis'
+import { Interaction } from './interactions'
 
 /**
  * registrations.js
@@ -14,13 +15,13 @@ import { redisDb } from '../redis'
 export interface Registration {
     oid: string
     type: string
-    credentials: string
+    credentials?: string
     password: string
     adapterId: string
     name: string
-    properties: string[]
-    events: string[]
-    actions: string[]
+    properties: Interaction[]
+    events: Interaction[]
+    actions: Interaction[]
 }
 
 export const registrationFuncs = {
