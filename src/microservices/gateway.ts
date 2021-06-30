@@ -96,12 +96,11 @@ export const gateway = {
      * @returns {error: boolean, message: array of TDs} 
      */
     postRegistrations: async function(body: {
-        agid: string,
         thingDescriptions: Registration[]
     }): Promise<TdsResponse> {
         try {
             const Authorization = await getAuthorization()
-            return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization })
+            return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', { ...body, agid: Config.GATEWAY.ID }, { ...ApiHeader, Authorization })
         } catch (err) {
             throw new Error(err)
         }
@@ -114,10 +113,11 @@ export const gateway = {
      * @param {body: Array of OIDs}
      * @returns {error: boolean, message: [{value: string, result: string, error: string}]} 
      */
-    removeRegistrations: async function(body: RemovalBody): Promise<DeleteResponse> {
+    removeRegistrations: async function(body: { oids: string[] }): Promise<DeleteResponse> {
         try {
             const Authorization = await getAuthorization()
-            return request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', body, { ...ApiHeader, Authorization })
+            const data: RemovalBody = { ...body, agid: Config.GATEWAY.ID }
+            return request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', data, { ...ApiHeader, Authorization })
         } catch (err) {
             throw new Error(err)
         }
@@ -139,7 +139,7 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
      */
-    discovery: async function(oid: string): Promise<BasicArrayResponse> {
+    discovery: async function(oid?: string): Promise<BasicArrayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
             return request('objects', 'GET', undefined, { ...ApiHeader, Authorization })

@@ -27,13 +27,15 @@ export enum InteractionsEnum {
     EVENTS = 'events'
 }
 
+export type InteractionsType = 'properties' | 'actions' | 'events'
+
 export const interactionFuncs = {
     // Store array of whole model in db
-    storeInMemory: async (array: Interaction[], type: InteractionsEnum): Promise<void> => {
+    storeInMemory: async (array: Interaction[], type: InteractionsType): Promise<void> => {
         await storeItems(array, type)
     },
     // Get array of whole model from db
-    loadFromMemory: async (type: InteractionsEnum): Promise<Interaction[]> => {
+    loadFromMemory: async (type: InteractionsType): Promise<Interaction[]> => {
         try {
             const all_interactions = await redisDb.smembers(type)
             const results: Interaction[] = []
@@ -47,7 +49,7 @@ export const interactionFuncs = {
         }
     },
     // Add item to db
-    addItem: async (data: Interaction, type: InteractionsEnum): Promise<boolean> => {
+    addItem: async (data: Interaction, type: InteractionsType): Promise<boolean> => {
         try {    
             await storeItems([data], type)
             return Promise.resolve(true)
@@ -57,7 +59,7 @@ export const interactionFuncs = {
         }
     },
     // Remove item from db
-    removeItem: async (ids: string | string[], type: InteractionsEnum) => {
+    removeItem: async (ids: string | string[], type: InteractionsType) => {
         if (typeof ids === 'string') {
             ids = [ids]
         }
@@ -81,7 +83,7 @@ export const interactionFuncs = {
     // Get item from db;
     // Returns object if ID provided;
     // Returns array of ids if ID not provided;
-    getItem: async (type: InteractionsEnum, id?: string): Promise<Interaction | string[]> => {
+    getItem: async (type: InteractionsType, id?: string): Promise<Interaction | string[]> => {
         try { 
             let obj
             if (id) {
@@ -98,7 +100,7 @@ export const interactionFuncs = {
     },
 
     // Get count of items in model stored in db
-    getCountOfItems: async (type: InteractionsEnum) => {
+    getCountOfItems: async (type: InteractionsType) => {
         try { 
             const count = await redisDb.scard(type)
             return Promise.resolve(count)
@@ -111,7 +113,7 @@ export const interactionFuncs = {
 
 // Private functions
 
-const storeItems = async (array: Interaction[], type: InteractionsEnum) => {
+const storeItems = async (array: Interaction[], type: InteractionsType) => {
     const interaction =  INTERACTIONS[type]
     const id = interaction.id
     const does = interaction.does

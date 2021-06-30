@@ -1,8 +1,9 @@
 import cors from 'cors'
 import express from 'express'
 import { responseBuilder, HttpStatusCode } from './utils'
-// import { UiRouter } from './api/ui-api/routes'
-// import { GtwRouter } from './api/gtw-api/routes'
+import { AgentRouter } from './api/agent/routes'
+import { GtwRouter } from './api/gateway/routes'
+import { ProxyRouter } from './api/proxy/routes'
 import { Config } from './config'
 import { logger } from './utils/logger'
 
@@ -29,8 +30,10 @@ app.use((req, res, next) => {
   next()
 })
  
-// app.use('/ui/v1/', UiRouter)
-// app.use('/gtw/v1/', GtwRouter)
+// API endpoints of the Agent
+app.use('/admin', AgentRouter)
+app.use('/api', GtwRouter)
+app.use('/agent', ProxyRouter)
 
 /**
  * Not Found

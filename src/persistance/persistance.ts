@@ -7,7 +7,7 @@
 import { logger } from '../utils/logger'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
-import { Interaction, interactionFuncs, InteractionsEnum } from './models/interactions'
+import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
 import { registrationFuncs, Registration } from './models/registrations'
 import { Config } from '../config'
 
@@ -16,7 +16,7 @@ import { Config } from '../config'
 type RegistrationsType = 'registrations'
 const REGISTRATIONS: RegistrationsType = 'registrations' 
 type RegistrationOrInteractionBody = Registration | Interaction
-type RegistrationOrInteractionEnum = InteractionsEnum | RegistrationsType
+type RegistrationOrInteractionEnum = InteractionsType | RegistrationsType
 
 // Import/Export data to/from persistance
 
@@ -249,7 +249,7 @@ export const reloadConfigInfo = async function() {
  * @async
  * @returns object
  */
-module.exports.getConfigInfo = async function() {
+ export const getConfigInfo = async function() {
     try {
         await removeConfigurationInfo()
         await addConfigurationInfo()
@@ -272,7 +272,7 @@ module.exports.getConfigInfo = async function() {
  * @param {string} data data requested
  * @returns boolean
  */
-module.exports.addToCache = async function(key: string, data: string) {
+ export const addToCache = async function(key: string, data: string) {
     try {
         redisDb.caching(key, data)
         return Promise.resolve(true)
@@ -289,12 +289,13 @@ module.exports.addToCache = async function(key: string, data: string) {
  * @async
  * @returns string
  */
-module.exports.redisHealth = async function() {
+ export const redisHealth = async (): Promise<string> => {
     try {
         await redisDb.health()
         return Promise.resolve('OK')
     } catch (err) {
-        return Promise.resolve(false)
+        logger.error(err.message)
+        return Promise.resolve('ERROR')
     }
 }
 
