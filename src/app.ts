@@ -1,11 +1,14 @@
 import cors from 'cors'
 import express from 'express'
+import swaggerUi from 'swagger-ui-express'
 import { responseBuilder, HttpStatusCode } from './utils'
 import { AgentRouter } from './api/agent/routes'
 import { GtwRouter } from './api/gateway/routes'
 import { ProxyRouter } from './api/proxy/routes'
 import { Config } from './config'
 import { logger } from './utils/logger'
+
+import swaggerDocument from './docs/swagger.json'
 
 // Create Express server
 const app = express()
@@ -15,6 +18,11 @@ app.set('port', Config.PORT || 4000)
 app.set('ip', Config.IP || 'localhost')
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// Load swagger docs
+const swagger_options = {
+  customCss: '.swagger-ui .topbar { display: none }'
+}
 
 // Basic cors setup
 app.use(cors())
@@ -34,6 +42,7 @@ app.use((req, res, next) => {
 app.use('/admin', AgentRouter)
 app.use('/api', GtwRouter)
 app.use('/agent', ProxyRouter)
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swagger_options))
 
 /**
  * Not Found

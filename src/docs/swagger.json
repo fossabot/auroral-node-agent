@@ -1,0 +1,1089 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "VICINITY generic adapter - developed by bAvenir. The REST API is divided in three main groups, the API (Calls that use the Gateway to contact the VICINITY platform), the ADMIN (calls oriented to monitor and make use to the adapter resources) and the ADAPTER (calls to make use of built-in automations)",
+    "version": "1.0.0",
+    "title": "bAvenir adapter",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "localhost",
+  "basePath": "",
+  "tags": [
+    {
+      "name": "auth",
+      "description": "API - Manual login of local infrastructure into VICINITY"
+    },
+    {
+      "name": "registry",
+      "description": "API - Manual registration of new devices or services into VICINITY"
+    },
+    {
+      "name": "discovery",
+      "description": "API - Discover the remote objects visible by your object"
+    },
+    {
+      "name": "consumption",
+      "description": "API - Resource consumption calls, request properties or publish events among others"
+    },
+    {
+      "name": "admin",
+      "description": "ADMIN - Monitor and manage the registrations and interactions that your adapter is using"
+    },
+    {
+      "name": "import/export",
+      "description": "ADMIN - Load/Save From/To file the information persisted by your adapter in memory"
+    },
+    {
+      "name": "healthcheck",
+      "description": "ADMIN - Test connection status of the adapter components (Server, Gateway and Storage)"
+    },
+    {
+      "name": "autocollection",
+      "description": "ADAPTER - Set auto-collection of properties or events"
+    },
+    {
+      "name": "mqtt",
+      "description": "ADAPTER - Enable/Disable/Control the MQTT module available in the adapter"
+    }
+  ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/admin/healthcheck": {
+      "get": {
+        "description": "See status of the adapter main components",
+        "tags": [ "healthcheck"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
+    "/admin/export/events": {
+      "get": {
+        "description": "Save events to file. BackUp option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/export/actions": {
+      "get": {
+        "description": "Save actions to file. BackUp option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/export/properties": {
+      "get": {
+        "description": "Save properties to file. BackUp option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/export/registrations": {
+      "get": {
+        "description": "Save registrations to file. BackUp option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/import/events": {
+      "get": {
+        "description": "Get into adapter events from file. Restore option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/import/actions": {
+      "get": {
+        "description": "Get into adapter actions from file. Restore option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/import/properties": {
+      "get": {
+        "description": "Get into adapter properties from file. Restore option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/import/registrations": {
+      "get": {
+        "description": "Get into adapter registrations from file. Restore option",
+        "tags": [ "import/export"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/actions/{id}": {
+      "get": {
+        "description": "See the actions registered in the adapter memory. Provide an aid as parameter to see more details",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description":"Remove an action from the adapter memory",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "AID of the action to remove",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/actions": {
+      "post": {
+        "description":"Add an action in the adapter memory",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Object describing an interaction as specified in VICINITY documentation",
+            "type": "object"
+          }
+        ],          
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/events/{id}": {
+      "get": {
+        "description": "See the events registered in the adapter memory. Provide an eid as parameter to see more details",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description":"Remove an event from the adapter memory",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "EID of the event to remove",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/events": {
+      "post": {
+        "description":"Add an event in the adapter memory",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Object describing an interaction as specified in VICINITY documentation",
+            "type": "object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/properties/{id}": {
+      "get": {
+        "description": "See the properties registered in the adapter memory. Provide an aid as parameter to see more details",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description":"Remove a property from the adapter memory",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "PID of the property to remove",
+            "required": true,
+            "type": "string"
+          }
+        ],          
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/properties": {
+      "post": {
+        "description":"Add a property in the adapter memory",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Object describing an interaction as specified in VICINITY documentation",
+            "type": "object"
+          }
+        ],          
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/admin/registrations/{id}": {
+      "get": {
+        "description": "Retrieve all the IDs of objects registered with your adapter and stored locally. Obtain the information of a concrete item by providing the ID as parameter",
+        "tags": [ "admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
+    "/admin/configuration": {
+      "get": {
+        "description": "Configuration status of the adapter",
+        "tags": [ "admin"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/{id}/{oid}/{pid}": {
+      "get": {
+        "description": "Request to get a remote property",
+        "tags": [ "consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "description": "Property of the remote object - PID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      },
+      "put": {
+        "description":"Request the update of a remote property",
+        "tags": [ "consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "description": "Property of the remote object - PID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
+    "/api/events/remote/{id}/{oid}/{eid}": {
+      "get": {
+        "description": "Get status of a remote event channel",
+        "tags": [ "consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description":"Subscribe to remote event channel",
+        "tags": [ "consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description":"Unsubscribe to remote event channel",
+        "tags": [ "consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/events/local/{id}/{eid}": {
+      "post": {
+        "description": "Create my event channel",
+        "tags": [ "consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description":"Put a message in my event channel",
+        "tags": [ "consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "description": "Body of the message",
+            "type": "object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description":"Delete my event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/events/subscribe": {
+      "get": {
+        "description": "Subscribe to all events existing in the file mapper.json. Agent will listen and collect messages in those channels.",
+        "tags": ["consumption"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description":"Unsubscribe to all events existing in the file mapper.json. Agent will stop listening.",
+        "tags": ["consumption"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/login/{id}": {
+      "get": {
+        "description": "Login your gateway instance or any object registered with it (Providing its id)",
+        "tags": [ "auth"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/logout/{id}": {
+      "get": {
+        "description": "Logout your gateway instance or any object registered with it (Providing its id)",
+        "tags": [ "auth"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/registration": {
+      "post": {
+        "description":"Register an object in the VICINITY platform",
+        "tags": [ "registry"],
+        "parameters": [            
+          {
+          "in": "body",
+          "name": "body",
+          "description": "Registration info",
+          "type": "object",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/bodyRegistry"
+          }
+        }
+      ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      },
+      "get": {
+        "description": "See what objects has your gateway registered in the platform",
+        "tags": [ "registry"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
+    "/api/registration/remove": {
+      "post": {
+        "description":"UnRegister an object from the VICINITY platform",
+        "tags": [ "registry"],
+        "parameters": [            
+          {
+          "in": "body",
+          "name": "body",
+          "description": "List of OIDs that have to be removed from the platform",
+          "type": "object",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/bodyUnRegistry"
+          }
+        }
+      ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/discovery/{id}": {
+      "get": {
+        "description": "See what remote objects can you reach which each OID. To see objects of other organisations you need to agree on a contract for exchanging data",
+        "tags": [ "discovery"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
+    "/adapter/mqtt/connect": {
+      "get": {
+        "description": "Connect adapter to MQTT server. Connection settings should be defined in configuration file",
+        "tags": ["mqtt"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/adapter/mqtt/disconnect": {
+      "get": {
+        "description": "Disconnect adapter from MQTT server",
+        "tags": ["mqtt"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/adapter/mqtt/subscribe": {
+      "post": {
+        "description": "Subscribe to MQTT channel",
+        "tags": ["mqtt"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "description": "Object with topic to subscribe and equivalent VICINITY event",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "topic": {
+                  "description": "MQTT topic name in remote server. + and # Can be used as wildcards for single path level or multilevel respectively",
+                  "type": "string"
+                },
+                "event": {
+                  "description": "Event name used to match MQTT topic in VICINITY",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/adapter/mqtt/unsubscribe": {
+      "post": {
+        "description": "Unsubscribe from an MQTT channel",
+        "tags": [ "mqtt"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "description": "Object with topic to unsubscribe",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "topic": {
+                  "description":  "MQTT topic name in remote server. + and # Can be used as wildcards for single path level or multilevel respectively",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],          
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/adapter/properties/autorequest": {
+      "get": {
+        "description": "Starts the automatic collection of remote properties. These properties have to be defined in mapper.json and the request interval is configurable.",
+        "tags": [ "autocollection"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description":"Stop the automatic collection of properties.",
+        "tags": ["autocollection"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ApiResponse": {
+      "type":"object",
+      "properties": {
+        "error": {
+          "type": "boolean",
+          "default": false
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "ApiResponseObject": {
+      "type":"object",
+      "properties": {
+        "error": {
+          "type": "boolean",
+          "default": false
+        },
+        "message": {
+          "type": "object"
+        }
+      }
+    },
+    "bodyRegistry": {
+      "type":"object",
+      "properties": {
+        "name" : {
+          "description": "Human readable name for the object",
+          "type": "string",
+          "required": true,
+          "default": "MySmartSensor"
+        },
+        "type" : {
+          "description": "VICINITY type to assign for the object",
+          "type": "string",
+          "required": true,
+          "default": "core:Device"
+        },
+        "adapterId" : {
+          "type": "string",
+          "description": "Id of the object in your infrastructure",
+          "required": true,
+          "default": "1234"
+        },
+        "properties": {
+          "type":"array",
+          "description": "Array of pid's. You can use only those you previously registered in the adapter",
+          "items": {
+              "type": "string"
+            }
+          },
+        "events": {
+          "type":"array",
+          "description": "Array of eid's. You can use only those you previously registered in the adapter",
+          "items": {
+              "type": "string"
+            }
+          },
+        "actions": {
+          "type":"array",
+          "description": "Array of aid's. You can use only those you previously registered in the adapter",
+          "items": {
+              "type": "string"
+            }
+        },
+        "version" : {
+          "type": "string",
+          "description": "Version of the registered device if applicable"
+        },
+        "description" : {
+          "type": "string",
+          "description": "Additional info"
+        }
+      }
+    },
+    "bodyUnRegistry": {
+      "type":"object",
+      "properties": {
+        "oids": {
+          "type":"array",
+          "description": "OIDs of those objects you would like to unregister",
+          "items": {
+              "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}
