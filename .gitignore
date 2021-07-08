@@ -5,6 +5,7 @@
 
 # Custom
 **/logs
+**/log
 redis/data
 agent/
 
