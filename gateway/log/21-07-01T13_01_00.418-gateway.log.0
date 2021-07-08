@@ -1,0 +1,12 @@
+Jul 01, 2021 1:01:01 PM eu.bavenir.ogwapi.commons.connectors.NeighbourhoodManagerConnector handshake
+INFO: Gateway connected as anonymous, restrictions might apply
+Jul 01, 2021 1:01:01 PM eu.bavenir.ogwapi.commons.monitoring.MessageCounter <init>
+INFO: Trying to load counters from file...
+Jul 01, 2021 1:01:01 PM eu.bavenir.ogwapi.App main
+INFO: Vicinity Gateway API initialized.
+Jul 01, 2021 1:01:01 PM org.restlet.Application start
+INFO: Starting eu.bavenir.ogwapi.restapi.Api application
+Jul 01, 2021 1:01:01 PM eu.bavenir.ogwapi.restapi.RestletThread run
+INFO: HTTP server configured and started.
+Jul 01, 2021 1:01:45 PM eu.bavenir.ogwapi.restapi.security.AuthenticationVerifier verify
+INFO: Missing credentials in request from a client with IP 172.18.0.4.

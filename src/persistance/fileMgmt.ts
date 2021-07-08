@@ -1,5 +1,4 @@
 import fs from 'fs'
-import { logger } from '../utils'
 
 export const fileSystem = {
     findFiles: async (path: string) => {
@@ -37,7 +36,7 @@ export const fileSystem = {
             if (err) {
                 reject(err)
             }
-            logger.info('The file has been saved')
+            resolve()
           })
         })
       }

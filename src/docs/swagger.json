@@ -1,16 +1,20 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "VICINITY generic adapter - developed by bAvenir. The REST API is divided in three main groups, the API (Calls that use the Gateway to contact the VICINITY platform), the ADMIN (calls oriented to monitor and make use to the adapter resources) and the ADAPTER (calls to make use of built-in automations)",
+    "description": "AURORAL node interface - developed by bAvenir. The REST API is divided in three main groups, the API (Calls that use the Gateway to contact the VICINITY platform), the ADMIN (calls oriented to monitor and make use to the adapter resources) and the ADAPTER (calls to make use of built-in automations)",
     "version": "1.0.0",
-    "title": "bAvenir adapter",
+    "title": "Auroral agent",
     "license": {
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     }
   },
-  "host": "localhost",
+  "host": "localhost:9997",
   "basePath": "",
+  "externalDocs": {
+    "description": "Find out more about AURORAL",
+    "url": "https://www.auroral.eu"
+  },
   "tags": [
     {
       "name": "auth",
@@ -39,18 +43,9 @@
     {
       "name": "healthcheck",
       "description": "ADMIN - Test connection status of the adapter components (Server, Gateway and Storage)"
-    },
-    {
-      "name": "autocollection",
-      "description": "ADAPTER - Set auto-collection of properties or events"
-    },
-    {
-      "name": "mqtt",
-      "description": "ADAPTER - Enable/Disable/Control the MQTT module available in the adapter"
     }
   ],
   "schemes": [
-    "https",
     "http"
   ],
   "paths": {
@@ -69,9 +64,9 @@
         }
       }
     },
-    "/admin/export/events": {
+    "/admin/exports": {
       "get": {
-        "description": "Save events to file. BackUp option",
+        "description": "Save registrations and interactions to file. BackUp option",
         "tags": [ "import/export"],
         "parameters": [],
         "responses": {
@@ -84,99 +79,9 @@
         }
       }
     },
-    "/admin/export/actions": {
+    "/admin/imports": {
       "get": {
-        "description": "Save actions to file. BackUp option",
-        "tags": [ "import/export"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/export/properties": {
-      "get": {
-        "description": "Save properties to file. BackUp option",
-        "tags": [ "import/export"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/export/registrations": {
-      "get": {
-        "description": "Save registrations to file. BackUp option",
-        "tags": [ "import/export"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/import/events": {
-      "get": {
-        "description": "Get into adapter events from file. Restore option",
-        "tags": [ "import/export"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/import/actions": {
-      "get": {
-        "description": "Get into adapter actions from file. Restore option",
-        "tags": [ "import/export"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/import/properties": {
-      "get": {
-        "description": "Get into adapter properties from file. Restore option",
-        "tags": [ "import/export"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/import/registrations": {
-      "get": {
-        "description": "Get into adapter registrations from file. Restore option",
+        "description": "Get into adapter registrations and interactions from file. Restore option",
         "tags": [ "import/export"],
         "parameters": [],
         "responses": {
@@ -866,130 +771,6 @@
           }
         }
       }
-    },
-    "/adapter/mqtt/connect": {
-      "get": {
-        "description": "Connect adapter to MQTT server. Connection settings should be defined in configuration file",
-        "tags": ["mqtt"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/adapter/mqtt/disconnect": {
-      "get": {
-        "description": "Disconnect adapter from MQTT server",
-        "tags": ["mqtt"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/adapter/mqtt/subscribe": {
-      "post": {
-        "description": "Subscribe to MQTT channel",
-        "tags": ["mqtt"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "description": "Object with topic to subscribe and equivalent VICINITY event",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "topic": {
-                  "description": "MQTT topic name in remote server. + and # Can be used as wildcards for single path level or multilevel respectively",
-                  "type": "string"
-                },
-                "event": {
-                  "description": "Event name used to match MQTT topic in VICINITY",
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/adapter/mqtt/unsubscribe": {
-      "post": {
-        "description": "Unsubscribe from an MQTT channel",
-        "tags": [ "mqtt"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "description": "Object with topic to unsubscribe",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "topic": {
-                  "description":  "MQTT topic name in remote server. + and # Can be used as wildcards for single path level or multilevel respectively",
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ],          
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/adapter/properties/autorequest": {
-      "get": {
-        "description": "Starts the automatic collection of remote properties. These properties have to be defined in mapper.json and the request interval is configurable.",
-        "tags": [ "autocollection"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      },
-      "delete": {
-        "description":"Stop the automatic collection of properties.",
-        "tags": ["autocollection"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
     }
   },
   "definitions": {
@@ -1081,9 +862,5 @@
         }
       }
     }
-  },
-  "externalDocs": {
-    "description": "Find out more about Swagger",
-    "url": "http://swagger.io"
   }
 }

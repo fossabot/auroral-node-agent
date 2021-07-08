@@ -31,8 +31,14 @@ export type InteractionsType = 'properties' | 'actions' | 'events'
 
 export const interactionFuncs = {
     // Store array of whole model in db
-    storeInMemory: async (array: Interaction[], type: InteractionsType): Promise<void> => {
-        await storeItems(array, type)
+    storeInMemory: async (array: Interaction[], type: InteractionsType): Promise<boolean> => {
+        try { 
+            await storeItems(array, type)
+            return Promise.resolve(true)
+        } catch (err) {
+            logger.warn(err.message)
+            return Promise.resolve(false)
+        }
     },
     // Get array of whole model from db
     loadFromMemory: async (type: InteractionsType): Promise<Interaction[]> => {

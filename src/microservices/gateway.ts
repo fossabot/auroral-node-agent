@@ -305,9 +305,12 @@ export const gateway = {
     health: async function(oid?: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
+            const data = await request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
+            // Store redundant variable data to catch any errors from GOT here
+            return data
         } catch (err) {
-            throw new Error(err)
+            logger.error(err.message)
+            return Promise.resolve({ error: true, message: err.message })
         }
     }
 

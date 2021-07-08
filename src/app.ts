@@ -16,6 +16,7 @@ const app = express()
 // Express configuration
 app.set('port', Config.PORT || 4000)
 app.set('ip', Config.IP || 'localhost')
+app.set('env', Config.NODE_ENV || 'development')
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
