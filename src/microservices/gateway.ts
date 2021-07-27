@@ -48,7 +48,7 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            logger.warn('Object ' + oid + ' was not logged in ...', 'GATEWAY')
+            logger.warn('Object ' + oid + ' was not logged in ...')
             throw new Error(err)
         }
     },
@@ -65,7 +65,7 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            logger.warn('Object ' + oid + ' was not logged in ...', 'GATEWAY')
+            logger.warn('Object ' + oid + ' was not logged in ...')
             throw new Error(err)
         }
     },
@@ -83,7 +83,7 @@ export const gateway = {
             const Authorization = await getAuthorization()
             return request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            logger.warn(`Error getting ${Config.GATEWAY.ID} objects ...`, 'GATEWAY')
+            logger.warn(`Error getting ${Config.GATEWAY.ID} objects ...`)
             throw new Error(err)
         }
     },

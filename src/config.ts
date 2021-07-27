@@ -29,6 +29,10 @@ export const Config = {
 		PORT: process.env.DB_PORT!,
 		CACHE: process.env.DB_CACHE === 'enabled',
 		CACHE_TTL: process.env.DB_CACHE_TTL!
+	},
+	WOT: {
+		HOST: process.env.WOT_HOST!,
+		PORT: process.env.WOT_PORT!,
+		BASE_URI: process.env.WOT_BASE_URI!
 	}
-
 }
