@@ -97,6 +97,7 @@ export const initialize = async function() {
   */    
  export const registerObject = async function(body: RegistrationBody) {
      try {
+         // TBD: Add to WoT
          const response = await gtwServices.registerObject(body)
          return Promise.resolve(response)
      } catch (err) {
@@ -115,6 +116,7 @@ export const initialize = async function() {
   */    
  export const unregisterObject = async function(oids: string | string[]) {
      try {
+         // TBD: Remove from WoT
          const obj = typeof oids === 'string' ? { oids: [oids] } : { oids }
          const response = await gtwServices.removeObject(obj)
          return Promise.resolve(response)
