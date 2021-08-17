@@ -8,6 +8,9 @@
 **/log
 redis/data
 agent/
+gateway-test
+gateway/keystore/
+redis/data
 
 # Node artifact files
 node_modules/

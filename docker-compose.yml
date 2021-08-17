@@ -22,7 +22,7 @@ services:
         condition: service_healthy
     ports:
       - 9997:9997
-      - 80:80
+      - 81:80
       # - 443:443
     image: nginx:stable
   gateway:
@@ -37,7 +37,7 @@ services:
     - GID=9999
     ports:
     - 8181:8181
-    image: bavenir/vicinity-gateway-api:latest
+    image: registry.bavenir.eu/auroral_gateway:dev
   cache-db:
     container_name: cache-db
     # restart: always

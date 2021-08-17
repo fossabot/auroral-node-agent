@@ -10,7 +10,7 @@
 		PROD 	- commserver.vicinity.ws
 
 		-->
-		<server>commserver.vicinity.ws</server>
+		<server>auroral.dev.bavenir.eu</server>
 
 
 		<!--
@@ -28,24 +28,21 @@
 		PROD 	- api.vicinity.bavenir.eu
 
 		-->
-		<neighbourhoodManagerServer>api.vicinity.bavenir.eu</neighbourhoodManagerServer>
+		<neighbourhoodManagerServer>auroral.dev.bavenir.eu</neighbourhoodManagerServer>
 
 		<!--
 		Port on which the NM listens for incoming requests.
 
 		Default is 3000.
 		-->
-		<neighourhoodManagerPort>3000</neighourhoodManagerPort>
+		<neighourhoodManagerPort>443</neighourhoodManagerPort>
 
-		<!--
-		User name to be used with NM communication.
+		<!-- 
+		Base URI for connecting the NM from the gateway
+		
+		Default is /api/gtw/v1/ (AURORAL) or /commserver/ (VICINITY/SHARQ)
 		-->
-		<neighbourhoodManagerUsername></neighbourhoodManagerUsername>
-
-		<!--
-		Password to be used with NM communication.
-		-->
-		<neighbourhoodManagerPassword></neighbourhoodManagerPassword>
+		<neighourhoodManagerBaseUri>/api/gtw/v1/</neighourhoodManagerBaseUri>
 
 		<!--
 		Setting this parameter to true will enable encryption of communication.
@@ -271,7 +268,7 @@
 		<!--
 		XMPP domain that is served by the server. Defaults to vicinity.ws.
 		-->
-		<domain>vicinity.ws</domain>
+		<domain>auroral.dev.bavenir.eu</domain>
 
 		<!--
 		Enables debugging of the XMPP communication between the Gateway and the
@@ -472,13 +469,13 @@
 			Tries to authenticate the gateway into the platform, if disabled the
 			gateway functions in anonymous mode and restrictions might apply (true or false)
 			-->
-			false
+			true
 		</enable>
 		<identity>
 			<!--
 			AGID of the Access Point used to authenticate the gateway (AGID string)
 			-->
-			0000
+			0aa1e7d0-42fd-43bf-a3c0-083a56d41f93
 		</identity>
 		<ttl>
 			<!--
