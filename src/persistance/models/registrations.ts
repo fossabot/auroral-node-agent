@@ -1,5 +1,4 @@
 // Global packages
-import { JsonType } from '../../types/misc-types'
 import { logger } from '../../utils/logger'
 import { redisDb } from '../redis'
 import { Interaction } from './interactions'
@@ -12,16 +11,37 @@ import { Interaction } from './interactions'
  * oid, type, credentials, password, adapterId, name, properties, events, agents
 */
 
-export interface Registration {
-    oid: string
+// Body received by application
+export interface PreRegistration {
     type: string
-    credentials?: string
-    password: string
     adapterId: string
     name: string
-    properties: Interaction[]
-    events: Interaction[]
-    actions: Interaction[]
+    properties?: string[]
+    events?: string[]
+    actions?: string[]
+    version?: string,
+    description?: string,
+    locatedIn?: string
+}
+
+// Body ready to register
+export interface RegistrationBody {
+    oid: string
+    properties?: Interaction[]
+    events?: Interaction[]
+    actions?: Interaction[]
+    type: string
+    adapterId: string
+    name: string
+    version?: string,
+    description?: string,
+    locatedIn?: string
+}
+
+// Complete registration type after item is registered in NM
+export interface Registration extends RegistrationBody {
+    credentials: string
+    password: string
 }
 
 export const registrationFuncs = {
@@ -142,7 +162,7 @@ const storeItems = async (array: Registration[]) => {
                 todo.push(redisDb.hset(data.oid, 'events', data.events.toString()))
             }
             if (data.actions && data.actions.length) {
-                todo.push(redisDb.hset(data.oid, 'agents', data.actions.toString()))
+                todo.push(redisDb.hset(data.oid, 'actions', data.actions.toString()))
             }
             await Promise.all(todo)
         } else {

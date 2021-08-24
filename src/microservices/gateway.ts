@@ -9,8 +9,9 @@ import got, { Method, Headers } from 'got'
 import { JsonType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger } from '../utils/logger'
-import { BasicResponse, TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody } from '../types/gateway-types'
-import { Registration } from '../persistance/models/registrations'
+import { BasicResponse, TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
+import { RegistrationBody } from '../persistance/models/registrations'
+import { getCredentials } from '../persistance/persistance'
 
 // CONSTANTS 
 
@@ -95,12 +96,10 @@ export const gateway = {
      * @param {body: Array of TDs}
      * @returns {error: boolean, message: array of TDs} 
      */
-    postRegistrations: async function(body: {
-        thingDescriptions: Registration[]
-    }): Promise<TdsResponse> {
+    postRegistrations: async function(body: { items: RegistrationBody[], agid: string }): Promise<RegistrationResult> {
         try {
             const Authorization = await getAuthorization()
-            return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', { ...body, agid: Config.GATEWAY.ID }, { ...ApiHeader, Authorization })
+            return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization })
         } catch (err) {
             throw new Error(err)
         }
@@ -319,16 +318,16 @@ export const gateway = {
 // PRIVATE FUNCTIONS
 
 const getAuthorization = async (oid?: string): Promise<string> => {
-    // if (oid) {
-        // const credentials = await persistance.getCredentials(oid)
-        // if (!credentials) {
-        //     throw new Error(`Missing authorization for object ${oid}`)
-        // }
-    //     return ''
-    // } else {
-    //     return '' // GATEWAY CREDS
-    // }
-    return ''
+    if (oid) {
+        const credentials = await getCredentials(oid)
+        if (!credentials) {
+            throw new Error(`Missing authorization for object ${oid}`)
+        }
+        return credentials
+    } else {
+        const creds = Buffer.from(Config.GATEWAY.ID + ':' + Config.GATEWAY.PASSWORD, 'utf-8').toString('base64') // GATEWAY CREDS
+        return 'Basic ' +  creds
+    }
 }
 
 const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {

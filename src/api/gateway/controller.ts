@@ -7,8 +7,10 @@ import { responseBuilder } from '../../utils/response-builder'
 // Other imports
 import { JsonType } from '../../types/misc-types'
 import { gateway } from '../../microservices/gateway'
-import { BasicArrayResponse, ConsumptionResponse, TdsResponse } from '../../types/gateway-types'
-import { Registration } from '../../persistance/models/registrations'
+import { gtwServices } from '../../core/gateway'
+import { BasicArrayResponse, ConsumptionResponse, RegistrationResultPost, TdsResponse } from '../../types/gateway-types'
+import { PreRegistration } from '../../persistance/models/registrations'
+import { removeItem } from '../../persistance/persistance'
 
 // Controllers
 
@@ -61,7 +63,7 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-type postRegistrationsCtrl = expressTypes.Controller<{}, { thingDescriptions: Registration[]}, {}, null, {}>
+type postRegistrationsCtrl = expressTypes.Controller<{}, PreRegistration | PreRegistration[], {}, RegistrationResultPost[], {}>
 
 /**
  * Register things in the platform
@@ -69,8 +71,13 @@ type postRegistrationsCtrl = expressTypes.Controller<{}, { thingDescriptions: Re
 export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
     const body = req.body
     try {
-        await gateway.postRegistrations(body)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
+        // Add OID to registration objects
+        // TBD Validate and Store TD in WoT** (Build TD from user input based on ontology)
+        // TBD Once ontology ready do not hardcode type device
+        // Register TD in NM (Dont send type nor interaction patterns)
+        const result = await gtwServices.registerObject(body)
+        // TBD Unregister from WoT on Error
+        return responseBuilder(HttpStatusCode.OK, res, null, result)
 	} catch (err) {
 		logger.error(err.message)
 		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
@@ -86,6 +93,7 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
     const body = req.body
     try {
         await gateway.removeRegistrations(body)
+        await removeItem('registrations', req.body.oids)
     return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
 		logger.error(err.message)
