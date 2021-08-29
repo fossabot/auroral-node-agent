@@ -35,9 +35,10 @@ services:
     environment:
     - UID=9999
     - GID=9999
-    ports:
-    - 8181:8181
-    image: registry.bavenir.eu/auroral_gateway:dev
+    # ports:
+    # - 8181:8181
+    # image: registry.bavenir.eu/auroral_gateway:dev
+    image: auroral_gateway
   cache-db:
     container_name: cache-db
     # restart: always

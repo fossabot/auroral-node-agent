@@ -149,6 +149,23 @@ export const gateway = {
     },
 
     /**
+     * Retrieve TD from remote gateway or object;
+     * (Understand object as gateway, service or device instance);
+     * (Using the credentials of a service or device);
+     * @async
+     * @param {oid: string}
+     * @returns {error: boolean, message: [oid: string]} 
+     */
+    discoveryRemote: async function(oid: string, params: { sparql?: JsonType, originId?: string }): Promise<BasicArrayResponse> {
+        try {
+            const { originId, sparql } = params
+            const Authorization = await getAuthorization(originId)
+            return request(`objects/${oid}`, 'POST', sparql, { ...ApiHeader, Authorization })
+        } catch (err) {
+            throw new Error(err)
+        }
+    },
+    /**
      * @TBD:
      * SPARQL query
      */

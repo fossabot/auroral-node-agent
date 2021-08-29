@@ -110,6 +110,25 @@ type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, BasicArray
       }
   }
 
+type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: string }, { sparql?: JsonType }, {}, BasicArrayResponse, {}>
+
+/**
+ * Discovery endpoint
+ * Check what remote objects can you see
+ */
+ export const discoveryRemote: discoveryRemoteCtrl = async (req, res) => {
+    const { id, originId } = req.params
+    const { sparql } = req.body
+      try {
+        const params = { sparql, originId }
+        const data = await gateway.discoveryRemote(id, params)
+        return responseBuilder(HttpStatusCode.OK, res, null, data)
+      } catch (err) {
+          logger.error(err.message)
+          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+      }
+  }
+
 // ***** Consume remote resources *****
 
 type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, {}, {}, ConsumptionResponse, {}>

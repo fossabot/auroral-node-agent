@@ -469,7 +469,7 @@
 			Tries to authenticate the gateway into the platform, if disabled the
 			gateway functions in anonymous mode and restrictions might apply (true or false)
 			-->
-			true
+			false
 		</enable>
 		<identity>
 			<!--

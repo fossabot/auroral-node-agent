@@ -21,9 +21,12 @@ GtwRouter
    .get('/registration', ctrl.getRegistrations)
    .post('/registration', ctrl.postRegistrations)
    .post('/registration/remove', ctrl.removeRegistrations)
+  // ***** Discovery *****
    .get('/discovery', ctrl.discovery)
    .get('/discovery/:id', ctrl.discovery)
-     // ***** Consume remote resources *****
+   .post('/discovery/:id', ctrl.discoveryRemote)
+   .post('/discovery/:id/:originId', ctrl.discoveryRemote)
+  // ***** Consume remote resources *****
    .get('/properties/:id/:oid/:pid', ctrl.getProperty) // Request remote property
    .put('/properties/:id/:oid/:pid', ctrl.setProperty) // Update remote property
    // .get('/actions/:id/:oid/:aid/:tid') // Get action status
