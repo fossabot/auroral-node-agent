@@ -3,6 +3,7 @@ import stoppable from 'stoppable'
 import { app } from './app'
 import { Config } from './config'
 import { logger } from './utils/logger'
+import { initialize } from './core/main'
 
 /**
  * Error Handler. Provides full stack - only in dev
@@ -15,6 +16,7 @@ if (Config.NODE_ENV === 'development') {
 function bootstrap() {
   try {
     // Run other services here
+    initialize()
     logger.info('All services initialized')
   } catch (err) {
     logger.error(err)

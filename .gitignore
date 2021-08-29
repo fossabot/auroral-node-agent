@@ -11,6 +11,7 @@ agent/
 tests/
 gateway/keystore/
 redis/data
+.env
 
 # Node artifact files
 node_modules/

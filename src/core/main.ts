@@ -10,7 +10,7 @@ import { gtwServices } from './gateway'
 import { logger } from '../utils'
 import  { loadConfigurationFile, getItem, reloadConfigInfo } from '../persistance/persistance'
 import { InteractionsEnum } from '../persistance/models/interactions'
-import { RegistrationBody } from '../types/gateway-types'
+import { PreRegistration } from '../persistance/models/registrations'
  
  /**
   * Initialization process of the agent module;
@@ -62,7 +62,7 @@ export const initialize = async function() {
  
          // End of initialization
          logger.info('Agent startup completed!')
-         return Promise.resolve(true)
+         return true
      } catch (err) {
          return Promise.reject(err)
      }
@@ -95,7 +95,7 @@ export const initialize = async function() {
   * @param {object} body
   * @returns {object} registration response
   */    
- export const registerObject = async function(body: RegistrationBody) {
+ export const registerObject = async function(body: PreRegistration | PreRegistration[]) {
      try {
          // TBD: Add to WoT
          const response = await gtwServices.registerObject(body)

@@ -12,6 +12,7 @@
     "redis": "^3.1.2",
     "stoppable": "^1.1.0",
     "swagger-ui-express": "^4.1.6",
+    "uuid": "^8.3.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
@@ -22,6 +23,7 @@
     "@types/redis": "^2.8.29",
     "@types/stoppable": "^1.1.1",
     "@types/swagger-ui-express": "^4.1.2",
+    "@types/uuid": "^8.3.1",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",

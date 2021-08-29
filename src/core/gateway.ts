@@ -3,13 +3,13 @@
  * Implements support functionality
  */
 
+ import { v4 as uuidv4 } from 'uuid'
 import { Interaction, InteractionsEnum } from '../persistance/models/interactions'
 import { logger } from '../utils'
 import { gateway } from '../microservices/gateway'
-import { RegistrationBody } from '../types/gateway-types'
 import { getCountOfItems, getItem, addItem, removeItem } from '../persistance/persistance'
-import { JsonType } from '../types/misc-types'
-import { Registration } from '../persistance/models/registrations'
+import { RegistrationResultPost } from '../types/gateway-types'
+import { Registration, PreRegistration, RegistrationBody } from '../persistance/models/registrations'
 import { Config } from '../config'
 
 const INTERACTIONS = {
@@ -22,52 +22,73 @@ export const gtwServices = {
     doLogins: async (array: string[]): Promise<void> => {
         try {
             await gateway.login() // Start always the gateway first
-            const actions = []
-            for (let i = 0, l = array.length; i < l; i++) {
-                actions.push(gateway.login(array[i]))
-            }
-            await Promise.all(actions)
-            logger.info('All logins finalized')
+            array.forEach(async (it) => {
+                try {
+                    await gateway.login(it)
+                } catch (error) {
+                    logger.error('Item ' + it + ' could not be logged in')
+                    logger.error(error.message)
+                }
+            })
         } catch (err) {
-            return Promise.reject(err)
+            logger.error(err.message)
         }
     },
     doLogouts: async (array: string[]): Promise<void> => {
         try {
-            const actions = []
-            for (let i = 0, l = array.length; i < l; i++) {
-                actions.push(gateway.logout(array[i]))
-            }
-            await Promise.all(actions)
+            array.forEach(async (it) => {
+                try {
+                    await gateway.logout(it)
+                } catch (error) {
+                    logger.error('Item ' + it + ' could not be logged out')
+                    logger.error(error.message)
+                }
+            })
             await gateway.logout() // Stop always the gateway last
             logger.info('All logouts were successful', 'AGENT')
         } catch (err) {
-            return Promise.reject(err)
+            logger.error(err.message)
         }
     },
     /**
      * Register object in platform
      * Only 1 by 1 - No multiple registration accepted
      */
-    registerObject: async (body: RegistrationBody): Promise<JsonType> => {
+    registerObject: async (body: PreRegistration | PreRegistration[]): Promise<RegistrationResultPost[]> => {
         try {
-            const td = await buildTD(body)
-            const result = await gateway.postRegistrations(td)
-            if (result.message[0].error) {
+            const itemsArray = Array.isArray(body) ? body : [body]
+            const items = await Promise.all(itemsArray.map(async (it) => {
+                return buildTD(it) 
+            }))
+            const result = await gateway.postRegistrations({
+                agid: Config.GATEWAY.ID,
+                items
+            })
+            if (result.error) {
                 throw new Error('Platform parsing failed, please revise error: ' + JSON.stringify(result.message[0].error))
             }
-            await storeRegistration(
-                { 
-                    ...td.thingDescriptions[0], 
-                    oid: result.message[0].oid,
-                    password: result.message[0].password
-                })
-            // Login new objects
-            const actions = []
-            for (let i = 0, l = result.message.length; i < l; i++) {
-                actions.push(gateway.login(result.message[i].oid))
-            }
-            await Promise.all(actions)
+            result.message.forEach(async (it) => {
+                if (!it.error && it.password) {
+                    try {
+                        const td = items.filter(x => x.oid === it.oid)
+                        await storeRegistration(
+                            { 
+                                ...td[0], 
+                                oid: it.oid,
+                                password: it.password,
+                                credentials: 'Basic ' + Buffer.from(it.oid + ':' + it.password, 'utf-8').toString('base64')
+                            })
+                        // Login new objects
+                        await gateway.login(it.oid)
+                        logger.info(it.name + ' with oid ' + it.oid + ' successfully registered!')
+                    } catch (error) {
+                        logger.warn(it.name + ' with oid ' + it.oid + ' had a registration issue...')
+                        logger.error(error.message)
+                    }
+                } else {
+                    logger.warn(it.name + ' with oid ' + it.oid + ' could not be registered...')
+                }
+            })
             return Promise.resolve(result.message)
         } catch (err) {
             return Promise.reject(err)
@@ -115,20 +136,17 @@ export const gtwServices = {
 
 // Private functions
 
-const buildTD = async (data: RegistrationBody) => {
+const buildTD = async (data: PreRegistration): Promise<RegistrationBody> => {
     try {
         await _checkNumberOfRegistrations()
         _validate(data)
+        const oid = uuidv4()
         const actions = data.actions ? await _checkInteractionPatterns(data.actions, InteractionsEnum.ACTIONS) : []
         const events = data.events ? await _checkInteractionPatterns(data.events, InteractionsEnum.EVENTS) : []
         const properties = data.properties ? await _checkInteractionPatterns(data.properties, InteractionsEnum.PROPERTIES) : []
-        return Promise.resolve({
-            agid: Config.GATEWAY.ID,
-            thingDescriptions: [{ ...data, actions, events, properties }]
-        }) as Promise<{
-            agid: string,
-            thingDescriptions: Registration[]
-        }>
+        return Promise.resolve(
+            { ...data, actions, events, properties, oid }
+        )
     } catch (err) {
         return Promise.reject(err)
     }
@@ -158,7 +176,7 @@ const _checkInteractionPatterns = async (all_interactions: string[], type: Inter
  * Check if all required parameters for registration are included
  * @param {object} data 
  */
-const _validate = (data: RegistrationBody) => {
+const _validate = (data: PreRegistration) => {
     if (!data.name) {
         throw new Error('REGISTRATION ERROR: Missing name')
     }
@@ -205,11 +223,7 @@ const _getInteractionId = (array: string[], type: InteractionsEnum) => {
  */
 const storeRegistration = async (registration: Registration) => {
     try {
-        const newRegistration = {
-            ...registration,
-            credentials: 'Basic ' +  Buffer.from(registration.oid + ':' + registration.password).toString('base64')
-        }
-        await addItem('registrations', newRegistration)
+        await addItem('registrations', registration)
         return Promise.resolve(true)
     } catch (err) {
         return Promise.reject(err)

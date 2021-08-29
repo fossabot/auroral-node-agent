@@ -33,16 +33,21 @@ export interface ConsumptionResponse {
     message: JsonType[]
 }
 
-export interface RegistrationBody {
-    adapterId: string,
-    name: string,
-    type: string,
-    version?: string,
-    description?: string,
-    locatedIn?: string,
-    actions?: string[],
-    events?: string[],
-    properties?: string[]
+export interface RegistrationResult {
+    error: boolean
+    message: [{
+        oid: string
+        password: string | null
+        name: string
+        error?: boolean
+    }]
+}
+
+export interface RegistrationResultPost {
+        oid: string
+        password: string | null
+        name: string
+        error?: boolean
 }
 
 export interface RemovalBody {
