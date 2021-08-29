@@ -38,7 +38,7 @@ services:
     # ports:
     # - 8181:8181
     # image: registry.bavenir.eu/auroral_gateway:dev
-    image: auroral_gateway
+    image: auroral-gateway
   cache-db:
     container_name: cache-db
     # restart: always
