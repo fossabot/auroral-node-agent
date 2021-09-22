@@ -1,7 +1,7 @@
 // Controller common imports
 import { expressTypes } from '../../types/index'
 import { HttpStatusCode } from '../../utils/http-status-codes'
-import { logger } from '../../utils/logger'
+import { logger, errorHandler } from '../../utils'
 import { responseBuilder } from '../../utils/response-builder'
 
 // Other imports
@@ -17,8 +17,9 @@ export const getProperty: PropertyCtrl = async (req, res) => {
     logger.info('Requested READ property ' + pid + ' from ' + id)
     return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+    const error = errorHandler(err)
+    logger.error(error.message)
+    return responseBuilder(error.status, res, error.message)
 	}
 }
  
@@ -28,8 +29,9 @@ export const setProperty: PropertyCtrl = async (req, res) => {
     logger.info('Requested UPDATE property ' + pid + ' from ' + id)
     return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+    const error = errorHandler(err)
+		logger.error(error.message)
+		return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -43,8 +45,9 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       logger.info(body)
       return responseBuilder(HttpStatusCode.OK, res, null, null)
       } catch (err) {
-          logger.error(err.message)
-          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
       }
   }
 
@@ -59,7 +62,8 @@ export const discovery: DiscoveryCtrl = async (req, res) => {
         const dummyResp: JsonType = { success: true }
         return responseBuilder(HttpStatusCode.OK, res, null, dummyResp)
       } catch (err) {
-          logger.error(err.message)
-          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
       }
   }

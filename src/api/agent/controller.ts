@@ -1,7 +1,7 @@
 // Controller common imports
 import { expressTypes } from '../../types/index'
 import { HttpStatusCode } from '../../utils/http-status-codes'
-import { logger } from '../../utils/logger'
+import { logger, errorHandler } from '../../utils'
 import { responseBuilder } from '../../utils/response-builder'
 
 // Other imports
@@ -29,8 +29,9 @@ export const getConfiguration: configurationCtrl = async (req, res) => {
         logger.info('Requested configuration file')
         return responseBuilder(HttpStatusCode.OK, res, null, config)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -42,8 +43,9 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
         const data = await persistance.getItem(registrationAndInteractions.REGISTRATIONS , id)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -55,8 +57,9 @@ export const getProperties: getInteractionCtrl = async (req, res) => {
         const data = await persistance.getItem(registrationAndInteractions.PROPERTIES , id)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
  
@@ -66,8 +69,9 @@ export const getActions: getInteractionCtrl = async (req, res) => {
         const data = await persistance.getItem(registrationAndInteractions.ACTIONS , id)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
  
@@ -77,8 +81,9 @@ export const getEvents: getInteractionCtrl = async (req, res) => {
         const data = await persistance.getItem(registrationAndInteractions.EVENTS , id)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -90,8 +95,9 @@ export const postProperties: postInteractionCtrl = async (req, res) => {
         await persistance.addItem(registrationAndInteractions.PROPERTIES, body)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -101,8 +107,9 @@ export const postActions: postInteractionCtrl = async (req, res) => {
         await persistance.addItem(registrationAndInteractions.ACTIONS, body)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -112,8 +119,9 @@ export const postEvents: postInteractionCtrl = async (req, res) => {
         await persistance.addItem(registrationAndInteractions.EVENTS, body)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -125,8 +133,9 @@ export const deleteProperties: deleteInteractionCtrl = async (req, res) => {
         await persistance.removeItem(registrationAndInteractions.PROPERTIES, id)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -136,8 +145,9 @@ export const deleteActions: deleteInteractionCtrl = async (req, res) => {
         await persistance.removeItem(registrationAndInteractions.ACTIONS, id)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -147,8 +157,9 @@ export const deleteEvents: deleteInteractionCtrl = async (req, res) => {
         await persistance.removeItem(registrationAndInteractions.EVENTS, id)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -162,8 +173,9 @@ export const importFiles: importsCtrl = async (req, res) => {
         await persistance.loadConfigurationFile(registrationAndInteractions.REGISTRATIONS)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -177,8 +189,9 @@ export const exportFiles: exportsCtrl = async (req, res) => {
         await persistance.saveConfigurationFile(registrationAndInteractions.REGISTRATIONS)
         return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -191,7 +204,8 @@ export const healthCheck: healthCheckCtrl = async (req, res) => {
         const response = { 'Redis': redisHealth, 'Gateway': gtwHealth, 'NodeApp': 'OK' }
         return responseBuilder(HttpStatusCode.OK, res, null, response)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }

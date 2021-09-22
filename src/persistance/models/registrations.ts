@@ -2,6 +2,7 @@
 import { logger } from '../../utils/logger'
 import { redisDb } from '../redis'
 import { Interaction } from './interactions'
+import { errorHandler } from '../../utils'
 
 /**
  * registrations.js
@@ -46,94 +47,60 @@ export interface Registration extends RegistrationBody {
 
 export const registrationFuncs = {
     // Store array of whole model in db
-    storeInMemory: async (array: Registration[]) => {
-        try { 
-            await storeItems(array)
-            return Promise.resolve(true)
-        } catch (err) {
-            logger.warn(err.message)
-            return Promise.resolve(false)
-        }
+    storeInMemory: async (array: Registration[]): Promise<void> => {
+        await storeItems(array)
     },
     // Get array of whole model from db
     loadFromMemory: async (): Promise<Registration[]> => {
-        try {
-            const oids = await redisDb.smembers('registrations')
-            const results: Registration[] = []
-            oids.forEach(async (it) => {
-                results.push(await redisDb.hgetall(it) as Registration)
-            })
-            return Promise.resolve(results)
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
-        }
+        const oids = await redisDb.smembers('registrations')
+        const results: Registration[] = []
+        oids.forEach(async (it) => {
+            results.push(await redisDb.hgetall(it) as Registration)
+        })
+        return Promise.resolve(results)
     },
     // Add item to db
-    addItem: async (data: Registration): Promise<boolean> => {
-        try {    
-            await storeItems([data])
-            return Promise.resolve(true)
-        } catch (err) {
-            logger.warn(err.message)
-            return Promise.resolve(false)
-        }
+    addItem: async (data: Registration): Promise<void> => {
+        await storeItems([data])
     },
     // Remove item from db
-    removeItem: async (ids: string | string[]) => {
+    removeItem: async (ids: string | string[]): Promise<void> => {
         if (typeof ids === 'string') {
             ids = [ids]
         }
-        try { 
-            for (let i = 0, l = ids.length; i < l; i++) {
-                const oid = ids[i]
-                const todo = []
-                todo.push(redisDb.srem('registrations', oid))
-                todo.push(redisDb.hdel(oid, 'credentials'))
-                todo.push(redisDb.hdel(oid, 'password'))
-                todo.push(redisDb.hdel(oid, 'type'))
-                todo.push(redisDb.hdel(oid, 'name'))
-                todo.push(redisDb.hdel(oid, 'adapterId'))
-                todo.push(redisDb.hdel(oid, 'properties'))
-                todo.push(redisDb.hdel(oid, 'events'))
-                todo.push(redisDb.hdel(oid, 'agents'))
-                await Promise.all(todo)
-            }
-            // Persist changes to dump.rdb
-            redisDb.save()
-            return Promise.resolve(true)
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
+        for (let i = 0, l = ids.length; i < l; i++) {
+            const oid = ids[i]
+            const todo = []
+            todo.push(redisDb.srem('registrations', oid))
+            todo.push(redisDb.hdel(oid, 'credentials'))
+            todo.push(redisDb.hdel(oid, 'password'))
+            todo.push(redisDb.hdel(oid, 'type'))
+            todo.push(redisDb.hdel(oid, 'name'))
+            todo.push(redisDb.hdel(oid, 'adapterId'))
+            todo.push(redisDb.hdel(oid, 'properties'))
+            todo.push(redisDb.hdel(oid, 'events'))
+            todo.push(redisDb.hdel(oid, 'actions'))
+            await Promise.all(todo)
         }
+        // Persist changes to dump.rdb
+        redisDb.save()
     },
     // Get item from db;
     // Returns object if ID provided;
     // Returns array of ids if ID not provided;
     getItem: async (id?: string): Promise<Registration | string[]> => {
         let result
-        try {
-            if (id) {
-                result = await redisDb.hgetall(id) as Registration
-                return Promise.resolve(result)
-            } else {
-                result = await redisDb.smembers('registrations')
-                return Promise.resolve(result)
-            }
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
+        if (id) {
+            result = await redisDb.hgetall(id) as Registration
+            return Promise.resolve(result)
+        } else {
+            result = await redisDb.smembers('registrations')
+            return Promise.resolve(result)
         }
     },
     // Get count of items in model stored in db
-    getCountOfItems: async () => {
-        try { 
-            const count = await redisDb.scard('registrations')
-            return Promise.resolve(count)
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
-        }
+    getCountOfItems: async (): Promise<number> => {
+        return redisDb.scard('registrations')
     }
 }
 

@@ -7,7 +7,7 @@
 import got, { Method, Headers, PlainResponse } from 'got'
 import { JsonType } from '../types/misc-types'
 import { Config } from '../config'
-import { logger } from '../utils/logger'
+import { logger, errorHandler } from '../utils'
 import { BasicResponse } from '../types/wot-types'
 
 // CONSTANTS 
@@ -49,8 +49,9 @@ export const gateway = {
             }
             return buildResponse()
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not registered ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
      /**
@@ -69,8 +70,9 @@ export const gateway = {
             }
             return buildResponse()
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not registered ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
     /**
@@ -91,8 +93,9 @@ export const gateway = {
             }
             return buildResponse()
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not registered ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
      /**
@@ -110,8 +113,9 @@ export const gateway = {
             }
             return buildResponse()
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not deleted ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
     /**
@@ -129,8 +133,9 @@ export const gateway = {
             }
             return buildResponse(response.body as JsonType)
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Problem retrieving TD of object with id ' + oid + '...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
     /**
@@ -145,8 +150,9 @@ export const gateway = {
             const response = await request('td', 'GET', undefined, ApiHeader)
             return buildResponse(response.body as JsonType)
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Error retrieving TDs ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
     /**
@@ -165,8 +171,9 @@ export const gateway = {
             }
             return buildResponse(response.body as JsonType)
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Error retrieving TDs ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     }
 }

@@ -1,7 +1,7 @@
 // Controller common imports
 import { expressTypes } from '../../types/index'
 import { HttpStatusCode } from '../../utils/http-status-codes'
-import { logger } from '../../utils/logger'
+import { logger, errorHandler } from '../../utils'
 import { responseBuilder } from '../../utils/response-builder'
 
 // Other imports
@@ -11,6 +11,8 @@ import { gtwServices } from '../../core/gateway'
 import { BasicArrayResponse, ConsumptionResponse, RegistrationResultPost, TdsResponse } from '../../types/gateway-types'
 import { PreRegistration } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
+import { tdParser } from '../../core/td-parser'
+import { Config } from '../../config'
 
 // Controllers
 
@@ -26,8 +28,9 @@ export const login: loginCtrl = async (req, res) => {
     await gateway.login(id)
     return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
  
@@ -43,8 +46,9 @@ export const logout: logoutCtrl = async (req, res) => {
     await gateway.logout(id)
     return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -58,8 +62,9 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
     const data = await gateway.getRegistrations()
     return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+      const error = errorHandler(err)
+      logger.error(error.message)
+      return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -71,16 +76,21 @@ type postRegistrationsCtrl = expressTypes.Controller<{}, PreRegistration | PreRe
 export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
     const body = req.body
     try {
-        // Add OID to registration objects
+        // Parse TD body and add OID to registration objects
+        const items = await tdParser(body)
         // TBD Validate and Store TD in WoT** (Build TD from user input based on ontology)
         // TBD Once ontology ready do not hardcode type device
+        if (Config.WOT.ENABLED) {
+          logger.info('Validate and register with WoT')
+        }
         // Register TD in NM (Dont send type nor interaction patterns)
-        const result = await gtwServices.registerObject(body)
+        const result = await gtwServices.registerObject(items)
         // TBD Unregister from WoT on Error
         return responseBuilder(HttpStatusCode.OK, res, null, result)
 	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -92,20 +102,28 @@ type removeRegistrationsCtrl = expressTypes.Controller<{}, { oids: string[] }, {
 export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => {
     const body = req.body
     try {
-        await gateway.removeRegistrations(body)
-        await removeItem('registrations', req.body.oids)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
-	} catch (err) {
-		logger.error(err.message)
-		return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+      // Remove from Auroral Cloud
+      await gateway.removeRegistrations(body)
+      // Remove from WoT
+      if (Config.WOT.ENABLED) {
+        logger.info('Remove item from WoT')
+      }
+      // Remove from agent
+      await removeItem('registrations', req.body.oids)
+      return responseBuilder(HttpStatusCode.OK, res, null, null)
+    } catch (err) {
+      const error = errorHandler(err)
+      logger.error(error.message)
+      return responseBuilder(error.status, res, error.message)
 	}
 }
 
 type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, BasicArrayResponse, {}>
 
 /**
- * Discovery endpoint
+ * Discovery endpoint LOCAL
  * Check what remote objects can you see
+ * Returns array of OIDs
  */
  export const discovery: discoveryCtrl = async (req, res) => {
     const { id } = req.params
@@ -113,16 +131,19 @@ type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, BasicArray
       const data = await gateway.discovery(id)
       return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
-          logger.error(err.message)
-          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
       }
   }
 
 type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: string }, { sparql?: JsonType }, {}, BasicArrayResponse, {}>
 
 /**
- * Discovery endpoint
- * Check what remote objects can you see
+ * Discovery endpoint REMOTE
+ * Check what remote objects can you see and fetch TDs (and data??)
+ * If no originId, it is assumed that you originate the call from your GATEWAY
+ * (Gateways can only reach other gateways, while items might see other items)
  */
  export const discoveryRemote: discoveryRemoteCtrl = async (req, res) => {
     const { id, originId } = req.params
@@ -132,8 +153,9 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
         const data = await gateway.discoveryRemote(id, params)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
-          logger.error(err.message)
-          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
       }
   }
 
@@ -151,8 +173,9 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
       logger.info(`Property ${pid} of ${oid} received`)
       return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
-          logger.error(err.message)
-          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
       }
   }
 
@@ -173,8 +196,9 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
       logger.info(`Property ${pid} of ${oid} set`)
       return responseBuilder(HttpStatusCode.OK, res, null, data)
     } catch (err) {
-        logger.error(err.message)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
     }
 }
 
@@ -190,8 +214,9 @@ export const activateEventChannel: activateEventChannelCtrl = async (req, res) =
       logger.info(`Channel ${eid} of ${id} activated`)
       return responseBuilder(HttpStatusCode.OK, res, null, data.message)
     } catch (err) {
-        logger.error(err.message)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
     }
 }
 
@@ -212,8 +237,9 @@ type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, Jso
         logger.info(`Message sent to channel ${eid} of ${id}`)
         return responseBuilder(HttpStatusCode.OK, res, null, data.message)
     } catch (err) {
-        logger.error(err.message)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
     }
 }
 
@@ -229,8 +255,9 @@ export const deactivateEventChannel: deactivateEventChannelCtrl = async (req, re
       logger.info(`Channel ${eid} of ${id} deactivated`)
       return responseBuilder(HttpStatusCode.OK, res, null, data.message)
     } catch (err) {
-        logger.error(err.message)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
     }
 }
 
@@ -246,8 +273,9 @@ export const statusRemoteEventChannel: statusRemoteEventChannelCtrl = async (req
       logger.info(`Get status of remote channel ${eid} of ${oid}`)
       return responseBuilder(HttpStatusCode.OK, res, null, data.message)
     } catch (err) {
-        logger.error(err.message)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
     }
 }
 
@@ -263,8 +291,9 @@ export const subscribeRemoteEventChannel: subscribeRemoteEventChannelCtrl = asyn
       logger.info(`Subscribed to remote channel ${eid} of ${oid}`)
       return responseBuilder(HttpStatusCode.OK, res, null, data.message)
     } catch (err) {
-        logger.error(err.message)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
     }
 }
 
@@ -280,7 +309,8 @@ export const unsubscribeRemoteEventChannel: unsubscribeRemoteEventChannelCtrl = 
         logger.info(`Unsubscribed to remote channel ${eid} of ${oid}`)
         return responseBuilder(HttpStatusCode.OK, res, null, data.message)
     } catch (err) {
-        logger.error(err.message)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
     }
 }

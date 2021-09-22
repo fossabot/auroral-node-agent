@@ -4,7 +4,7 @@
 * @interface
 */ 
 
-import { logger } from '../utils/logger'
+import { logger, errorHandler } from '../utils'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
 import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
@@ -30,7 +30,7 @@ type RegistrationOrInteractionEnum = InteractionsType | RegistrationsType
  * @param {string} type 
  * @returns array
  */  
-export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum): Promise<Registration[] | Interaction[] | []> => {
+export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum): Promise<Registration[] | Interaction[]> => {
     try { 
         const file = await fileSystem.read(`${Config.HOME_PATH}/agent/imports/${type}.json`)
         const array = JSON.parse(file)
@@ -48,12 +48,13 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
             return Promise.resolve(array)
         }
     } catch (err) {
-        if (err.code === 'ENOENT') {
+        const error = errorHandler(err)
+        if (error.code === 'ENOENT') {
             logger.warn(`File ${type}.json not found`)
             return Promise.resolve([])
         } else {
-            logger.error(err.message)
-            return Promise.reject(err)
+            logger.error(error.message)
+            throw new Error(error.message)
         }
     }
 }
@@ -75,10 +76,11 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
             data = await interactionFuncs.loadFromMemory(type)
         }
         await fileSystem.write(`${Config.HOME_PATH}/agent/exports/${type}.json`, JSON.stringify(data))
-        return Promise.resolve(true)
+        return true
     } catch (err) {
-        logger.error(err.message)
-        return Promise.resolve(false)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return false
     }
 }
 
@@ -91,20 +93,20 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
  * @param {object} data 
  * @returns boolean 
  */
- export const addItem = async (type: RegistrationOrInteractionEnum, data: RegistrationOrInteractionBody): Promise<boolean> => {
+ export const addItem = async (type: RegistrationOrInteractionEnum, data: RegistrationOrInteractionBody): Promise<void> => {
     try {
         let result
         if (type === REGISTRATIONS && determineIfIsRegistration(data)) {
-            result = await registrationFuncs.addItem(data)
+            await registrationFuncs.addItem(data)
         } else if (type !== REGISTRATIONS) {
-            result = await interactionFuncs.addItem(data as Interaction, type)
+            await interactionFuncs.addItem(data as Interaction, type)
         } else {
             throw new Error('Wrong type')
         }
-        return Promise.resolve(result)
     } catch (err) {
-        logger.error(err.message)
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        throw new Error(error.message)
     }
 }
 
@@ -115,18 +117,18 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
  * @param {string} id 
  * @returns boolean  
  */
- export const removeItem = async (type: RegistrationOrInteractionEnum, ids: string | string[]): Promise<boolean> => {
+ export const removeItem = async (type: RegistrationOrInteractionEnum, ids: string | string[]): Promise<void> => {
     try {
         let result
         if (type === REGISTRATIONS) {
-            result = await registrationFuncs.removeItem(ids)
+            await registrationFuncs.removeItem(ids)
         } else {
-            result = await interactionFuncs.removeItem(ids, type)
+            await interactionFuncs.removeItem(ids, type)
         }
-        return Promise.resolve(result)
     } catch (err) {
-        logger.error(err.message)
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        throw new Error(error.message)
     }
 }
 
@@ -149,8 +151,9 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
         }
         return Promise.resolve(result)
     } catch (err) {
-        logger.error(err.message)
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        throw new Error(error.message)
     }
 }
 
@@ -170,8 +173,9 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
         }
         return Promise.resolve(result)
     } catch (err) {
-        logger.error(err.message)
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        logger.error(error.message)
+        throw new Error(error.message)
     }
 }
 
@@ -190,7 +194,8 @@ export const getCredentials = async (oid: string) => {
         const credentials = await redisDb.hget(oid, 'credentials')
         return Promise.resolve(credentials)
     } catch (err) {
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        throw new Error(error.message)
     }
 }
 
@@ -219,7 +224,8 @@ export const combinationExists = async (oid: string, pid: string) => {
         }
         return Promise.resolve(true)
     } catch (err) {
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        throw new Error(error.message)
     }    
 }
 
@@ -256,7 +262,8 @@ export const reloadConfigInfo = async function() {
         const result = await redisDb.hgetall('configuration')
         return Promise.resolve(result)
     } catch (err) {
-        logger.error(err.message, 'PERSISTANCE')
+        const error = errorHandler(err)
+        logger.error('PERSISTANCE: ' + error.message)
         throw new Error('Problem storing configuration information...')
     }
 }
@@ -277,7 +284,8 @@ export const reloadConfigInfo = async function() {
         redisDb.caching(key, data)
         return Promise.resolve(true)
     } catch (err) {
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        throw new Error(error.message)
     }
 }
 
@@ -294,7 +302,8 @@ export const reloadConfigInfo = async function() {
         await redisDb.health()
         return Promise.resolve('OK')
     } catch (err) {
-        logger.error(err.message)
+        const error = errorHandler(err)
+        logger.error(error.message)
         return Promise.resolve('ERROR')
     }
 }
@@ -326,7 +335,8 @@ const addConfigurationInfo = async () => {
         await redisDb.hset('configuration', 'events', String(numevents))
         return Promise.resolve(true)
     } catch (err) {
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        throw new Error(error.message)
     }
 }
 
@@ -343,6 +353,7 @@ const removeConfigurationInfo = async () => {
         await redisDb.hdel('configuration', 'events')
         return Promise.resolve(true)
     } catch (err) {
-        return Promise.reject(err)
+        const error = errorHandler(err)
+        throw new Error(error.message)
     }
 }

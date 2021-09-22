@@ -469,13 +469,13 @@
 			Tries to authenticate the gateway into the platform, if disabled the
 			gateway functions in anonymous mode and restrictions might apply (true or false)
 			-->
-			false
+			true
 		</enable>
 		<identity>
 			<!--
 			AGID of the Access Point used to authenticate the gateway (AGID string)
 			-->
-			ed76fc3e-9151-49de-a369-fd23496bb273
+			42c8302d-927e-4866-93a8-4277ced8dfb7
 		</identity>
 		<ttl>
 			<!--

@@ -71,7 +71,7 @@ export const redisDb = {
     */
    start: () => {
      client.on('error', (err) => {
-         logger.error(err)
+         logger.error(err.message)
          process.exit(1)
      })
      client.on('connect', () => {
@@ -88,7 +88,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.ping((err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug('Redis is ready: ' + reply)
@@ -133,7 +133,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.set(key, item, 'EX', ttl, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -153,7 +153,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.del(key, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -173,7 +173,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.get(key, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -196,7 +196,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.sadd(key, item, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -218,7 +218,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.srem(key, item, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -239,7 +239,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.sismember(key, item, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -259,7 +259,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.scard(key, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -279,7 +279,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.smembers(key, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -301,7 +301,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.hget(hkey, key, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -323,7 +323,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.hset(hkey, key, value, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -344,7 +344,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.hdel(hkey, key, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -365,7 +365,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.hexists(hkey, key, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)
@@ -385,7 +385,7 @@ export const redisDb = {
      return new Promise((resolve, reject) => {
        client.hgetall(hkey, (err, reply) => {
          if (err) {
-           logger.error(err)
+           logger.error(err.message)
            reject(err)
          } else {
            logger.debug(reply)

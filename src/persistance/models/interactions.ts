@@ -1,6 +1,6 @@
 // Global packages
 import { JsonType } from '../../types/misc-types'
-import { logger } from '../../utils/logger'
+import { logger, errorHandler } from '../../utils'
 import { redisDb } from '../redis'
 
 /**
@@ -31,95 +31,61 @@ export type InteractionsType = 'properties' | 'actions' | 'events'
 
 export const interactionFuncs = {
     // Store array of whole model in db
-    storeInMemory: async (array: Interaction[], type: InteractionsType): Promise<boolean> => {
-        try { 
-            await storeItems(array, type)
-            return Promise.resolve(true)
-        } catch (err) {
-            logger.warn(err.message)
-            return Promise.resolve(false)
-        }
+    storeInMemory: async (array: Interaction[], type: InteractionsType): Promise<void> => {
+        await storeItems(array, type)
     },
     // Get array of whole model from db
     loadFromMemory: async (type: InteractionsType): Promise<Interaction[]> => {
-        try {
-            const all_interactions = await redisDb.smembers(type)
-            const results: Interaction[] = []
-            all_interactions.forEach(async (it) => {
-                results.push(JSON.parse(await redisDb.hget(`${type}:${it}`, 'body')))
-            })
-            return Promise.resolve(results)
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
-        }
+        const all_interactions = await redisDb.smembers(type)
+        const results: Interaction[] = []
+        all_interactions.forEach(async (it) => {
+            results.push(JSON.parse(await redisDb.hget(`${type}:${it}`, 'body')))
+        })
+        return Promise.resolve(results)
     },
     // Add item to db
-    addItem: async (data: Interaction, type: InteractionsType): Promise<boolean> => {
-        try {    
-            await storeItems([data], type)
-            return Promise.resolve(true)
-        } catch (err) {
-            logger.warn(err.message)
-            return Promise.resolve(false)
-        }
+    addItem: async (data: Interaction, type: InteractionsType): Promise<void> => {
+        await storeItems([data], type)
     },
     // Remove item from db
-    removeItem: async (ids: string | string[], type: InteractionsType) => {
+    removeItem: async (ids: string | string[], type: InteractionsType): Promise<void> => {
         if (typeof ids === 'string') {
             ids = [ids]
         }
-        try { 
-            for (let i = 0, l = ids.length; i < l; i++) {
-                const id = ids[i]
-                const todo = []
-                todo.push(redisDb.srem(type, id))
-                todo.push(redisDb.hdel(`${type}:${id}`, 'body'))
-                todo.push(redisDb.hdel(`${type}:${id}`, 'vicinity'))
-                await Promise.all(todo)
-            }
-            // Persist changes to dump.rdb
-            redisDb.save()
-            return Promise.resolve(true)
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
+        for (let i = 0, l = ids.length; i < l; i++) {
+            const id = ids[i]
+            const todo = []
+            todo.push(redisDb.srem(type, id))
+            todo.push(redisDb.hdel(`${type}:${id}`, 'body'))
+            todo.push(redisDb.hdel(`${type}:${id}`, 'vicinity'))
+            await Promise.all(todo)
         }
+        // Persist changes to dump.rdb
+        redisDb.save()
     },
     // Get item from db;
     // Returns object if ID provided;
     // Returns array of ids if ID not provided;
     getItem: async (type: InteractionsType, id?: string): Promise<Interaction | string[]> => {
-        try { 
-            let obj
-            if (id) {
-                obj = await redisDb.hget(type + ':' + id, 'body')
-                return Promise.resolve(JSON.parse(obj))
-            } else {
-                obj = await redisDb.smembers(type)
-                return Promise.resolve(obj)
-            }
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
+        let obj
+        if (id) {
+            obj = await redisDb.hget(type + ':' + id, 'body')
+            return Promise.resolve(JSON.parse(obj))
+        } else {
+            obj = await redisDb.smembers(type)
+            return Promise.resolve(obj)
         }
     },
 
     // Get count of items in model stored in db
-    getCountOfItems: async (type: InteractionsType) => {
-        try { 
-            const count = await redisDb.scard(type)
-            return Promise.resolve(count)
-        } catch (err) {
-            logger.error(err.message)
-            return Promise.reject(err)
-        }
+    getCountOfItems: async (type: InteractionsType): Promise<number> => {
+        return redisDb.scard(type)
     }
 }
 
 // Private functions
 
-const storeItems = async (array: Interaction[], type: InteractionsType) => {
+const storeItems = async (array: Interaction[], type: InteractionsType): Promise<boolean> => {
     const interaction =  INTERACTIONS[type]
     const id = interaction.id
     const does = interaction.does
@@ -147,11 +113,12 @@ const storeItems = async (array: Interaction[], type: InteractionsType) => {
                 success = false
             }
         } catch (err) {
-            logger.error(err.message, 'PERSISTANCE')
-            return Promise.reject(err)
+            const error = errorHandler(err)
+            logger.warn(error.message)
+            throw new Error(error.message)
         }
     }
     // Persist changes to dump.rdb
     redisDb.save()
-    return Promise.resolve(success)
+    return success
 }

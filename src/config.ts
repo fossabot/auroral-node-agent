@@ -19,18 +19,19 @@ export const Config = {
 	GATEWAY: {
 		HOST: process.env.GTW_HOST!,
 		PORT: process.env.GTW_PORT!,
-		ROUTE: process.env.GTW_ROUTE!,
-		CALLBACK_ROUTE: process.env.GTW_CALLBACK_ROUTE!,
+		ROUTE: 'api',
+		CALLBACK_ROUTE: 'agent',
 		ID: process.env.GTW_ID!,
 		PASSWORD: process.env.GTW_PWD!
 	},
 	DB: {
 		HOST: process.env.DB_HOST!,
 		PORT: process.env.DB_PORT!,
-		CACHE: process.env.DB_CACHE === 'enabled',
-		CACHE_TTL: process.env.DB_CACHE_TTL!
+		CACHE: process.env.DB_CACHE_ENABLED === 'true', // Enables caching values in Redis, reduce calls to adapter
+		CACHE_TTL: process.env.DB_CACHE_TTL! // Time to live of the values cached from the adapter
 	},
 	WOT: {
+		ENABLED: process.env.WOT_ENABLED === 'true',
 		HOST: process.env.WOT_HOST!,
 		PORT: process.env.WOT_PORT!,
 		BASE_URI: process.env.WOT_BASE_URI!

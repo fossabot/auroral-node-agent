@@ -8,7 +8,7 @@
 import got, { Method, Headers } from 'got'
 import { JsonType } from '../types/misc-types'
 import { Config } from '../config'
-import { logger } from '../utils/logger'
+import { logger, errorHandler } from '../utils'
 import { BasicResponse, TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
 import { RegistrationBody } from '../persistance/models/registrations'
 import { getCredentials } from '../persistance/persistance'
@@ -49,8 +49,9 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not logged in ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
 
@@ -66,8 +67,9 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not logged in ...')
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
 
@@ -84,8 +86,9 @@ export const gateway = {
             const Authorization = await getAuthorization()
             return request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
+            const error = errorHandler(err)
             logger.warn(`Error getting ${Config.GATEWAY.ID} objects ...`)
-            throw new Error(err)
+            throw new Error(error.message)
         }
     },
 
@@ -101,7 +104,8 @@ export const gateway = {
             const Authorization = await getAuthorization()
             return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -118,7 +122,8 @@ export const gateway = {
             const data: RemovalBody = { ...body, agid: Config.GATEWAY.ID }
             return request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', data, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)        
         }
     },
 
@@ -143,14 +148,15 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request('objects', 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
     /**
      * Retrieve TD from remote gateway or object;
      * (Understand object as gateway, service or device instance);
-     * (Using the credentials of a service or device);
+     * (Using the credentials of the gateway or an item if originId is provided);
      * @async
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
@@ -161,7 +167,8 @@ export const gateway = {
             const Authorization = await getAuthorization(originId)
             return request(`objects/${oid}`, 'POST', sparql, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
     /**
@@ -184,7 +191,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`objects/${remote_oid}/properties/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -200,7 +208,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`objects/${remote_oid}/properties/${pid}`, 'PUT', body, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -216,7 +225,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -232,7 +242,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`events/${eid}`, 'PUT', body, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -248,7 +259,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -264,7 +276,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`objects/${remote_oid}/events/${eid}`, 'GET', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -281,7 +294,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`objects/${remote_oid}/events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -298,7 +312,8 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             return request(`objects/${remote_oid}/events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization })
         } catch (err) {
-            throw new Error(err)
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     },
 
@@ -325,8 +340,9 @@ export const gateway = {
             // Store redundant variable data to catch any errors from GOT here
             return data
         } catch (err) {
-            logger.error(err.message)
-            return Promise.resolve({ error: true, message: err.message })
+            const error = errorHandler(err)
+            logger.error(error.message)
+            return Promise.resolve({ error: true, message: error.message })
         }
     }
 
