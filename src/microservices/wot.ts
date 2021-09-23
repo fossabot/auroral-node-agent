@@ -13,7 +13,7 @@ import { BasicResponse } from '../types/wot-types'
 // CONSTANTS 
 
 const callApi = got.extend({
-    prefixUrl: Config.WOT.HOST + ':' + Config.WOT.PORT + '/' + Config.WOT.BASE_URI,
+    prefixUrl: Config.WOT.HOST + ':' + Config.WOT.PORT,
     responseType: 'json',
     isStream: false,
     retry: 2, // Retries on failure N times
@@ -30,7 +30,25 @@ const ApiHeader = {
 
 // INTERFACE
 
-export const gateway = {
+export const wot = {
+    test: async function(): Promise<BasicResponse> {
+        try {
+            logger.info('HELLO')
+            const response = await request('.well-known/wot-thing-description', 'GET', undefined, ApiHeader)
+            if (response.statusCode === 400) {
+                throw new Error('Invalid serialization or TD')
+            }
+            if (response.statusCode === 404) {
+                throw new Error('TD with the given id not found')
+            }
+            logger.debug(response)
+            return buildResponse()
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.warn('Object  was not registered ...')
+            throw new Error(error.message)
+        }
+    },
     /**
      * Create/Update a Thing Description
      * Provide oid

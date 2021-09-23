@@ -8,9 +8,8 @@ import { Config } from '../config'
 import { gateway } from '../microservices/gateway'
 import { gtwServices } from './gateway'
 import { logger } from '../utils'
-import  { loadConfigurationFile, getItem, reloadConfigInfo } from '../persistance/persistance'
-import { InteractionsEnum } from '../persistance/models/interactions'
-// import { PreRegistration } from '../persistance/models/registrations'
+import  { getItem, reloadConfigInfo } from '../persistance/persistance'
+import { wot } from '../microservices/wot'
  
  /**
   * Initialization process of the agent module;
@@ -29,10 +28,6 @@ export const initialize = async function() {
     // Get objects OIDs stored locally
     const registrations = await getItem('registrations') as string[]
 
-    // Load mappings and configurations
-    await loadConfigurationFile(InteractionsEnum.PROPERTIES)
-    await loadConfigurationFile(InteractionsEnum.EVENTS)
-
     // Login objects
     await gtwServices.doLogins(registrations)
 
@@ -46,6 +41,7 @@ export const initialize = async function() {
     // Initialize WoT
     if (Config.WOT.ENABLED) {
         logger.info('WoT directory successfully started')
+        // await wot.test()
     } else {
         logger.warn('WoT directory is not active')
     }
@@ -57,22 +53,13 @@ export const initialize = async function() {
         logger.warn('Adapter values are not being cached by redis')
     }
 
-    // Adapter initialization
-    // Initialize event channels
-    // for (let i = 0, l = registrations.length; i < l; i++) {
-    //     const thing = await getItem('registrations', registrations[i]) as Registration
-    //     const events = thing.events || []
-    //     if (events.length > 0) {
-    //         await gtwServices.activateEventChannels(registrations[i], events)
-    //     }
-    //  }
-    //  logger.info('All event channels created!', 'AGENT')
-
-    // Subscribe event channels
-    // await this.subscribeEvents(); Subscription via API
-
     // Store configuration info
     await reloadConfigInfo()
+
+    // Scheduled tasks
+    // Run periodic healthchecks
+    // Re-login the infrastructure periodically (i.e 60min)
+    // Others ...
 
     // End of initialization
     logger.info(' ##### Agent startup completed!')
@@ -92,34 +79,3 @@ export const initialize = async function() {
     logger.info('Gateway connections closed', 'AGENT')
     return Promise.resolve(true)
  }
- 
-//  /**
-//   * Register one object;
-//   * This function enables adapters to access registration services programatically;
-//   * It is a wrapper of the Gateway call for registration, it simplifies the process;
-//   * Only requires the body of the new item
-//   * @async
-//   * @param {object} body
-//   * @returns {object} registration response
-//   */    
-//  export const registerObject = async function(body: PreRegistration | PreRegistration[]) {
-//     // TBD: Add to WoT
-//     const response = await gtwServices.registerObject(body)
-//     return Promise.resolve(response)
-//  }
- 
-//  /**
-//   * Unregister one object;
-//   * This function enables adapters to access registration services programatically;
-//   * It is a wrapper of the Gateway call for unregistration, it simplifies the process;
-//   * Only requires the oid of the item to be removed;
-//   * @async
-//   * @param {String} oid
-//   * @returns {object} registration response
-//   */    
-//  export const unregisterObject = async function(oids: string | string[]) {
-//     // TBD: Remove from WoT
-//     const obj = typeof oids === 'string' ? { oids: [oids] } : { oids }
-//     const response = await gtwServices.removeObject(obj)
-//     return Promise.resolve(response)
-//  }

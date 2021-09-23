@@ -8,8 +8,9 @@ import { logger, errorHandler } from '../utils'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
 import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
-import { registrationFuncs, Registration } from './models/registrations'
+import { registrationFuncs, Registration, RegistrationJSON } from './models/registrations'
 import { Config } from '../config'
+import { Configuration, addConfigurationInfo, removeConfigurationInfo } from './models/configurations'
 
 // Constants
 
@@ -141,7 +142,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
  * @param {string} id [OPTIONAL]
  * @returns object 
  */
- export const getItem = async (type: RegistrationOrInteractionEnum, id?: string): Promise<Registration | Interaction | string[]>  => {
+ export const getItem = async (type: RegistrationOrInteractionEnum, id?: string): Promise<RegistrationJSON | Interaction | string[]>  => {
     try {
         let result
         if (type === REGISTRATIONS) {
@@ -238,12 +239,13 @@ export const combinationExists = async (oid: string, pid: string) => {
  * @async
  * @returns boolean
  */
-export const reloadConfigInfo = async function() {
+export const reloadConfigInfo = async function(): Promise<void> {
     try { 
         await removeConfigurationInfo()
         await addConfigurationInfo()
-        return Promise.resolve(true)
     } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
         throw new Error('Problem storing configuration information...')
     }
 }
@@ -255,16 +257,15 @@ export const reloadConfigInfo = async function() {
  * @async
  * @returns object
  */
- export const getConfigInfo = async function() {
+ export const getConfigInfo = async (): Promise<Configuration>  => {
     try {
         await removeConfigurationInfo()
         await addConfigurationInfo()
-        const result = await redisDb.hgetall('configuration')
-        return Promise.resolve(result)
+        return redisDb.hgetall('configuration') as unknown as Configuration
     } catch (err) {
         const error = errorHandler(err)
-        logger.error('PERSISTANCE: ' + error.message)
-        throw new Error('Problem storing configuration information...')
+        logger.error(error.message)
+        throw new Error('Problem retrieving configuration information...')
     }
 }
 
@@ -316,44 +317,3 @@ const determineIfIsRegistration = (toBeDetermined: RegistrationOrInteractionBody
     }
     return false
   }
-
-  /**
- * Adds configuration of agent info
- * To memory
- */
-const addConfigurationInfo = async () => {
-    try { 
-        const d = new Date()
-        const numregis = await redisDb.scard('registrations')
-        const numprops = await redisDb.scard('properties')
-        const numactions = await redisDb.scard('actions')
-        const numevents = await redisDb.scard('events')
-        await redisDb.hset('configuration', 'date', d.toISOString())
-        await redisDb.hset('configuration', 'registrations', String(numregis))
-        await redisDb.hset('configuration', 'properties', String(numprops))
-        await redisDb.hset('configuration', 'actions', String(numactions))
-        await redisDb.hset('configuration', 'events', String(numevents))
-        return Promise.resolve(true)
-    } catch (err) {
-        const error = errorHandler(err)
-        throw new Error(error.message)
-    }
-}
-
- /**
- * Removes configuration of agent info
- * From memory
- */
-const removeConfigurationInfo = async () => {
-    try { 
-        await redisDb.hdel('configuration', 'date')
-        await redisDb.hdel('configuration', 'registrations')
-        await redisDb.hdel('configuration', 'properties')
-        await redisDb.hdel('configuration', 'actions')
-        await redisDb.hdel('configuration', 'events')
-        return Promise.resolve(true)
-    } catch (err) {
-        const error = errorHandler(err)
-        throw new Error(error.message)
-    }
-}

@@ -3,19 +3,12 @@
  * Implements support functionality
  */
 
- import { InteractionsEnum } from '../persistance/models/interactions'
  import { logger, errorHandler } from '../utils'
  import { gateway } from '../microservices/gateway'
- import { addItem, removeItem } from '../persistance/persistance'
+ import { addItem, removeItem, getItem } from '../persistance/persistance'
  import { RegistrationResultPost } from '../types/gateway-types'
  import { RegistrationBody } from '../persistance/models/registrations'
  import { Config } from '../config'
- 
- const INTERACTIONS = {
-     'properties': { 'id': 'pid', 'does': 'monitors' },
-     'actions': { 'id': 'aid', 'does': 'affects' },
-     'events': { 'id': 'eid', 'does': 'monitors' }
- }
  
  export const gtwServices = {
      doLogins: async (array: string[]): Promise<void> => {
@@ -47,7 +40,7 @@
                  }
              })
              await gateway.logout() // Stop always the gateway last
-             logger.info('All logouts were successful', 'AGENT')
+             logger.info('All logouts were successful')
          } catch (err) {
              const error = errorHandler(err)
              logger.error(error.message)        
@@ -75,10 +68,9 @@
                                  ...td[0], 
                                  oid: it.oid,
                                  password: it.password,
+                                 created: new Date().toISOString(),
                                  credentials: 'Basic ' + Buffer.from(it.oid + ':' + it.password, 'utf-8').toString('base64')
                              })
-                         // Login new objects
-                         await gateway.login(it.oid)
                          logger.info(it.name + ' with oid ' + it.oid + ' successfully registered!')
                      } catch (err) {
                          const error = errorHandler(err)
@@ -89,7 +81,16 @@
                      logger.warn(it.name + ' with oid ' + it.oid + ' could not be registered...')
                  }
              })
-             return result.message
+             // Do login of infrastructure with small delay to avoid race conditions
+            setTimeout(
+                async () => {
+                    // Get objects OIDs stored locally
+                    const registrations = await getItem('registrations') as string[]
+                    gtwServices.doLogins(registrations)
+                }, 
+                5000)
+            // Return and end registration
+            return result.message
          } catch (err) {
              const error = errorHandler(err)
              throw new Error(error.message)
@@ -126,7 +127,7 @@
                      throw new Error('Local and platform objects are not the same')
                  }
              }
-             logger.info('Local and platform objects match!', 'AGENT')
+             logger.info('Local and platform objects match!')
              return true
          } catch (err) {
              const error = errorHandler(err)
@@ -135,20 +136,4 @@
              return false
          }
      }
- }
- 
- // Private functions
- 
- /**
-  * Return only pid/aid/eid of interactions
-  * @param {array} array 
-  */
- const _getInteractionId = (array: string[], type: InteractionsEnum) => {
-     const id = INTERACTIONS[type].id as any // Use any as workaround to error with index
-     const result = []
-     for (let i = 0, l = array.length; i < l; i++) {
-         result.push(array[i][id])
-     }
-     return result
- }
- 
+    }

@@ -1,8 +1,6 @@
 // Global packages
 import { logger } from '../../utils/logger'
 import { redisDb } from '../redis'
-import { Interaction } from './interactions'
-import { errorHandler } from '../../utils'
 
 /**
  * registrations.js
@@ -12,37 +10,39 @@ import { errorHandler } from '../../utils'
  * oid, type, credentials, password, adapterId, name, properties, events, agents
 */
 
-// Body received by application
-export interface PreRegistration {
+// Body when received or returned by application
+export interface RegistrationJSON {
     type: string
     adapterId: string
     name: string
     properties?: string[]
     events?: string[]
     actions?: string[]
-    version?: string,
-    description?: string,
+    version?: string
+    description?: string
     locatedIn?: string
 }
 
 // Body ready to register
 export interface RegistrationBody {
-    oid: string
-    properties?: Interaction[]
-    events?: Interaction[]
-    actions?: Interaction[]
     type: string
     adapterId: string
     name: string
-    version?: string,
-    description?: string,
+    properties?: string
+    events?: string // Stringify to register in REDIS
+    actions?: string // Stringify to register in REDIS
+    version?: string // Stringify to register in REDIS
+    description?: string
     locatedIn?: string
+    oid: string
 }
 
-// Complete registration type after item is registered in NM
+// Complete registration type after item is registered in AURORAL
+// Item stored in REDIS
 export interface Registration extends RegistrationBody {
     credentials: string
     password: string
+    created: string
 }
 
 export const registrationFuncs = {
@@ -57,7 +57,7 @@ export const registrationFuncs = {
         oids.forEach(async (it) => {
             results.push(await redisDb.hgetall(it) as Registration)
         })
-        return Promise.resolve(results)
+        return results
     },
     // Add item to db
     addItem: async (data: Registration): Promise<void> => {
@@ -76,6 +76,7 @@ export const registrationFuncs = {
             todo.push(redisDb.hdel(oid, 'password'))
             todo.push(redisDb.hdel(oid, 'type'))
             todo.push(redisDb.hdel(oid, 'name'))
+            todo.push(redisDb.hdel(oid, 'created'))
             todo.push(redisDb.hdel(oid, 'adapterId'))
             todo.push(redisDb.hdel(oid, 'properties'))
             todo.push(redisDb.hdel(oid, 'events'))
@@ -88,14 +89,17 @@ export const registrationFuncs = {
     // Get item from db;
     // Returns object if ID provided;
     // Returns array of ids if ID not provided;
-    getItem: async (id?: string): Promise<Registration | string[]> => {
-        let result
+    getItem: async (id?: string): Promise<RegistrationJSON | string[]> => {
         if (id) {
-            result = await redisDb.hgetall(id) as Registration
-            return Promise.resolve(result)
+            const data = await redisDb.hgetall(id) as unknown as Registration
+            return {
+                ...data,
+                properties: data.properties ? data.properties.split(',') : undefined,
+                actions: data.actions ? data.actions.split(',') : undefined,
+                events: data.events ? data.events.split(',') : undefined,
+            }
         } else {
-            result = await redisDb.smembers('registrations')
-            return Promise.resolve(result)
+            return redisDb.smembers('registrations')
         }
     },
     // Get count of items in model stored in db
@@ -121,24 +125,21 @@ const storeItems = async (array: Registration[]) => {
             todo.push(redisDb.hset(data.oid, 'password', data.password))
             todo.push(redisDb.hset(data.oid, 'adapterId', data.adapterId))
             todo.push(redisDb.hset(data.oid, 'name', data.name))
+            todo.push(redisDb.hset(data.oid, 'created', data.created))
             todo.push(redisDb.hset(data.oid, 'type', data.type))
-            if (data.properties && data.properties.length) {
-                todo.push(redisDb.hset(data.oid, 'properties', data.properties.toString()))
+            if (data.properties) {
+                todo.push(redisDb.hset(data.oid, 'properties', data.properties))
             }
-            if (data.events && data.events.length) {
-                todo.push(redisDb.hset(data.oid, 'events', data.events.toString()))
+            if (data.events) {
+                todo.push(redisDb.hset(data.oid, 'events', data.events))
             }
-            if (data.actions && data.actions.length) {
-                todo.push(redisDb.hset(data.oid, 'actions', data.actions.toString()))
+            if (data.actions) {
+                todo.push(redisDb.hset(data.oid, 'actions', data.actions))
             }
             await Promise.all(todo)
         } else {
             logger.warn(`OID: ${data.oid} is already stored in memory.`)
         }
-        // TBD: Activate event channels
-        // if (data.events && data.events.length) {
-            // await gateway.activateEventChannels(data.oid, data.events)
-        // }
     }
     // Persist changes to dump.rdb
     redisDb.save()

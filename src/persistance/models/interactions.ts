@@ -41,7 +41,7 @@ export const interactionFuncs = {
         all_interactions.forEach(async (it) => {
             results.push(JSON.parse(await redisDb.hget(`${type}:${it}`, 'body')))
         })
-        return Promise.resolve(results)
+        return results
     },
     // Add item to db
     addItem: async (data: Interaction, type: InteractionsType): Promise<void> => {
@@ -70,10 +70,9 @@ export const interactionFuncs = {
         let obj
         if (id) {
             obj = await redisDb.hget(type + ':' + id, 'body')
-            return Promise.resolve(JSON.parse(obj))
+            return JSON.parse(obj)
         } else {
-            obj = await redisDb.smembers(type)
-            return Promise.resolve(obj)
+            return redisDb.smembers(type)
         }
     },
 

@@ -36,10 +36,10 @@ export const redisDb = {
            })
          }
          if (reply == null) {
-           logger.debug('Cache miss ' + redis_key)
+           logger.warn('Cache miss ' + redis_key)
            next()
          } else {
-           logger.debug('Cache hit ' + redis_key)
+           logger.info('Cache hit ' + redis_key)
            const response = JSON.parse(reply)  
            res.status(200).json(response)
          }
@@ -136,7 +136,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(true)
          }
        })
@@ -156,7 +155,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(true)
          }
        })
@@ -176,7 +174,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -199,7 +196,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -221,7 +217,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -242,7 +237,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -262,7 +256,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -282,7 +275,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -304,7 +296,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -326,7 +317,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -347,7 +337,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -368,7 +357,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })
@@ -388,7 +376,6 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug(reply)
            resolve(reply)
          }
        })

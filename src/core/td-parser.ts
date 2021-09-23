@@ -2,60 +2,38 @@
 Parsing middlewares
 */
 import { v4 as uuidv4 } from 'uuid'
-import { PreRegistration, RegistrationBody } from '../persistance/models/registrations'
-import { Interaction, InteractionsEnum } from '../persistance/models/interactions'
-import { getCountOfItems, getItem } from '../persistance/persistance'
+import { RegistrationJSON, RegistrationBody } from '../persistance/models/registrations'
+import { getCountOfItems } from '../persistance/persistance'
 
 // PUBLIC
 
-export const tdParser = async (body : PreRegistration | PreRegistration[]): Promise<RegistrationBody[]> => {
+export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationBody[]> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     // Check num registrations not over 100
     await _checkNumberOfRegistrations(itemsArray.length)
     // Create TDs array
-    return Promise.all(
-        itemsArray.map(
-            async (it) => {
-                return _buildTD(it) 
-            }
-        )
-    )
+    return itemsArray.map(it => _buildTD(it))
 }
 
 // PRIVATE
 
-const _buildTD = async (data: PreRegistration): Promise<RegistrationBody> => {
+const _buildTD = (data: RegistrationJSON): RegistrationBody => {
     _validate(data)
     const oid = uuidv4()
-    const actions = data.actions ? await _checkInteractionPatterns(data.actions, InteractionsEnum.ACTIONS) : []
-    const events = data.events ? await _checkInteractionPatterns(data.events, InteractionsEnum.EVENTS) : []
-    const properties = data.properties ? await _checkInteractionPatterns(data.properties, InteractionsEnum.PROPERTIES) : []
-    return Promise.resolve(
-        { ...data, actions, events, properties, oid }
-    )
-}
-
-const _checkInteractionPatterns = async (all_interactions: string[], type: InteractionsEnum): Promise<Interaction[]> => {
-    const interactionsArray = []
-    if (!Array.isArray(all_interactions)) {
-        throw new Error(`REGISTRATION ERROR: ${type} is not a valid array`)
+    return { 
+        ...data, 
+        oid, 
+        properties: data.properties ? data.properties.toString() : undefined,
+        actions: data.actions ? data.actions.toString() : undefined,
+        events: data.events ? data.events.toString() : undefined
     }
-    const uniqueInteractions = [...new Set(all_interactions)] // Ensure interaction ids registered are unique 
-    for (let i = 0, l = uniqueInteractions.length; i < l; i++) {
-        const aux = await getItem(type, uniqueInteractions[i]) as Interaction
-        if (aux == null) {
-            throw new Error(`REGISTRATION ERROR: Interaction: ${uniqueInteractions[i]} could not be found in ${type}`)
-        } 
-        interactionsArray.push(aux)
-    }
-    return interactionsArray
 }
 
 /**
  * Check if all required parameters for registration are included
  * @param {object} data 
  */
-const _validate = (data: PreRegistration) => {
+const _validate = (data: RegistrationJSON) => {
     if (!data.name) {
         throw new Error('REGISTRATION ERROR: Missing name')
     }

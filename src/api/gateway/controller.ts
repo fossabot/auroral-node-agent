@@ -9,7 +9,7 @@ import { JsonType } from '../../types/misc-types'
 import { gateway } from '../../microservices/gateway'
 import { gtwServices } from '../../core/gateway'
 import { BasicArrayResponse, ConsumptionResponse, RegistrationResultPost, TdsResponse } from '../../types/gateway-types'
-import { PreRegistration } from '../../persistance/models/registrations'
+import { RegistrationJSON } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
 import { tdParser } from '../../core/td-parser'
 import { Config } from '../../config'
@@ -68,7 +68,7 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-type postRegistrationsCtrl = expressTypes.Controller<{}, PreRegistration | PreRegistration[], {}, RegistrationResultPost[], {}>
+type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, RegistrationResultPost[], {}>
 
 /**
  * Register things in the platform
