@@ -7,6 +7,7 @@ services:
     volumes:
     - ./.env:/app/.env:ro
     - .:/app:delegated
+    - ./agent:/app/agent
     depends_on:
       cache-db:
         condition: service_healthy

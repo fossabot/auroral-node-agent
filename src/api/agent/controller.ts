@@ -52,15 +52,15 @@ type importsCtrl = expressTypes.Controller<{}, {}, {}, null, {}>
  
 export const importFiles: importsCtrl = async (req, res) => {
     try {
-        // await persistance.loadConfigurationFile(registrationAndInteractions.PROPERTIES)
-        // await persistance.loadConfigurationFile(registrationAndInteractions.EVENTS)
-        // await persistance.loadConfigurationFile(registrationAndInteractions.ACTIONS)
-        await persistance.loadConfigurationFile(registrationAndInteractions.REGISTRATIONS)
-        return responseBuilder(HttpStatusCode.OK, res, null, null)
+                // await persistance.loadConfigurationFile(registrationAndInteractions.PROPERTIES)
+                // await persistance.loadConfigurationFile(registrationAndInteractions.EVENTS)
+                // await persistance.loadConfigurationFile(registrationAndInteractions.ACTIONS)
+                await persistance.loadConfigurationFile(registrationAndInteractions.REGISTRATIONS)
+                return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
-        const error = errorHandler(err)
-        logger.error(error.message)
-        return responseBuilder(error.status, res, error.message)
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(error.status, res, error.message)
 	}
 }
 
@@ -85,7 +85,7 @@ type healthCheckCtrl = expressTypes.Controller<{}, {}, {}, { Redis: string, Gate
 export const healthCheck: healthCheckCtrl = async (req, res) => {
     try {
         const redisHealth = await persistance.redisHealth()
-        const gtwHealth = (await gateway.health()).message
+        const gtwHealth = !(await gateway.health()).error ? 'OK' : 'DOWN'
         const response = { 'Redis': redisHealth, 'Gateway': gtwHealth, 'NodeApp': 'OK' }
         return responseBuilder(HttpStatusCode.OK, res, null, response)
 	} catch (err) {

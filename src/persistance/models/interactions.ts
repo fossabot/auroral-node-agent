@@ -37,11 +37,9 @@ export const interactionFuncs = {
     // Get array of whole model from db
     loadFromMemory: async (type: InteractionsType): Promise<Interaction[]> => {
         const all_interactions = await redisDb.smembers(type)
-        const results: Interaction[] = []
-        all_interactions.forEach(async (it) => {
-            results.push(JSON.parse(await redisDb.hget(`${type}:${it}`, 'body')))
-        })
-        return results
+        return Promise.all(all_interactions.map(async (it) => {
+            return JSON.parse(await redisDb.hget(`${type}:${it}`, 'body')) as unknown as Interaction
+        }))
     },
     // Add item to db
     addItem: async (data: Interaction, type: InteractionsType): Promise<void> => {

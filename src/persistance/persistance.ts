@@ -43,16 +43,16 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
                 await interactionFuncs.storeInMemory(array, type)
             }
             logger.info(`File ${type}.json, loaded ${countRows} elements`)
-            return Promise.resolve(array)
+            return array
         } else {
             logger.info(`There are no ${type} available to load`)
-            return Promise.resolve(array)
+            return array
         }
     } catch (err) {
         const error = errorHandler(err)
         if (error.code === 'ENOENT') {
             logger.warn(`File ${type}.json not found`)
-            return Promise.resolve([])
+            throw new Error(`File ${type}.json not found`)
         } else {
             logger.error(error.message)
             throw new Error(error.message)
@@ -70,7 +70,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
  */
  export const saveConfigurationFile = async (type: RegistrationOrInteractionEnum): Promise<boolean> => {
     try { 
-        let data
+        let data: Interaction[] | Registration[]
         if (type === REGISTRATIONS) {
             data = await registrationFuncs.loadFromMemory()
         } else {

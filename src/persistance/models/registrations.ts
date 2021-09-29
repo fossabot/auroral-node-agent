@@ -53,11 +53,9 @@ export const registrationFuncs = {
     // Get array of whole model from db
     loadFromMemory: async (): Promise<Registration[]> => {
         const oids = await redisDb.smembers('registrations')
-        const results: Registration[] = []
-        oids.forEach(async (it) => {
-            results.push(await redisDb.hgetall(it) as Registration)
-        })
-        return results
+        return Promise.all(oids.map(async (it) => {
+            return redisDb.hgetall(it) as unknown as Registration
+        }))
     },
     // Add item to db
     addItem: async (data: Registration): Promise<void> => {

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "AURORAL node interface - developed by bAvenir. The REST API is divided in three main groups, the API (Calls that use the Gateway to contact the VICINITY platform), the ADMIN (calls oriented to monitor and make use to the adapter resources) and the ADAPTER (calls to make use of built-in automations)",
+    "description": "AURORAL node interface - developed by bAvenir. The REST API is divided in two main groups; the API (Calls that use the Gateway to contact the VICINITY platform) and the ADMIN (calls oriented to monitor and make use to the agent resources)",
     "version": "1.0.0",
     "title": "Auroral agent",
     "license": {
@@ -94,205 +94,24 @@
         }
       }
     },
-    "/admin/actions/{id}": {
+    "/admin/registrations": {
       "get": {
-        "description": "See the actions registered in the adapter memory. Provide an aid as parameter to see more details",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "Object id - OID",
-            "type": "string"
-          }
-        ],
+        "description": "Retrieve all the IDs of objects registered with your adapter and stored locally.",
+        "tags": ["admin"],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/ApiResponseObject"
-            }
-          }
-        }
-      },
-      "delete": {
-        "description":"Remove an action from the adapter memory",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "description": "AID of the action to remove",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
+              "$ref": "#/definitions/ApiResponseArray"
             }
           }
         }
       }
     },
-    "/admin/actions": {
-      "post": {
-        "description":"Add an action in the adapter memory",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Object describing an interaction as specified in VICINITY documentation",
-            "type": "object"
-          }
-        ],          
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/events/{id}": {
+      "/admin/registrations/{id}": {
       "get": {
-        "description": "See the events registered in the adapter memory. Provide an eid as parameter to see more details",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "Object id - OID",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponseObject"
-            }
-          }
-        }
-      },
-      "delete": {
-        "description":"Remove an event from the adapter memory",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "EID of the event to remove",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/events": {
-      "post": {
-        "description":"Add an event in the adapter memory",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Object describing an interaction as specified in VICINITY documentation",
-            "type": "object"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/properties/{id}": {
-      "get": {
-        "description": "See the properties registered in the adapter memory. Provide an aid as parameter to see more details",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "Object id - OID",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponseObject"
-            }
-          }
-        }
-      },
-      "delete": {
-        "description":"Remove a property from the adapter memory",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "PID of the property to remove",
-            "required": true,
-            "type": "string"
-          }
-        ],          
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/properties": {
-      "post": {
-        "description":"Add a property in the adapter memory",
-        "tags": [ "admin"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Object describing an interaction as specified in VICINITY documentation",
-            "type": "object"
-          }
-        ],          
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponse"
-            }
-          }
-        }
-      }
-    },
-    "/admin/registrations/{id}": {
-      "get": {
-        "description": "Retrieve all the IDs of objects registered with your adapter and stored locally. Obtain the information of a concrete item by providing the ID as parameter",
-        "tags": [ "admin"],
+        "description": "Obtain the information of a concrete registered item by providing the ID as parameter",
+        "tags": ["admin"],
         "parameters": [
           {
             "in": "path",
@@ -314,7 +133,7 @@
     "/admin/configuration": {
       "get": {
         "description": "Configuration status of the adapter",
-        "tags": [ "admin"],
+        "tags": ["admin"],
         "parameters": [],
         "responses": {
           "200": {
@@ -749,9 +568,23 @@
         }
       }
     },
+    "/api/discovery": {
+      "get": {
+        "description": "See what remote objects can you reach with your Gateway. You will see other gateways of your organisation or partnered organisations",
+        "tags": [ "discovery"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseArray"
+            }
+          }
+        }
+      }
+    },
     "/api/discovery/{id}": {
       "get": {
-        "description": "See what remote objects can you reach which each OID. To see objects of other organisations you need to agree on a contract for exchanging data",
+        "description": "See what remote objects can you reach which each OID. To see objects of other organisations you need to agree on a contract for exchanging data. Get what your gateway can see by not providing oid parameter.",
         "tags": [ "discovery"],
         "parameters": [
           {
@@ -760,6 +593,76 @@
             "description": "Object id - OID",
             "type": "string",
             "default": "0000-0000-0000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseArray"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Remote discovery. Get thing descriptions of remote infrastructures that your gateway can see",
+        "tags": [ "discovery"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "SPARQL query: Filter out specific content that you wish to see. I.E: Get me only thermometers",
+            "type": "object",
+            "schema": {
+              "$ref": "#/definitions/SparqlResponseObject"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
+    "/api/discovery/{id}/{originId}": {
+      "post": {
+        "description": "Remote discovery. Get thing descriptions of remote objects that some of your objects can see. Set the id of the object with the OID parameter and set the object initiating the request with originID.",
+        "tags": [ "discovery"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "originId",
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "SPARQL query: Filter out specific content that you wish to see. I.E: Get me only thermometers",
+            "type": "object",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SparqlResponseObject"
+            }
           }
         ],
         "responses": {
@@ -786,6 +689,22 @@
         }
       }
     },
+    "ApiResponseArray": {
+      "type":"object",
+      "properties": {
+        "error": {
+          "type": "boolean",
+          "default": false
+        },
+        "message": {
+          "type":"array",
+          "description": "Array of oid's.",
+          "items": {
+              "type": "string"
+            }
+        }
+      }
+    },
     "ApiResponseObject": {
       "type":"object",
       "properties": {
@@ -799,60 +718,80 @@
       }
     },
     "bodyRegistry": {
-      "type":"object",
       "properties": {
-        "name" : {
-          "description": "Human readable name for the object",
+        "agid" : {
+          "description": "ID of the agent",
           "type": "string",
           "required": true,
-          "default": "MySmartSensor"
+          "default": "000-0000-000"
         },
-        "type" : {
-          "description": "VICINITY type to assign for the object",
-          "type": "string",
-          "required": true,
-          "default": "core:Device"
-        },
-        "adapterId" : {
-          "type": "string",
-          "description": "Id of the object in your infrastructure",
-          "required": true,
-          "default": "1234"
-        },
-        "properties": {
+        "items": {
           "type":"array",
           "description": "Array of pid's. You can use only those you previously registered in the adapter",
           "items": {
-              "type": "string"
+            "type":"object",
+            "properties": {
+              "name" : {
+                "description": "Human readable name for the object",
+                "type": "string",
+                "required": true,
+                "default": "MySmartSensor"
+              },
+              "type" : {
+                "description": "VICINITY type to assign for the object",
+                "type": "string",
+                "required": true,
+                "default": "Device"
+              },
+              "adapterId" : {
+                "type": "string",
+                "description": "Id of the object in your infrastructure",
+                "required": true,
+                "default": "1234"
+              },
+              "properties": {
+                "type":"array",
+                "description": "Array of pid's. You can use only those you previously registered in the adapter",
+                "items": {
+                    "type": "string"
+                  }
+                },
+              "events": {
+                "type":"array",
+                "description": "Array of eid's. You can use only those you previously registered in the adapter",
+                "items": {
+                    "type": "string"
+                  }
+                },
+              "actions": {
+                "type":"array",
+                "description": "Array of aid's. You can use only those you previously registered in the adapter",
+                "items": {
+                    "type": "string"
+                  }
+              },
+              "version" : {
+                "type": "string",
+                "description": "Version of the registered device if applicable"
+              },
+              "description" : {
+                "type": "string",
+                "description": "Additional info"
+              }
             }
-          },
-        "events": {
-          "type":"array",
-          "description": "Array of eid's. You can use only those you previously registered in the adapter",
-          "items": {
-              "type": "string"
-            }
-          },
-        "actions": {
-          "type":"array",
-          "description": "Array of aid's. You can use only those you previously registered in the adapter",
-          "items": {
-              "type": "string"
-            }
-        },
-        "version" : {
-          "type": "string",
-          "description": "Version of the registered device if applicable"
-        },
-        "description" : {
-          "type": "string",
-          "description": "Additional info"
+          }
         }
       }
     },
     "bodyUnRegistry": {
       "type":"object",
       "properties": {
+        "agid" : {
+          "description": "ID of the agent",
+          "type": "string",
+          "required": true,
+          "default": "000-0000-000"
+        },
         "oids": {
           "type":"array",
           "description": "OIDs of those objects you would like to unregister",
@@ -861,6 +800,9 @@
           }
         }
       }
+    },
+    "SparqlResponseObject": {
+      "type":"object"
     }
   }
 }
