@@ -6,16 +6,18 @@ import { responseBuilder } from '../../utils/response-builder'
 
 // Other imports
 import { JsonType } from '../../types/misc-types'
+import { getData, Method, Interaction } from '../../core/proxy'
 
 // Controllers
 
-type PropertyCtrl = expressTypes.Controller<{ id: string, pid: string }, {}, {}, null, {}>
+type PropertyCtrl = expressTypes.Controller<{ id: string, pid: string }, {}, {}, JsonType, {}>
  
 export const getProperty: PropertyCtrl = async (req, res) => {
   const { id, pid } = req.params
 	try {
     logger.info('Requested READ property ' + pid + ' from ' + id)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
+    const data = await getData(id, { method: Method.GET, interaction: Interaction.PROPERTY, id: pid })
+    return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
     const error = errorHandler(err)
     logger.error(error.message)
@@ -27,7 +29,8 @@ export const setProperty: PropertyCtrl = async (req, res) => {
   const { id, pid } = req.params
 	try {
     logger.info('Requested UPDATE property ' + pid + ' from ' + id)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
+    const data = await getData(id, { method: Method.PUT, interaction: Interaction.PROPERTY, id: pid })
+    return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
     const error = errorHandler(err)
 		logger.error(error.message)
@@ -35,7 +38,7 @@ export const setProperty: PropertyCtrl = async (req, res) => {
 	}
 }
 
-type EventCtrl = expressTypes.Controller<{ id: string, eid: string }, { body: JsonType }, {}, null, {}>
+type EventCtrl = expressTypes.Controller<{ id: string, eid: string }, { body: JsonType }, {}, JsonType, {}>
 
 export const receiveEvent: EventCtrl = async (req, res) => {
     const { id, eid } = req.params
@@ -43,7 +46,8 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       try {
       logger.info('Received event ' + eid + ' from ' + id)
       logger.info(body)
-      return responseBuilder(HttpStatusCode.OK, res, null, null)
+      const data = await getData(id, { method: Method.GET, interaction: Interaction.EVENT, id: eid })
+      return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -59,8 +63,8 @@ export const discovery: DiscoveryCtrl = async (req, res) => {
       try {
         logger.info('Received discovery to ' + id)
         logger.info(sparql)
-        const dummyResp: JsonType = { success: true }
-        return responseBuilder(HttpStatusCode.OK, res, null, dummyResp)
+        const data = await getData(id, { interaction: Interaction.DISCOVERY, body: sparql })
+        return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

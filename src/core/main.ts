@@ -53,6 +53,9 @@ export const initialize = async function() {
         logger.warn('Adapter values are not being cached by redis')
     }
 
+    // Check Adapter mode
+    logger.info('Agent is responding to incoming requests in ' + Config.ADAPTER.MODE + ' mode')
+
     // Store configuration info
     await reloadConfigInfo()
 

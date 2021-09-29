@@ -4,6 +4,7 @@
 * @interface
 */ 
 
+import { JsonType } from '../types/misc-types'
 import { logger, errorHandler } from '../utils'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
@@ -257,11 +258,15 @@ export const reloadConfigInfo = async function(): Promise<void> {
  * @async
  * @returns object
  */
- export const getConfigInfo = async (): Promise<Configuration>  => {
+ export const getConfigInfo = async (): Promise<JsonType>  => {
     try {
         await removeConfigurationInfo()
         await addConfigurationInfo()
-        return redisDb.hgetall('configuration') as unknown as Configuration
+        const agentConfig = await redisDb.hgetall('configuration') as unknown as Configuration
+        return {
+            'INFO': agentConfig,
+            'CONFIGURATION': Config
+        }
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

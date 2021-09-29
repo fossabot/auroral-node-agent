@@ -21,7 +21,7 @@ const callApi = got.extend({
     isStream: false,
     retry: 2, // Retries on failure N times
     throwHttpErrors: true, // If true 4XX and 5XX throw an error
-    timeout: 30000, // 30sec to timeout
+    timeout: Config.GATEWAY.TIMEOUT, // 30sec to timeout is the default
     decompress: true // accept-encoding header gzip
 })
 
@@ -84,7 +84,7 @@ export const gateway = {
     getRegistrations: async function(): Promise<TdsResponse> {
         try {
             const Authorization = await getAuthorization()
-            return request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })
+            return (await request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })).message
         } catch (err) {
             const error = errorHandler(err)
             logger.warn(`Error getting ${Config.GATEWAY.ID} objects ...`)

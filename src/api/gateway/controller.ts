@@ -16,7 +16,7 @@ import { Config } from '../../config'
 
 // Controllers
 
-type loginCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
+type loginCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string, {}>
 
 /**
  * Login endpoint
@@ -26,7 +26,7 @@ export const login: loginCtrl = async (req, res) => {
   const { id } = req.params
 	try {
     await gateway.login(id)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
+    return responseBuilder(HttpStatusCode.OK, res, null, 'success')
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -34,7 +34,7 @@ export const login: loginCtrl = async (req, res) => {
 	}
 }
  
-type logoutCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
+type logoutCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string, {}>
 
 /**
  * Logout endpoint
@@ -44,7 +44,7 @@ export const logout: logoutCtrl = async (req, res) => {
   const { id } = req.params
 	try {
     await gateway.logout(id)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
+    return responseBuilder(HttpStatusCode.OK, res, null, 'success')
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
