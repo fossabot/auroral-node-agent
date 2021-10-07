@@ -23,8 +23,7 @@ const callApi = got.extend({
 })
 
 const ApiHeader = { 
-    'Content-Type': 'application/json; charset=utf-8',
-    Accept: 'application/json',
+    'Content-Type': 'application/td+json',
     simple: 'false' 
 }
 
@@ -33,7 +32,6 @@ const ApiHeader = {
 export const wot = {
     test: async function(): Promise<BasicResponse> {
         try {
-            logger.info('HELLO')
             const response = await request('.well-known/wot-thing-description', 'GET', undefined, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
@@ -58,7 +56,7 @@ export const wot = {
      */
     upsertTD: async function(oid: string, body: JsonType): Promise<BasicResponse> {
         try {
-            const response = await request(`td/${oid}`, 'PUT', undefined, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'PUT', body, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
             }
@@ -82,7 +80,7 @@ export const wot = {
      */
     createTD: async function(oid: string, body: JsonType): Promise<BasicResponse> {
         try {
-            const response = await request('td', 'POST', undefined, ApiHeader)
+            const response = await request('api/things/', 'POST', undefined, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
             }
@@ -102,7 +100,7 @@ export const wot = {
      */
      updatePartialTD: async function(oid: string, body: JsonType): Promise<BasicResponse> {
         try {
-            const response = await request(`td/${oid}`, 'PATCH', undefined, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'PATCH', undefined, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
             }
@@ -125,7 +123,7 @@ export const wot = {
      */
     deleteTD: async function(oid: string): Promise<BasicResponse> {
         try {
-            const response = await request(`td/${oid}`, 'DELETE', undefined, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'DELETE', undefined, ApiHeader)
             if (response.statusCode === 404) {
                 throw new Error('TD with the given id not found')
             }
@@ -145,7 +143,7 @@ export const wot = {
      */
      retrieveTD: async function(oid: string): Promise<BasicResponse> {
         try {
-            const response = await request(`td/${oid}`, 'GET', undefined, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'GET', undefined, ApiHeader)
             if (response.statusCode === 404) {
                 throw new Error('TD with the given id not found')
             }
@@ -157,15 +155,14 @@ export const wot = {
         }
     },
     /**
-     * Retrieve a Thing Description
-     * Provide oid
+     * Retrieve many Thing Descriptions
      * @async
-     * @param {oid: string}
+     * @query {offset,limit,sort_by,sort_order: string}
      * @returns {error: boolean, message: string} 
      */
         retrieveTDs: async function(): Promise<BasicResponse> {
         try {
-            const response = await request('td', 'GET', undefined, ApiHeader)
+            const response = await request('api/things/', 'GET', undefined, ApiHeader)
             return buildResponse(response.body as JsonType)
         } catch (err) {
             const error = errorHandler(err)
@@ -177,13 +174,13 @@ export const wot = {
      * Retrieve a Thing Description
      * Provide oid
      * @async
-     * @param {oid: string}
+     * @query {sparql: string}
      * @returns {error: boolean, message: string} 
      */
      searchSPARQL: async function(query: string): Promise<BasicResponse> {
         try {
             const searchParams = (new URLSearchParams([['query', query]])).toString()
-            const response = await request('/search/sparql', 'GET', undefined, ApiHeader, searchParams)
+            const response = await request('api/search/sparql', 'GET', undefined, ApiHeader, searchParams)
             if (response.statusCode === 400) {
                 throw new Error('JSONPath expression not provided or contains syntax errors')
             }
