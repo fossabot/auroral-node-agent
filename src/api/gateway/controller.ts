@@ -1,4 +1,5 @@
 // Controller common imports
+import { v4 as uuidv4 } from 'uuid'
 import { expressTypes } from '../../types/index'
 import { HttpStatusCode } from '../../utils/http-status-codes'
 import { logger, errorHandler } from '../../utils'
@@ -13,6 +14,7 @@ import { RegistrationJSON } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
 import { tdParser } from '../../core/td-parser'
 import { Config } from '../../config'
+import { wot } from '../../microservices/wot'
 
 // Controllers
 
@@ -68,7 +70,8 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, RegistrationResultPost[], {}>
+// type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, RegistrationResultPost[], {}>
+type postRegistrationsCtrl = expressTypes.Controller<{}, JsonType, {}, any, {}>
 
 /**
  * Register things in the platform
@@ -76,15 +79,18 @@ type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSON | Regi
 export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
     const body = req.body
     try {
+        const oid = uuidv4()
         // Parse TD body and add OID to registration objects
-        const items = await tdParser(body)
+        // const items = await tdParser(body)
         // TBD Validate and Store TD in WoT** (Build TD from user input based on ontology)
         // TBD Once ontology ready do not hardcode type device
-        if (Config.WOT.ENABLED) {
+        // if (Config.WOT.ENABLED) {
           logger.info('Validate and register with WoT')
-        }
+          await wot.upsertTD(oid, body)
+          const result = await wot.retrieveTDs()
+        // }
         // Register TD in NM (Dont send type nor interaction patterns)
-        const result = await gtwServices.registerObject(items)
+        // const result = await gtwServices.registerObject(items)
         // TBD Unregister from WoT on Error
         return responseBuilder(HttpStatusCode.OK, res, null, result)
 	} catch (err) {
