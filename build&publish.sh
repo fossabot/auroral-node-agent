@@ -6,7 +6,7 @@ USAGE="$(basename "$0") [ -h ] [ -e env ]
       -e  environment [ dev (default), prod, ... ]"
 
 # Default configuration
-ENV=local
+ENV=dev
 REGISTRY=registry.bavenir.eu
 IMAGE_NAME=auroral_agent
 
