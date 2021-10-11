@@ -10,6 +10,7 @@ redis/data
 agent/
 tests/
 gateway/keystore/
+gateway/data/
 redis/data
 .env
 

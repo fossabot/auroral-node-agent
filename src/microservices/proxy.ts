@@ -8,6 +8,7 @@ import got, { Method, Headers } from 'got'
 import { JsonType } from '../types/misc-types'
 import { Config } from '../config'
 import { Interaction } from '../core/proxy'
+import { logger } from '../utils/logger'
 
 // CONSTANTS 
 
@@ -40,6 +41,7 @@ export const proxy = {
      * @returns 
      */ 
     retrieveInteraction: async function(oid: string, id: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
+        logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + id)
         return request('api/' + interaction + '/' + oid + '/' + id , method, undefined, { ...ApiHeader, Authorization })
     },
     /**

@@ -32,6 +32,7 @@ services:
     # restart: always
     volumes:
     - ./gateway/log:/gateway/log
+    - ./gateway/data:/gateway/data
     - ./gateway/GatewayConfig.xml:/gateway/config/GatewayConfig.xml:ro
     - ./gateway/keystore:/gateway/keystore
     environment:
@@ -57,13 +58,13 @@ services:
     command:
     - /usr/local/etc/redis/redis.conf
     image: redis:buster
-  triplestore:
-    container_name: triplestore
-    image: acimmino/helio-cloud-rdf4jstore:latest
-    ports:
-      - '4567:4567'
-  wothive:
-    container_name: wothive
-    image: acimmino/wot-hive:latest
-    ports:
-      - '9000:9000'
+  # triplestore:
+  #   container_name: triplestore
+  #   image: acimmino/helio-cloud-rdf4jstore:latest
+  #   ports:
+  #     - '4567:4567'
+  # wothive:
+  #   container_name: wothive
+  #   image: acimmino/wot-hive:latest
+  #   ports:
+  #     - '9000:9000'
