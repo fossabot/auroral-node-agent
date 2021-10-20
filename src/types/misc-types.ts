@@ -1,5 +1,5 @@
-export type JsonType = {
-    [x: string]: any
+export type JsonType<T=any> = {
+    [x: string]: T
 }
 
 export type KeyValue = {

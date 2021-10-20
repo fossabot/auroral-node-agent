@@ -1,5 +1,4 @@
 // Controller common imports
-import { v4 as uuidv4 } from 'uuid'
 import { expressTypes } from '../../types/index'
 import { HttpStatusCode } from '../../utils/http-status-codes'
 import { logger, errorHandler } from '../../utils'
@@ -10,11 +9,12 @@ import { JsonType } from '../../types/misc-types'
 import { gateway } from '../../microservices/gateway'
 import { gtwServices } from '../../core/gateway'
 import { BasicArrayResponse, ConsumptionResponse, RegistrationResultPost, TdsResponse } from '../../types/gateway-types'
-import { RegistrationJSON } from '../../persistance/models/registrations'
+import { RegistrationJSON, RegistrationJSONBasic } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
-import { tdParser } from '../../core/td-parser'
+import { tdParser, tdParserWoT } from '../../core/td-parser'
 import { Config } from '../../config'
 import { wot } from '../../microservices/wot'
+import { Thing } from '../../types/wot-types'
 
 // Controllers
 
@@ -70,8 +70,7 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-// type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, RegistrationResultPost[], {}>
-type postRegistrationsCtrl = expressTypes.Controller<{}, JsonType, {}, any, {}>
+type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, RegistrationResultPost[], {}>
 
 /**
  * Register things in the platform
@@ -79,18 +78,18 @@ type postRegistrationsCtrl = expressTypes.Controller<{}, JsonType, {}, any, {}>
 export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
     const body = req.body
     try {
-        const oid = uuidv4()
-        // Parse TD body and add OID to registration objects
-        // const items = await tdParser(body)
-        // TBD Validate and Store TD in WoT** (Build TD from user input based on ontology)
-        // TBD Once ontology ready do not hardcode type device
-        // if (Config.WOT.ENABLED) {
-          logger.info('Validate and register with WoT')
-          await wot.upsertTD(oid, body)
-          const result = await wot.retrieveTDs()
-        // }
+        // Parse TD body
+        // Two ways available depending if WoT enabled
+        let items
+        if (Config.WOT.ENABLED) {
+          // Validate and Store TD in WoT** (Build TD from user input based on ontology)
+          logger.debug('Validate and register with WoT')
+          items = await tdParserWoT(body as Thing)
+        } else {
+          items = await tdParser(body as RegistrationJSONBasic)
+        }
         // Register TD in NM (Dont send type nor interaction patterns)
-        // const result = await gtwServices.registerObject(items)
+        const result = await gtwServices.registerObject(items)
         // TBD Unregister from WoT on Error
         return responseBuilder(HttpStatusCode.OK, res, null, result)
 	} catch (err) {
@@ -108,11 +107,17 @@ type removeRegistrationsCtrl = expressTypes.Controller<{}, { oids: string[] }, {
 export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => {
     const body = req.body
     try {
-      // Remove from Auroral Cloud
+      // Logout and remove from AURORAL cloud and CS
+      await gtwServices.doLogouts(body.oids)
       await gateway.removeRegistrations(body)
       // Remove from WoT
       if (Config.WOT.ENABLED) {
-        logger.info('Remove item from WoT')
+        await Promise.all(
+          body.oids.map(async oid => {
+            logger.info('Removing ' + oid + ' from WoT')
+            await wot.deleteTD(oid)
+          })
+        )
       }
       // Remove from agent
       await removeItem('registrations', req.body.oids)

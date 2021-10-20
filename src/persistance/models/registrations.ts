@@ -1,6 +1,7 @@
 // Global packages
 import { logger } from '../../utils/logger'
 import { redisDb } from '../redis'
+import { Thing } from '../../types/wot-types'
 
 /**
  * registrations.js
@@ -11,7 +12,9 @@ import { redisDb } from '../redis'
 */
 
 // Body when received or returned by application
-export interface RegistrationJSON {
+export type RegistrationJSON = RegistrationJSONBasic | Thing
+
+export interface RegistrationJSONBasic {
     type: string
     adapterId: string
     name: string

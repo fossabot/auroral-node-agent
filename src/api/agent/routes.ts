@@ -20,6 +20,7 @@ AgentRouter
 // .delete('/configuration', ctrl.removeConfiguration)
 .get('/registrations', ctrl.getRegistrations)
 .get('/registrations/:id', ctrl.getRegistrations)
+.get('/registrations/td/:id', ctrl.getRegistrationsTd)
 // IN AURORAL WE CURRENTLY DONT PERSIST INTERACTIONS INFO
 // .get('/properties', ctrl.getProperties)
 // .get('/properties/:id', ctrl.getProperties)

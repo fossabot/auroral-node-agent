@@ -9,6 +9,9 @@ import * as persistance from '../../persistance/persistance'
 import { Registration } from '../../persistance/models/registrations'
 import { gateway } from '../../microservices/gateway'
 import { Configuration } from '../../persistance/models/configurations'
+import { Thing } from '../../types/wot-types'
+import { wot } from '../../microservices/wot'
+import { Config } from '../../config'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -45,6 +48,25 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
         const error = errorHandler(err)
         logger.error(error.message)
         return responseBuilder(error.status, res, error.message)
+	}
+}
+
+type getRegistrationsTdCtrl = expressTypes.Controller<{ id: string }, {}, {}, Thing | string | undefined, {}>
+ 
+export const getRegistrationsTd: getRegistrationsTdCtrl = async (req, res) => {
+    const { id } = req.params
+    try {
+        let result
+        if (Config.WOT.ENABLED) {
+                result = (await wot.retrieveTD(id)).message
+        } else {
+                result = 'You need to enable WoT to use this function'
+        }
+        return responseBuilder(HttpStatusCode.OK, res, null, result)
+	} catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(error.status, res, error.message)
 	}
 }
 

@@ -51,6 +51,9 @@
       * Only 1 by 1 - No multiple registration accepted
       */
      registerObject: async (items: RegistrationBody[]): Promise<RegistrationResultPost[]> => {
+         if (items.length === 0) {
+             return []
+         }
          try {
              const result = await gateway.postRegistrations({
                  agid: Config.GATEWAY.ID,

@@ -130,6 +130,28 @@
         }
       }
     },
+    "/admin/registrations/td/{id}": {
+      "get": {
+        "description": "Obtain the TD concrete registered item by providing the ID as parameter",
+        "tags": ["admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Object id - OID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
+          }
+        }
+      }
+    },
     "/admin/configuration": {
       "get": {
         "description": "Configuration status of the adapter",
@@ -719,67 +741,52 @@
     },
     "bodyRegistry": {
       "properties": {
-        "agid" : {
-          "description": "ID of the agent",
+        "name" : {
+          "description": "Human readable name for the object",
           "type": "string",
           "required": true,
-          "default": "000-0000-000"
+          "default": "MySmartSensor"
         },
-        "items": {
+        "type" : {
+          "description": "VICINITY type to assign for the object",
+          "type": "string",
+          "required": true,
+          "default": "Device"
+        },
+        "adapterId" : {
+          "type": "string",
+          "description": "Id of the object in your infrastructure",
+          "required": true,
+          "default": "1234"
+        },
+        "properties": {
           "type":"array",
           "description": "Array of pid's. You can use only those you previously registered in the adapter",
           "items": {
-            "type":"object",
-            "properties": {
-              "name" : {
-                "description": "Human readable name for the object",
-                "type": "string",
-                "required": true,
-                "default": "MySmartSensor"
-              },
-              "type" : {
-                "description": "VICINITY type to assign for the object",
-                "type": "string",
-                "required": true,
-                "default": "Device"
-              },
-              "adapterId" : {
-                "type": "string",
-                "description": "Id of the object in your infrastructure",
-                "required": true,
-                "default": "1234"
-              },
-              "properties": {
-                "type":"array",
-                "description": "Array of pid's. You can use only those you previously registered in the adapter",
-                "items": {
-                    "type": "string"
-                  }
-                },
-              "events": {
-                "type":"array",
-                "description": "Array of eid's. You can use only those you previously registered in the adapter",
-                "items": {
-                    "type": "string"
-                  }
-                },
-              "actions": {
-                "type":"array",
-                "description": "Array of aid's. You can use only those you previously registered in the adapter",
-                "items": {
-                    "type": "string"
-                  }
-              },
-              "version" : {
-                "type": "string",
-                "description": "Version of the registered device if applicable"
-              },
-              "description" : {
-                "type": "string",
-                "description": "Additional info"
-              }
+              "type": "string"
             }
-          }
+          },
+        "events": {
+          "type":"array",
+          "description": "Array of eid's. You can use only those you previously registered in the adapter",
+          "items": {
+              "type": "string"
+            }
+          },
+        "actions": {
+          "type":"array",
+          "description": "Array of aid's. You can use only those you previously registered in the adapter",
+          "items": {
+              "type": "string"
+            }
+        },
+        "version" : {
+          "type": "string",
+          "description": "Version of the registered device if applicable"
+        },
+        "description" : {
+          "type": "string",
+          "description": "Additional info"
         }
       }
     },

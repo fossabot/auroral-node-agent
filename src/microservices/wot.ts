@@ -8,7 +8,7 @@ import got, { Method, Headers, PlainResponse } from 'got'
 import { JsonType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
-import { BasicResponse } from '../types/wot-types'
+import { BasicResponse, Thing } from '../types/wot-types'
 
 // CONSTANTS 
 
@@ -30,7 +30,7 @@ const ApiHeader = {
 // INTERFACE
 
 export const wot = {
-    test: async function(): Promise<BasicResponse> {
+    test: async function(): Promise<BasicResponse<null>> {
         try {
             const response = await request('.well-known/wot-thing-description', 'GET', undefined, ApiHeader)
             if (response.statusCode === 400) {
@@ -54,9 +54,9 @@ export const wot = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    upsertTD: async function(oid: string, body: JsonType): Promise<BasicResponse> {
+    upsertTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
-            const response = await request(`api/things/${oid}`, 'PUT', body, ApiHeader)
+            const response = await request(`api/things/oid:${oid}`, 'PUT', body, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
             }
@@ -78,7 +78,7 @@ export const wot = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    createTD: async function(oid: string, body: JsonType): Promise<BasicResponse> {
+    createTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request('api/things/', 'POST', undefined, ApiHeader)
             if (response.statusCode === 400) {
@@ -98,9 +98,9 @@ export const wot = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-     updatePartialTD: async function(oid: string, body: JsonType): Promise<BasicResponse> {
+     updatePartialTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
-            const response = await request(`api/things/${oid}`, 'PATCH', undefined, ApiHeader)
+            const response = await request(`api/things/oid:${oid}`, 'PATCH', undefined, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
             }
@@ -121,9 +121,9 @@ export const wot = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    deleteTD: async function(oid: string): Promise<BasicResponse> {
+    deleteTD: async function(oid: string): Promise<BasicResponse<null>> {
         try {
-            const response = await request(`api/things/${oid}`, 'DELETE', undefined, ApiHeader)
+            const response = await request(`api/things/oid:${oid}`, 'DELETE', undefined, ApiHeader)
             if (response.statusCode === 404) {
                 throw new Error('TD with the given id not found')
             }
@@ -141,9 +141,9 @@ export const wot = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-     retrieveTD: async function(oid: string): Promise<BasicResponse> {
+     retrieveTD: async function(oid: string): Promise<BasicResponse<Thing>> {
         try {
-            const response = await request(`api/things/${oid}`, 'GET', undefined, ApiHeader)
+            const response = await request(`api/things/oid:${oid}`, 'GET', undefined, ApiHeader)
             if (response.statusCode === 404) {
                 throw new Error('TD with the given id not found')
             }
@@ -160,7 +160,7 @@ export const wot = {
      * @query {offset,limit,sort_by,sort_order: string}
      * @returns {error: boolean, message: string} 
      */
-        retrieveTDs: async function(): Promise<BasicResponse> {
+    retrieveTDs: async function(): Promise<BasicResponse<Thing[]>> {
         try {
             const response = await request('api/things/', 'GET', undefined, ApiHeader)
             return buildResponse(response.body as JsonType)
@@ -172,12 +172,12 @@ export const wot = {
     },
     /**
      * Retrieve a Thing Description
-     * Provide oid
+     * Provide sparql
      * @async
      * @query {sparql: string}
      * @returns {error: boolean, message: string} 
      */
-     searchSPARQL: async function(query: string): Promise<BasicResponse> {
+     searchSPARQL: async function(query: string): Promise<BasicResponse<Thing[]>> {
         try {
             const searchParams = (new URLSearchParams([['query', query]])).toString()
             const response = await request('api/search/sparql', 'GET', undefined, ApiHeader, searchParams)
@@ -203,7 +203,7 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
     return response
 }
 
-const buildResponse = (message?: string | JsonType | JsonType[]): BasicResponse => {
+const buildResponse = (message?: string | JsonType | JsonType[]): BasicResponse<any> => {
     return {
         error: false,
         message

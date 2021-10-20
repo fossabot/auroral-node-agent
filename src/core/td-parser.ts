@@ -2,12 +2,16 @@
 Parsing middlewares
 */
 import { v4 as uuidv4 } from 'uuid'
-import { RegistrationJSON, RegistrationBody } from '../persistance/models/registrations'
+import { Thing } from '../types/wot-types'
+import { RegistrationJSON, RegistrationBody, RegistrationJSONBasic } from '../persistance/models/registrations'
 import { getCountOfItems } from '../persistance/persistance'
+import { wot } from '../microservices/wot'
+import { errorHandler } from '../utils/error-handler'
+import { logger } from '../utils'
 
 // PUBLIC
 
-export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationBody[]> => {
+export const tdParser = async (body : RegistrationJSONBasic | RegistrationJSONBasic[]): Promise<RegistrationBody[]> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     // Check num registrations not over 100
     await _checkNumberOfRegistrations(itemsArray.length)
@@ -15,9 +19,27 @@ export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Pr
     return itemsArray.map(it => _buildTD(it))
 }
 
+export const tdParserWoT = async (body : Thing | Thing[]): Promise<RegistrationBody[]> => {
+    const itemsArray = Array.isArray(body) ? body : [body]
+    await _checkNumberOfRegistrations(itemsArray.length)
+    const items = await Promise.all(itemsArray.map(async it => {
+            try {
+                const oid = uuidv4()
+                await wot.upsertTD(oid, { '@id': 'oid:' + oid, ...it })
+                return _buildTDWoT(oid, it)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return null
+            }
+        })
+    )
+    return items.filter(it => it) as RegistrationBody[]
+}
+
 // PRIVATE
 
-const _buildTD = (data: RegistrationJSON): RegistrationBody => {
+const _buildTD = (data: RegistrationJSONBasic): RegistrationBody => {
     _validate(data)
     const oid = uuidv4()
     return { 
@@ -26,6 +48,18 @@ const _buildTD = (data: RegistrationJSON): RegistrationBody => {
         properties: data.properties ? data.properties.toString() : undefined,
         actions: data.actions ? data.actions.toString() : undefined,
         events: data.events ? data.events.toString() : undefined
+    }
+}
+
+const _buildTDWoT = (oid: string, data: Thing): RegistrationBody => {
+    return {
+        oid,
+        properties: Object.keys(data.properties).toString(),
+        actions: Object.keys(data.actions).toString(),
+        events: Object.keys(data.events).toString(),
+        name: data.title,
+        type: 'Device', // TBD: Force to only accepted until ready // data['@type'],
+        adapterId: 'dummy' // TBD: Update this and add groupId or other props when ready
     }
 }
 

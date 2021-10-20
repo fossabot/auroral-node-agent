@@ -6,6 +6,8 @@
 import { JsonType, AdapterMode } from '../types/misc-types'
 import { Config } from '../config'
 import { proxy } from '../microservices/proxy'
+import { wot } from '../microservices/wot'
+import * as persistance from '../persistance/persistance'
 
 export enum Method {
     POST = 'POST',
@@ -19,6 +21,13 @@ export enum Interaction {
     DISCOVERY = 'discovery'
 }
 
+enum registrationAndInteractions {
+    REGISTRATIONS = 'registrations',
+    PROPERTIES = 'properties',
+    ACTIONS = 'actions',
+    EVENTS = 'events'
+}
+
 export interface Options {
     method?: Method
     id?: string
@@ -27,17 +36,21 @@ export interface Options {
 }
 
 export const getData = async (oid: string, options: Options): Promise<JsonType>  => {
-    if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
-        return Promise.resolve({ success: true, value: 100, object: oid, interaction: options.interaction })
-    } else {
-        if (options.interaction === Interaction.DISCOVERY) {
-            return proxy.retrieveDiscovery(oid, options.body)
+    if (options.interaction === Interaction.DISCOVERY) {
+        if (Config.WOT.ENABLED) {
+            // If ID matches the gateway is a request all infrastructure TDs
+            return Config.GATEWAY.ID === oid ? wot.retrieveTDs() : wot.retrieveTD(oid)
         } else {
-            if (options.id && options.method) {
-                return proxy.retrieveInteraction(oid, options.id, options.method, options.interaction, options.body)
-            } else {
-                return Promise.resolve({ success: false, message: 'Missing parameters' })
-            }
+            return persistance.getItem(registrationAndInteractions.REGISTRATIONS , oid)
+        }
+        // return proxy.retrieveDiscovery(oid, options.body)
+    } else {    
+        if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
+            return Promise.resolve({ success: true, value: 100, object: oid, interaction: options.interaction })
+        } else {
+            return options.id && options.method ?
+                proxy.retrieveInteraction(oid, options.id, options.method, options.interaction, options.body) :
+                Promise.resolve({ success: false, message: 'Missing parameters' }) 
         }
     }    
 }
