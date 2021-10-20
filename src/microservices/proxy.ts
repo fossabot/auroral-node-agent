@@ -51,7 +51,8 @@ export const proxy = {
      * @returns 
      */ 
     retrieveDiscovery: async function(oid: string, body?: JsonType): Promise<JsonType> {
-        return request('api/discovery/' + oid, 'GET', body, { ...ApiHeader, Authorization })
+        logger.debug('Calling: POST ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/discovery/' + oid)
+        return request('api/discovery/' + oid, 'POST', body, { ...ApiHeader, Authorization })
     }
 }
 

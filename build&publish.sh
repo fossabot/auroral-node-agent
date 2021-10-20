@@ -31,10 +31,5 @@ docker login ${REGISTRY}
 # Build depending on env
 docker buildx use multiplatform
 docker buildx build --platform linux/amd64,linux/arm64 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile --push .
+# docker buildx build --platform linux/arm/v7 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile.armv7 --push .
 # docker build --tag ${IMAGE_NAME} -f Dockerfile .
-
-# # Tag the image
-# docker image tag ${IMAGE_NAME} ${REGISTRY}/${IMAGE_NAME}:${ENV}
-
-# # Push image
-# docker push ${REGISTRY}/${IMAGE_NAME}:${ENV}
