@@ -28,7 +28,7 @@
              logger.error(error.message)
          }
      },
-     doLogouts: async (array: string[]): Promise<void> => {
+     doLogouts: async (array: string[], stopgtw: boolean = true): Promise<void> => {
          try {
              array.forEach(async (it) => {
                  try {
@@ -39,7 +39,9 @@
                      logger.error(error.message)
                  }
              })
-             await gateway.logout() // Stop always the gateway last
+             if (stopgtw) {
+                await gateway.logout() // Stop always the gateway last
+             }
              logger.info('All logouts were successful')
          } catch (err) {
              const error = errorHandler(err)

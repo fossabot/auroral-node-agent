@@ -108,7 +108,7 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
     const body = req.body
     try {
       // Logout and remove from AURORAL cloud and CS
-      await gtwServices.doLogouts(body.oids)
+      await gtwServices.doLogouts(body.oids, false)
       await gateway.removeRegistrations(body)
       // Remove from WoT
       if (Config.WOT.ENABLED) {
