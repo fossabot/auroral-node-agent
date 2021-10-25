@@ -13,6 +13,7 @@ gateway/keystore/
 gateway/data/
 redis/data
 .env
+.token
 
 # Node artifact files
 node_modules/
