@@ -6,9 +6,9 @@ USAGE="$(basename "$0") [ -h ] [ -e env ]
       -e  environment [ dev (default), prod, ... ]"
 
 # Default configuration
-ENV=dev
-REGISTRY=registry.bavenir.eu
-IMAGE_NAME=auroral_agent
+ENV=beta
+REGISTRY=ghcr.io
+IMAGE_NAME=AuroralH2020/auroral-node-agent
 
 # Get configuration
 while getopts 'hd:e:' OPTION; do
@@ -30,6 +30,5 @@ docker login ${REGISTRY}
 
 # Build depending on env
 docker buildx use multiplatform
-# docker buildx build --platform linux/amd64,linux/arm64 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile --push .
-docker buildx build --platform linux/arm/v7 --tag ${REGISTRY}/${IMAGE_NAME}:armv7 -f Dockerfile.armv7 --push .
-# docker build --tag ${IMAGE_NAME} -f Dockerfile .
+docker buildx build --platform linux/amd64,linux/arm64 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile --push .
+# docker buildx build --platform linux/arm/v7 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV}_armv7 -f Dockerfile.armv7 --push .
