@@ -13,7 +13,7 @@ IMAGE_NAME=auroral_agent
 # Github configuration
 GIT_ENV=beta
 GIT_REGISTRY=ghcr.io
-GIT_IMAGE_NAME=AuroralH2020/auroral-node-agent
+GIT_IMAGE_NAME=auroralh2020/auroral-node-agent
 
 # Get configuration
 while getopts 'hd:e:' OPTION; do
@@ -37,12 +37,12 @@ docker login ${REGISTRY}
 docker buildx use multiplatform
 
 # Build for AMD64/ARM64 & push to private registry
-docker buildx build --platform linux/amd64,linux/arm64 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile .
-docker push ${REGISTRY}/${IMAGE_NAME}:${ENV}
+docker buildx build --platform linux/amd64,linux/arm64 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile . --push
+docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
 
 # Build for ARMv7 & push to private registry
-docker buildx build --platform linux/arm/v7 --tag ${REGISTRY}/${IMAGE_NAME}:armv7 -f Dockerfile.armv7 --push .
-docker push ${REGISTRY}/${IMAGE_NAME}:armv7
+docker buildx build --platform linux/arm/v7 --tag ${REGISTRY}/${IMAGE_NAME}:armv7 -f Dockerfile.armv7 . --push
+docker pull ${REGISTRY}/${IMAGE_NAME}:armv7
 
 # Push to GitHub
 docker login ${GIT_REGISTRY}

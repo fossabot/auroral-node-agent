@@ -1,4 +1,5 @@
 // Global packages
+import { IItemPrivacy } from '../../types/misc-types'
 import { logger } from '../../utils/logger'
 import { redisDb } from '../redis'
 import { Thing } from '../../types/wot-types'
@@ -23,7 +24,7 @@ export interface RegistrationJSONBasic {
     actions?: string[]
     version?: string
     description?: string
-    locatedIn?: string
+    privacy?: ItemPrivacy
 }
 
 // Body ready to register
@@ -36,8 +37,14 @@ export interface RegistrationBody {
     actions?: string // Stringify to register in REDIS
     version?: string // Stringify to register in REDIS
     description?: string
-    locatedIn?: string
     oid: string
+    privacy?: ItemPrivacy
+}
+
+export enum ItemPrivacy {
+    PUBLIC = 2,
+    FOR_FRIENDS = 1,
+    PRIVATE = 0
 }
 
 // Complete registration type after item is registered in AURORAL
@@ -90,17 +97,49 @@ export const registrationFuncs = {
     // Get item from db;
     // Returns object if ID provided;
     // Returns array of ids if ID not provided;
-    getItem: async (id?: string): Promise<RegistrationJSON | string[]> => {
+    getItem: async (id?: string): Promise<RegistrationJSONBasic | string[]> => {
         if (id) {
-            const data = await redisDb.hgetall(id) as unknown as Registration
+            const data = await redisDb.hgetall(id)
+            // Return to user
+            // Do not return credentials or password!!
             return {
-                ...data,
+                type: data.type,
+                adapterId: data.adapterId,
+                name: data.name,
+                version: data.version,
+                description: data.description,
+                privacy: data.privacy,
                 properties: data.properties ? data.properties.split(',') : undefined,
                 actions: data.actions ? data.actions.split(',') : undefined,
                 events: data.events ? data.events.split(',') : undefined,
             }
         } else {
             return redisDb.smembers('registrations')
+        }
+    },
+    // Set item privacy in registration set
+    setPrivacy: async (items: IItemPrivacy[]): Promise<void> => {
+        await Promise.all(items.map(async it => {
+                await redisDb.hset(it.oid, 'privacy', it.privacy)
+            })
+        )
+    },
+    // Get item from db;
+    // Returns privacy if ID provided;
+    // Returns array all oids with privacy if ID not provided;
+    getPrivacy: async (id?: string): Promise<ItemPrivacy | IItemPrivacy[]> => {
+        if (id) {
+            return redisDb.hget(id, 'privacy') as unknown as Promise<ItemPrivacy>
+        } else {
+            const items = await redisDb.smembers('registrations')
+            return Promise.all(
+                items.map(async (it): Promise<IItemPrivacy> => {
+                    return {
+                        oid: it,
+                        privacy: await redisDb.hget(it, 'privacy')
+                    }
+                })
+            )
         }
     },
     // Get count of items in model stored in db

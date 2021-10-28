@@ -9,7 +9,7 @@
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     }
   },
-  "host": "localhost:9997",
+  "host": "localhost:81",
   "basePath": "",
   "externalDocs": {
     "description": "Find out more about AURORAL",

@@ -6,7 +6,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, BasicResponse } from '../types/misc-types'
+import { JsonType, BasicResponse, IItemPrivacy, RelationshipType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
 import { TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
@@ -352,7 +352,7 @@ export const gateway = {
     * @param {rid: string}
     * @returns {error: boolean, message: object} 
     */
-    getRelationship: async function (rid: string): Promise<BasicResponse> {
+    getRelationship: async function (rid: string): Promise<BasicResponse<RelationshipType>> {
         try {
             const Authorization = await getAuthorization()
             return request(`security/relationship/${rid}`, 'GET', undefined, { ...ApiHeader, Authorization })
@@ -367,7 +367,7 @@ export const gateway = {
     * @param 
     * @returns {error: boolean, message: object} 
     */
-     getItemsPrivacy: async function (): Promise<ConsumptionResponse> {
+     getItemsPrivacy: async function (): Promise<ConsumptionResponse<IItemPrivacy[]>> {
         try {
             const Authorization = await getAuthorization()
             return request('security/privacy', 'GET', undefined, { ...ApiHeader, Authorization })

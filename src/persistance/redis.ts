@@ -53,9 +53,10 @@ export const redisDb = {
     * TTL is configurable in .env file;
     * @returns {void}
     */
-   caching: (key: string, data: string) => {
+   caching: (key: string, data: string, ttl?: number) => {
      logger.debug('Cache adition ' + key + ': ' + data)
-     client.set(key, JSON.stringify(data), 'EX', Number(Config.DB.CACHE_TTL))
+     const timeToLive = ttl ? ttl :  Number(Config.DB.CACHE_TTL)
+     client.set(key, JSON.stringify(data), 'EX', timeToLive)
    },
    /**
     * Remove manually key stored for the cache;

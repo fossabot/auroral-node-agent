@@ -23,12 +23,6 @@ export enum RelationshipType{
     OTHER = 'other'
 }
 
-export enum ItemPrivacy {
-    PUBLIC = 2,
-    FOR_FRIENDS = 1,
-    PRIVATE = 0
-}
-
 // Interface used to get item  privacy value from NM
 export interface IItemPrivacy {
     oid: string, // Auroral Id

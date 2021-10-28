@@ -23,9 +23,9 @@ export interface DeleteResponse {
 }
 
 // TBD: Replace JsonType with more accurate interface
-export interface ConsumptionResponse {
+export interface ConsumptionResponse<T = JsonType[]> {
     error: boolean
-    message: JsonType[]
+    message: T
 }
 
 export interface RegistrationResult {

@@ -1,67 +1,105 @@
 import { expressTypes } from '../../types/index'
-import { gateway } from '../../microservices/gateway'
+import { security } from '../../core/security'
 
 // Other imports
-import { IItemPrivacy, ItemPrivacy, JsonType, RelationshipType } from '../../types/misc-types'
+import { IItemPrivacy, JsonType, RelationshipType } from '../../types/misc-types'
 import { PermissionLocals } from '../../types/locals-types'
 import { HttpStatusCode } from '../../utils/http-status-codes'
+import { ItemPrivacy } from '../../persistance/models/registrations'
 import { logger, errorHandler, responseBuilder } from '../../utils'
 
 type proxyGuardController = expressTypes.Controller<{ id: string }, { sparql: JsonType }, {}, void, PermissionLocals>
 
 export const validatePermissions = () => {
     return function (req, res, next) {
-        const id = req.params.id
         const sourceoid = req.headers.sourceoid as string
-        // const sourceoid = '0d9e577c-ed9d-4bdd-a241-3b11d810aeba'
-
+        
+        // CASE sourceId not provided --> Reject request
         if (!sourceoid) {
             logger.error('sourceId not provided')
             return responseBuilder(HttpStatusCode.FORBIDDEN, res, 'SourceId not provided')
         }
-        logger.debug('SOURCE OID: ' + sourceoid)
-        // local request
+
+        // CASE is local request
         if (sourceoid === process.env.GTW_ID) {
-            logger.debug('My GATEWAY, skipping')
+            logger.debug('Receiving discovery from my node infrastructure')
             res.locals.relationship = RelationshipType.ME
             next()
         }
 
-        // Test relationship
-        gateway.getRelationship(sourceoid).then(
+        // CASE is NOT local request - Test relationship
+        security.getRelationship(sourceoid).then(
             (relationship) => {
-                if (relationship.message === RelationshipType.ME) {
-                    // if me -> pass
+                // Check if relationship is valid --> Reject if invalid
+                const validRelationships = Object.keys(RelationshipType)
+                if (validRelationships.indexOf(relationship) === -1) {
+                    logger.error('Unvalid relationship type: ' + relationship)
+                    return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Unvalid relationship type')
+                }
+
+                if (relationship === RelationshipType.ME) {
+                // CASE is a request from our organisation --> Retrieve all items
                     res.locals.relationship = RelationshipType.ME
-                    logger.debug('My item, skipping')
+                    logger.debug('Receiving discovery from different node in my organisation')
                     next()
                 } else {
-                    // Test privacy
-                    gateway.getItemsPrivacy().then(
-                        (itemsWithPrivacy) => {
-                            // getRelationship
-                            const rel = relationship.message === RelationshipType.FRIEND ?
-                                RelationshipType.FRIEND : RelationshipType.OTHER
-                            // set privacy based on RelationshipType
-                            const globalPrivacy = rel === RelationshipType.FRIEND ? ItemPrivacy.FOR_FRIENDS : ItemPrivacy.PUBLIC
-                            // filter items
-                            const items = (itemsWithPrivacy.message as IItemPrivacy[]).filter(it => {
-                                return it.privacy >= globalPrivacy
-                            }).map(it => it.oid)
+                // CASE is NOT a request from our organisation --> Check for items privacy to return only fitting ones
+                    checkPrivacy(relationship).then(
+                        (items) => {
                             // save to locals
-                            res.locals.relationship = rel
+                            res.locals.relationship = relationship
                             res.locals.items = items
                             next()
+                        }
+                    ).catch(
+                    // Case checking privacy fails --> Return nothing!
+                        (err) => {
+                            errorCallback(err)
+                            res.locals.items = []
+                            res.locals.relationship = RelationshipType.OTHER
                         }
                     )
                 }
             }
         ).catch((err) => {
+        // Case checking relationship fails --> Assume OTHER organisation is calling == MAX restriction level
             const error = errorHandler(err)
             logger.error(error.message)
-            res.locals.items = []
-            res.locals.relationship = RelationshipType.OTHER
-        }
-        )
+            logger.debug('Get relationship failed... Assuming incoming request from NOT friend organisation')
+            checkPrivacy(RelationshipType.OTHER).then(
+                (items) => {
+                    // save to locals
+                    res.locals.relationship = RelationshipType.OTHER
+                    res.locals.items = items
+                    next()
+                }
+            ).catch(
+            // Case checking privacy fails --> Return nothing
+                (err2) => {
+                    errorCallback(err2)
+                    res.locals.items = []
+                    res.locals.relationship = RelationshipType.OTHER
+                }
+            )
+        })
     } as proxyGuardController
+}
+
+// Private functions
+
+const checkPrivacy = async (rel: RelationshipType) => {
+    // Test privacy
+    const itemsWithPrivacy = await security.getItemsPrivacy() as IItemPrivacy[]
+    const globalPrivacy = rel === RelationshipType.FRIEND ?
+    ItemPrivacy.FOR_FRIENDS : ItemPrivacy.PUBLIC
+    // Filter items based on relationship and privacy level
+    return itemsWithPrivacy.filter(it => {
+        return it.privacy >= globalPrivacy
+    }).map(it => it.oid)
+}
+
+const errorCallback = (err: unknown) => {
+    logger.debug('Get privacy failed... Returning empty array...')
+    const error = errorHandler(err)
+    logger.error(error.message)
 }
