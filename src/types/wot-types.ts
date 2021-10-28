@@ -346,13 +346,6 @@ export abstract class ThingEvent implements ThingInteraction {
     [key: string]: any
 }
 
-// Define WoT Responses
-
-export interface BasicResponse<T> {
-    error: boolean
-    message?: T
-}
-
 // WoT Thing Example
 
 // {

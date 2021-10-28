@@ -6,10 +6,10 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType } from '../types/misc-types'
+import { JsonType, BasicResponse } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
-import { BasicResponse, TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
+import { TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
 import { RegistrationBody } from '../persistance/models/registrations'
 import { getCredentials } from '../persistance/persistance'
 
@@ -342,10 +342,40 @@ export const gateway = {
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            return Promise.resolve({ error: true, message: error.message })
+            return Promise.resolve({ error: error.message })
+        }
+    },
+
+    /**
+    * Get a relationship with CID or OID
+    * @async
+    * @param {rid: string}
+    * @returns {error: boolean, message: object} 
+    */
+    getRelationship: async function (rid: string): Promise<BasicResponse> {
+        try {
+            const Authorization = await getAuthorization()
+            return request(`security/relationship/${rid}`, 'GET', undefined, { ...ApiHeader, Authorization })
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
+    /**
+    * Get a privacy status of all node items
+    * @async
+    * @param 
+    * @returns {error: boolean, message: object} 
+    */
+     getItemsPrivacy: async function (): Promise<ConsumptionResponse> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('security/privacy', 'GET', undefined, { ...ApiHeader, Authorization })
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
         }
     }
-
 }
 
 // PRIVATE FUNCTIONS
@@ -359,6 +389,7 @@ const getAuthorization = async (oid?: string): Promise<string> => {
         return credentials
     } else {
         const creds = Buffer.from(Config.GATEWAY.ID + ':' + Config.GATEWAY.PASSWORD, 'utf-8').toString('base64') // GATEWAY CREDS
+        logger.debug(creds)
         return 'Basic ' +  creds
     }
 }

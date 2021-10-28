@@ -6,6 +6,7 @@ import { responseBuilder } from '../../utils/response-builder'
 
 // Other imports
 import { JsonType } from '../../types/misc-types'
+import { PermissionLocals } from '../../types/locals-types'
 import { getData, Method, Interaction } from '../../core/proxy'
 
 // Controllers
@@ -55,15 +56,16 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       }
   }
 
-type DiscoveryCtrl = expressTypes.Controller<{ id: string }, { sparql: JsonType }, {}, JsonType, {}>
+type DiscoveryCtrl = expressTypes.Controller<{ id: string }, { sparql: JsonType }, {}, JsonType, PermissionLocals>
 
 export const discovery: DiscoveryCtrl = async (req, res) => {
     const { id } = req.params
     const { sparql } = req.body
+    const { relationship, items } = res.locals
       try {
         logger.info('Received discovery to ' + id)
-        logger.info(sparql)
-        const data = await getData(id, { interaction: Interaction.DISCOVERY, body: sparql })
+        logger.info('Sparql:', sparql)
+        const data = await getData(id, { interaction: Interaction.DISCOVERY, body: sparql }, relationship, items)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
         const error = errorHandler(err)

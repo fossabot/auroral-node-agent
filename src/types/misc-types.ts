@@ -11,3 +11,27 @@ export enum AdapterMode {
     PROXY = 'proxy',
     DUMMY = 'dummy'
 }
+
+export interface BasicResponse<T = any> {
+    error?: string
+    message?: T
+}
+
+export enum RelationshipType{
+    ME = 'me',
+    FRIEND = 'friend',
+    OTHER = 'other'
+}
+
+export enum ItemPrivacy {
+    PUBLIC = 2,
+    FOR_FRIENDS = 1,
+    PRIVATE = 0
+}
+
+// Interface used to get item  privacy value from NM
+export interface IItemPrivacy {
+    oid: string, // Auroral Id
+    privacy: ItemPrivacy, // Privacy level of the item
+}
+

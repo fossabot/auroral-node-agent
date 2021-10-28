@@ -2,11 +2,6 @@
 
 import { JsonType } from './misc-types'
 
-export interface BasicResponse {
-    error: boolean
-    message: string
-}
-
 export interface TdsResponse {
     error: boolean
     message: JsonType[]

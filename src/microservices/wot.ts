@@ -5,10 +5,10 @@
 * @interface
 */ 
 import got, { Method, Headers, PlainResponse } from 'got'
-import { JsonType } from '../types/misc-types'
+import { JsonType, BasicResponse } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
-import { BasicResponse, Thing } from '../types/wot-types'
+import { Thing } from '../types/wot-types'
 
 // CONSTANTS 
 
@@ -204,8 +204,5 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
 }
 
 const buildResponse = (message?: string | JsonType | JsonType[]): BasicResponse<any> => {
-    return {
-        error: false,
-        message
-    }
+    return { message }
 }
