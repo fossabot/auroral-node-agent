@@ -33,6 +33,9 @@ echo Build and push image ${IMAGE_NAME} with tag ${ENV}
 # Do login
 docker login ${REGISTRY}
 
+# Compile ts into js
+tsc
+
 # Multiarch builder
 docker buildx use multiplatform
 
