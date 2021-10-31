@@ -12,6 +12,9 @@ import { Thing } from '../../types/wot-types'
  * oid, type, credentials, password, adapterId, name, properties, events, agents
 */
 
+// Human readable privacy
+const PRIV_ARRAY = ['Private', 'For Friends', 'Public']
+
 // Body when received or returned by application
 export type RegistrationJSON = RegistrationJSONBasic | Thing
 
@@ -24,7 +27,7 @@ export interface RegistrationJSONBasic {
     actions?: string[]
     version?: string
     description?: string
-    privacy?: ItemPrivacy
+    privacy?: string
 }
 
 // Body ready to register
@@ -38,7 +41,6 @@ export interface RegistrationBody {
     version?: string // Stringify to register in REDIS
     description?: string
     oid: string
-    privacy?: ItemPrivacy
 }
 
 export enum ItemPrivacy {
@@ -50,6 +52,7 @@ export enum ItemPrivacy {
 // Complete registration type after item is registered in AURORAL
 // Item stored in REDIS
 export interface Registration extends RegistrationBody {
+    privacy?: ItemPrivacy
     credentials: string
     password: string
     created: string
@@ -108,7 +111,7 @@ export const registrationFuncs = {
                 name: data.name,
                 version: data.version,
                 description: data.description,
-                privacy: data.privacy,
+                privacy: PRIV_ARRAY[Number(data.privacy)],
                 properties: data.properties ? data.properties.split(',') : undefined,
                 actions: data.actions ? data.actions.split(',') : undefined,
                 events: data.events ? data.events.split(',') : undefined,
@@ -120,14 +123,16 @@ export const registrationFuncs = {
     // Set item privacy in registration set
     setPrivacy: async (items: IItemPrivacy[]): Promise<void> => {
         await Promise.all(items.map(async it => {
-                await redisDb.hset(it.oid, 'privacy', it.privacy)
+                await redisDb.hset(it.oid, 'privacy', String(it.privacy))
             })
         )
+        await redisDb.hset('configuration', 'last_privacy_update', new Date().toISOString())
     },
     // Get item from db;
     // Returns privacy if ID provided;
     // Returns array all oids with privacy if ID not provided;
     getPrivacy: async (id?: string): Promise<ItemPrivacy | IItemPrivacy[]> => {
+        // TBD display time last updated and maybe restrict access if older than 1 day
         if (id) {
             return redisDb.hget(id, 'privacy') as unknown as Promise<ItemPrivacy>
         } else {
@@ -136,7 +141,7 @@ export const registrationFuncs = {
                 items.map(async (it): Promise<IItemPrivacy> => {
                     return {
                         oid: it,
-                        privacy: await redisDb.hget(it, 'privacy')
+                        privacy: await redisDb.hget(it, 'privacy') as unknown as ItemPrivacy
                     }
                 })
             )

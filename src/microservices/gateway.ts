@@ -9,9 +9,10 @@ import got, { Method, Headers } from 'got'
 import { JsonType, BasicResponse, IItemPrivacy, RelationshipType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
-import { TdsResponse, BasicArrayResponse, DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
-import { RegistrationBody } from '../persistance/models/registrations'
+import { DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
+import { Registration, RegistrationBody } from '../persistance/models/registrations'
 import { getCredentials } from '../persistance/persistance'
+import { Thing } from '../types/wot-types'
 
 // CONSTANTS 
 
@@ -81,7 +82,7 @@ export const gateway = {
      * @async
      * @returns {error: boolean, message: array of TDs} 
      */
-    getRegistrations: async function(): Promise<TdsResponse> {
+    getRegistrations: async function(): Promise<string[]> {
         try {
             const Authorization = await getAuthorization()
             return (await request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })).message
@@ -143,7 +144,7 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
      */
-    discovery: async function(oid?: string): Promise<BasicArrayResponse> {
+    discovery: async function(oid?: string): Promise<string[]> {
         try {
             const Authorization = await getAuthorization(oid)
             return request('objects', 'GET', undefined, { ...ApiHeader, Authorization })
@@ -161,11 +162,11 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
      */
-    discoveryRemote: async function(oid: string, params: { sparql?: JsonType, originId?: string }): Promise<BasicArrayResponse> {
+    discoveryRemote: async function(oid: string, params: { sparql?: JsonType, originId?: string }): Promise<BasicResponse<Registration>[] | BasicResponse<Thing>[]> {
         try {
             const { originId, sparql } = params
             const Authorization = await getAuthorization(originId)
-            return request(`objects/${oid}`, 'POST', sparql, { ...ApiHeader, Authorization })
+            return (await request(`objects/${oid}`, 'POST', sparql, { ...ApiHeader, Authorization })).message
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -389,7 +390,6 @@ const getAuthorization = async (oid?: string): Promise<string> => {
         return credentials
     } else {
         const creds = Buffer.from(Config.GATEWAY.ID + ':' + Config.GATEWAY.PASSWORD, 'utf-8').toString('base64') // GATEWAY CREDS
-        logger.debug(creds)
         return 'Basic ' +  creds
     }
 }

@@ -7,7 +7,8 @@ import { redisDb } from '../redis'
  */
 
 export type Configuration = {
-    date: string // Date of node creation
+    last_configuration_update: string
+    last_privacy_update: string
     registrations: string
     propierties: string
     actions: string
@@ -24,7 +25,7 @@ export const addConfigurationInfo = async (): Promise<void> => {
     const numprops = await redisDb.scard('properties')
     const numactions = await redisDb.scard('actions')
     const numevents = await redisDb.scard('events')
-    await redisDb.hset('configuration', 'date', d.toISOString())
+    await redisDb.hset('configuration', 'last_configuration_update', d.toISOString())
     await redisDb.hset('configuration', 'registrations', String(numregis))
     await redisDb.hset('configuration', 'properties', String(numprops))
     await redisDb.hset('configuration', 'actions', String(numactions))
@@ -36,9 +37,9 @@ export const addConfigurationInfo = async (): Promise<void> => {
  * From memory
  */
 export const removeConfigurationInfo = async (): Promise<void> => {
-        await redisDb.hdel('configuration', 'date')
+        await redisDb.hdel('configuration', 'last_configuration_update')
         await redisDb.hdel('configuration', 'registrations')
         await redisDb.hdel('configuration', 'properties')
         await redisDb.hdel('configuration', 'actions')
         await redisDb.hdel('configuration', 'events')
-}
+    }

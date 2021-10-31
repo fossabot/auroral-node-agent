@@ -8,8 +8,8 @@ import { responseBuilder } from '../../utils/response-builder'
 import { JsonType } from '../../types/misc-types'
 import { gateway } from '../../microservices/gateway'
 import { gtwServices } from '../../core/gateway'
-import { BasicArrayResponse, ConsumptionResponse, RegistrationResultPost, TdsResponse } from '../../types/gateway-types'
-import { RegistrationJSON, RegistrationJSONBasic } from '../../persistance/models/registrations'
+import { ConsumptionResponse, RegistrationResultPost } from '../../types/gateway-types'
+import { Registration, RegistrationJSON, RegistrationJSONBasic } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
 import { tdParser, tdParserWoT } from '../../core/td-parser'
 import { Config } from '../../config'
@@ -54,7 +54,7 @@ export const logout: logoutCtrl = async (req, res) => {
 	}
 }
 
-type getRegistrationsCtrl = expressTypes.Controller<{}, {}, {}, TdsResponse, {}>
+type getRegistrationsCtrl = expressTypes.Controller<{}, {}, {}, string[], {}>
 
 /**
  * Retrieve things registered in the platform
@@ -129,7 +129,7 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
 	}
 }
 
-type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, BasicArrayResponse, {}>
+type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string[], {}>
 
 /**
  * Discovery endpoint LOCAL
@@ -148,7 +148,7 @@ type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, BasicArray
       }
   }
 
-type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: string }, { sparql?: JsonType }, {}, BasicArrayResponse, {}>
+type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: string }, { sparql?: JsonType }, {}, Registration[] | Thing[], {}>
 
 /**
  * Discovery endpoint REMOTE
@@ -161,7 +161,7 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
     const { sparql } = req.body
       try {
         const params = { sparql, originId }
-        const data = await gateway.discoveryRemote(id, params)
+        const data = (await gateway.discoveryRemote(id, params)).map(it => it.message)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
         const error = errorHandler(err)

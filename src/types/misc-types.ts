@@ -1,3 +1,5 @@
+import { ItemPrivacy } from '../persistance/models/registrations'
+
 export type JsonType<T=any> = {
     [x: string]: T
 }

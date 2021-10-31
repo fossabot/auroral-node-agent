@@ -56,7 +56,8 @@ export const redisDb = {
    caching: (key: string, data: string, ttl?: number) => {
      logger.debug('Cache adition ' + key + ': ' + data)
      const timeToLive = ttl ? ttl :  Number(Config.DB.CACHE_TTL)
-     client.set(key, JSON.stringify(data), 'EX', timeToLive)
+     const dataAsString = typeof data === 'string' ? data : JSON.stringify(data)
+     client.set(key, dataAsString, 'EX', timeToLive)
    },
    /**
     * Remove manually key stored for the cache;

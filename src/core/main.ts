@@ -10,6 +10,8 @@ import { gtwServices } from './gateway'
 import { logger } from '../utils'
 import  { getItem, reloadConfigInfo } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
+import { security } from './security'
+import { scheduledJobs } from './scheduler'
  
  /**
   * Initialization process of the agent module;
@@ -35,8 +37,7 @@ export const initialize = async function() {
     const objectsInPlatform = await gateway.getRegistrations()
 
     // Compare local regitrations with platform registrations
-    // TBD: Use more accurate typing
-    gtwServices.compareLocalAndRemote(registrations, objectsInPlatform.message as { id: { info: { oid: string } } }[])
+    gtwServices.compareLocalAndRemote(registrations, objectsInPlatform)
 
     // Initialize WoT
     if (Config.WOT.ENABLED) {
@@ -53,6 +54,10 @@ export const initialize = async function() {
         logger.warn('Adapter values are not being cached by redis')
     }
 
+    // Update Items privacy in node
+    await security.cacheItemsPrivacy()
+    logger.info('Local items privacy updated!!')
+
     // Check Adapter mode
     logger.info('Agent is responding to incoming requests in ' + Config.ADAPTER.MODE + ' mode')
 
@@ -60,9 +65,7 @@ export const initialize = async function() {
     await reloadConfigInfo()
 
     // Scheduled tasks
-    // Run periodic healthchecks
-    // Re-login the infrastructure periodically (i.e 60min)
-    // Others ...
+    scheduledJobs.start()
 
     // End of initialization
     logger.info(' ##### Agent startup completed!')

@@ -122,13 +122,10 @@
       * Compare Local infrastracture with platform
       * Both should have the same objects registered
       */
-     compareLocalAndRemote: (local: string[], platform: { id: { info: { oid: string } } }[]) => {
+     compareLocalAndRemote: (local: string[], platform: string[]) => {
          try {
-             const oidArray = platform.map((item) => {
-                 return item.id.info.oid 
-             })
              for (let i = 0, l = local.length; i < l; i++) {
-                 if (oidArray.indexOf(local[i]) === -1) {
+                 if (platform.indexOf(local[i]) === -1) {
                      throw new Error('Local and platform objects are not the same')
                  }
              }
@@ -136,7 +133,6 @@
              return true
          } catch (err) {
              const error = errorHandler(err)
-             logger.warn('Local and remote registrations do not match')
              logger.warn(error.message)
              return false
          }

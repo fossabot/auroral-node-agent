@@ -24,6 +24,6 @@ ProxyRouter
      // .post('/objects/:oid/actions/:aid') // receive request to start action
      // .delete('/objects/:oid/actions/:aid') // receive request to stop action
      .put('/objects/:id/events/:eid', ctrl.receiveEvent) // get event from channel where you are subscribed
-     .post('/objects/:id/discovery', validatePermissions(),  ctrl.discovery) // Get discovery request (From local or remote, with or w/o sparql query)
+     .post('/objects/:id/discovery', validatePermissions(), ctrl.discovery) // Get discovery request (From local or remote, with or w/o sparql query)
    
 export { ProxyRouter }
