@@ -172,10 +172,58 @@ export const gateway = {
             throw new Error(error.message)
         }
     },
+
     /**
-     * @TBD:
-     * SPARQL query
+     * Retrieve CID;
+     * (For any given object get its organisation(agid or oid));
+     * (Using the credentials of the gateway);
+     * @async
+     * @param {reqid: string}
+     * @returns {error: boolean, message: cid: string} 
      */
+    getCid: async function(reqid: string): Promise<string> {
+        try {
+            const Authorization = await getAuthorization()
+            return (await request(`agents/cid/${reqid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
+
+    /**
+     * Get partners;
+     * Get your organisation partners;
+     * (Using the credentials of the gateway);
+     * @async
+     * @returns {error: boolean, message: cid: string} 
+     */
+    getPartners: async function(): Promise<string[]> {
+        try {
+            const Authorization = await getAuthorization()
+            return (await request('agents/partners', 'GET', undefined, { ...ApiHeader, Authorization })).message
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
+
+    /**
+     * Get partner info;
+     * Get info about one of your partners;
+     * (Using the credentials of the gateway);
+     * @async
+     * @returns {error: boolean, message: cid: string} 
+     */
+    getPartnerInfo: async function(cid: string): Promise<{ name: string, nodes: string[]}> {
+        try {
+            const Authorization = await getAuthorization()
+            return (await request(`agents/partner/${cid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
 
     // ***** RESOURCE CONSUMPTION *****
     // Properties, events and actions

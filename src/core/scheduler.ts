@@ -1,31 +1,36 @@
 import { CronJob } from 'cron'
 import { logger, errorHandler } from '../utils'
 import { security } from './security'
+import { discovery } from './discovery'
+import { Config } from '../config'
 
 // Private functions 
-const reloadPrivacy = async (): Promise<void> => {
+const reloadCloudSettings = async (): Promise<void> => {
     try {
         await security.cacheItemsPrivacy()
+        const cid = await discovery.reloadCid(Config.GATEWAY.ID)
+        await discovery.reloadPartners()
+        await discovery.reloadPartnerInfo(cid)
     } catch (err) {
         const error = errorHandler(err)
-        logger.error('Could not load privacy')
+        logger.error('Could refresh privacy and partners')
         logger.error(error.message)
     }
 }
 
 // Create jobs
-const privacyJob = new CronJob('0 0 * * * *', (() => {
+const reloadJob = new CronJob('0 0 * * * *', (() => {
     // Running every hour
     logger.info('Running scheduled task: Reloading privacy')
-    reloadPrivacy()
+    reloadCloudSettings()
 }), null, true)
 
 // Export scheduler
 export const scheduledJobs = {
     start: () => {
-        privacyJob.start()
+        reloadJob.start()
     },
     stop: () => {
-        privacyJob.stop()
+        reloadJob.stop()
     }
 }

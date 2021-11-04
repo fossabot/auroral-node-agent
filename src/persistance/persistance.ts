@@ -240,10 +240,10 @@ export const combinationExists = async (oid: string, pid: string) => {
  * @async
  * @returns boolean
  */
-export const reloadConfigInfo = async function(): Promise<void> {
+export const reloadConfigInfo = async function(cid: string, name: string, nodes: string[], partners: string[]): Promise<void> {
     try { 
         await removeConfigurationInfo()
-        await addConfigurationInfo()
+        await addConfigurationInfo(cid, name, nodes, partners)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -260,8 +260,6 @@ export const reloadConfigInfo = async function(): Promise<void> {
  */
  export const getConfigInfo = async (): Promise<JsonType>  => {
     try {
-        await removeConfigurationInfo()
-        await addConfigurationInfo()
         const agentConfig = await redisDb.hgetall('configuration') as unknown as Configuration
         return {
             'INFO': agentConfig,

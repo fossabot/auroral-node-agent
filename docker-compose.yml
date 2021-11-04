@@ -2,7 +2,8 @@ version: '2.4'
 
 services:
   auroral-agent:
-    image: auroral-agent
+    # image: auroral-agent
+    image: registry.bavenir.eu/auroral_agent:dev
     volumes:
     - ./.env:/app/.env:ro
     - .:/app:delegated

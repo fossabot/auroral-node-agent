@@ -1,5 +1,6 @@
 import { expressTypes } from '../../types/index'
 import { security } from '../../core/security'
+import { discovery } from '../../core/discovery'
 
 // Other imports
 import { IItemPrivacy, JsonType, RelationshipType } from '../../types/misc-types'
@@ -31,7 +32,7 @@ export const validatePermissions = () => {
          }
 
         // CASE is NOT local request - Test relationship
-        security.getRelationship(sourceoid).then(
+        discovery.getRelationship(sourceoid).then(
             (relationship) => {
                 // Check if relationship is valid --> Reject if invalid
                 if (VALID_RELATIONSHIPS.indexOf(relationship) === -1) {

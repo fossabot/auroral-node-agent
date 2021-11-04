@@ -11,6 +11,7 @@ import { logger } from '../utils'
 import  { getItem, reloadConfigInfo } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
 import { security } from './security'
+import { discovery } from './discovery'
 import { scheduledJobs } from './scheduler'
  
  /**
@@ -61,8 +62,14 @@ export const initialize = async function() {
     // Check Adapter mode
     logger.info('Agent is responding to incoming requests in ' + Config.ADAPTER.MODE + ' mode')
 
+    // Get my organisation info
+    const cid = await discovery.reloadCid(Config.GATEWAY.ID)
+    const info = await discovery.reloadPartnerInfo(cid)
+    const partners = await discovery.reloadPartners()
+    logger.info('Node belongs to organisation: ' + info.name)
+
     // Store configuration info
-    await reloadConfigInfo()
+    await reloadConfigInfo(cid, info.name, info.nodes, partners)
 
     // Scheduled tasks
     scheduledJobs.start()
