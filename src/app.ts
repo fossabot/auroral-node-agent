@@ -11,7 +11,7 @@ import { logger } from './utils/logger'
 import swaggerDocument from './docs/swagger.json'
 
 // Update port dynamically
-swaggerDocument.host = 'localhost:' + Config.EXTERNAL_PORT
+// swaggerDocument.host = 'localhost:' + Config.EXTERNAL_PORT
 
 // Create Express server
 const app = express()
