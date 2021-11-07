@@ -6,18 +6,11 @@ import { Config } from '../config'
 
 export const discovery = {
     getRelationship: async (id: string): Promise<RelationshipType> => {
-        const cid = await discovery.getCid(id)
+        const cid = await getCid(id)
         return relationshipSwitch(cid)
     },
     getCid: async (id: string): Promise<string> => {
-        const cid = await redisDb.get('cid:' + id)
-        // Check if incoming id's cid is already stored
-        if (!cid) {
-            const newcid = await discovery.getCid(id)
-            redisDb.caching('cid:' + id, newcid)
-            return newcid
-        }
-        return  cid
+        return getCid(id)
     },
     getPartners: async (): Promise<string[]> => {
         return gateway.getPartners()
@@ -54,13 +47,25 @@ export const discovery = {
 // Private functions
 
 const relationshipSwitch = async (cid: string): Promise<RelationshipType> => {
-    const partners = await discovery.getPartners()
+    const partners = await redisDb.hget('configuration', 'partners')
+    const partnersArray = partners.split(',')
     const me = await redisDb.hget('configuration', 'cid')
     if (cid === me) {
         return RelationshipType.ME
-    } else if (partners.indexOf(cid) !== -1) {
+    } else if (partnersArray.indexOf(cid)) {
         return RelationshipType.FRIEND
     } else {
         return RelationshipType.OTHER
     }
 } 
+
+const getCid = async (id: string): Promise<string> => {
+    const cid = await redisDb.get('cid:' + id)
+    // Check if incoming id's cid is already stored
+    if (!cid) {
+        const newcid = await gateway.getCid(id)
+        redisDb.caching('cid:' + id, newcid)
+        return newcid
+    }
+    return cid
+}

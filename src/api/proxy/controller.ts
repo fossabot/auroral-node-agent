@@ -56,16 +56,20 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       }
   }
 
-type DiscoveryCtrl = expressTypes.Controller<{ id: string }, { sparql: JsonType }, {}, JsonType, PermissionLocals>
+type DiscoveryCtrl = expressTypes.Controller<{ id: string }, { sparql: string }, {}, JsonType, PermissionLocals>
 
 export const discovery: DiscoveryCtrl = async (req, res) => {
     const { id } = req.params
     const { sparql } = req.body
     const { relationship, items } = res.locals
       try {
-        logger.info('Received discovery to ' + id)
-        logger.info('Sparql:', sparql)
-        const data = await getData(id, { interaction: Interaction.DISCOVERY, body: sparql }, relationship, items)
+        if (sparql) {
+          logger.info('Received discovery to ' + id)
+        } else {
+          logger.info('Received Sparql discovery to ' + id)
+          logger.debug(sparql)
+        }
+        const data = await getData(id, { interaction: Interaction.DISCOVERY, sparql }, relationship, items)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
       } catch (err) {
         const error = errorHandler(err)

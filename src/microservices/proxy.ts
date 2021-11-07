@@ -8,7 +8,9 @@ import got, { Method, Headers } from 'got'
 import { JsonType } from '../types/misc-types'
 import { Config } from '../config'
 import { Interaction } from '../core/proxy'
+import { wot } from './wot'
 import { logger } from '../utils/logger'
+import { Thing } from '../types/wot-types'
 
 // CONSTANTS 
 
@@ -53,6 +55,29 @@ export const proxy = {
     retrieveDiscovery: async function(oid: string, body?: JsonType): Promise<JsonType> {
         logger.debug('Calling: POST ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/discovery/' + oid)
         return request('api/discovery/' + oid, 'POST', body, { ...ApiHeader, Authorization })
+    },
+    /**
+     * Access adapter to get interaction info
+     * Getting URL from WoT
+     * @param oid
+     * @param id 
+     * @param method 
+     * @returns 
+     */ 
+     retrieveInteractionFromWot: async function(oid: string, id: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
+        const thing = (await wot.retrieveTD(oid)).message
+        if (thing) {
+            const forms = getInteractionsForms(interaction, thing, id)
+            if (forms) {
+                const url = forms[0].href
+                logger.debug('Calling: ' + method + ' ' + url)
+                return request(url , method, undefined, { ...ApiHeader, Authorization })
+            } else {
+                return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + id + ' does not specify url to access data...' })
+            }
+        } else {
+            return Promise.resolve({ success: false, message: 'Thing ' + oid + ' not found in infrastructure...' })
+        }
     }
 }
 
@@ -62,3 +87,16 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     return response.body
 }
+
+const getInteractionsForms = (interaction: Interaction, thing: Thing, id: string) => {
+    const { properties, events } = thing
+    switch (interaction) {
+        case Interaction.PROPERTY:
+            return properties[id].forms
+        case Interaction.EVENT:
+            return events[id].forms
+        default:
+            throw new Error('Wrong interaction')
+    }
+}
+

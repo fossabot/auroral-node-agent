@@ -10,6 +10,7 @@ import { wot } from '../microservices/wot'
 import * as persistance from '../persistance/persistance'
 import { Thing } from '../types/wot-types'
 import { logger, errorHandler } from '../utils'
+import { registrationFuncs } from '../persistance/models/registrations'
 
 export enum Method {
     POST = 'POST',
@@ -34,6 +35,7 @@ export interface Options {
     method?: Method
     id?: string
     body?: JsonType
+    sparql?: string
     interaction: Interaction
     relationship?: string
     items?: string[]
@@ -43,8 +45,11 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
     if (options.interaction === Interaction.DISCOVERY) {
         if (Config.GATEWAY.ID === oid) {
             if (Config.WOT.ENABLED) {
-                // If ID matches the gateway is a request all infrastructure TDs
-                return gatewayDiscovery(relationship, items)
+                if (options.sparql) {
+                    return sparqlDiscovery(options.sparql)
+                } else {
+                    return semanticDiscovery(relationship, items)
+                }
             } else {
                 // wot disabled 
                 if (relationship === RelationshipType.ME) {
@@ -64,7 +69,7 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
             }
         } else {
             // test if device is accesible 
-            if (items && oid in items || relationship === RelationshipType.ME) {
+            if (items && items.indexOf(oid) || relationship === RelationshipType.ME) {
                 return Config.WOT.ENABLED ? wot.retrieveTD(oid) : persistance.getItem(registrationAndInteractions.REGISTRATIONS, oid)
             } else {
                 return { message: {} }
@@ -73,6 +78,10 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
     } else {
         if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
             return Promise.resolve({ success: true, value: 100, object: oid, interaction: options.interaction })
+        } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
+            return options.id && options.method ?
+            proxy.retrieveInteractionFromWot(oid, options.id, options.method, options.interaction, options.body) :
+            Promise.resolve({ success: false, message: 'Missing parameters' })
         } else {
             return options.id && options.method ?
                 proxy.retrieveInteraction(oid, options.id, options.method, options.interaction, options.body) :
@@ -83,26 +92,38 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
 
 // PRIVATE
 
-const gatewayDiscovery = async (relationship?: string, items?: string[]): Promise<BasicResponse<Thing | Thing[]>> => {
+const semanticDiscovery = async (relationship?: string, items?: string[]): Promise<BasicResponse<Thing | Thing[]>> => {
     try {
+        let rel = relationship
         if (!relationship) {
-            relationship = RelationshipType.OTHER
+            rel = RelationshipType.OTHER
         }
-        if (relationship === 'me') {
-            const thing = (await wot.retrieveTDs()).message || []
-            return { message: thing }
+        if (rel === RelationshipType.ME) {
+            const allItems = await registrationFuncs.getItem() as string[]
+            const things = await Promise.all(allItems.map(async it => {
+                return (await wot.retrieveTD(it)).message
+            }))
+            return things as BasicResponse<Thing[]>
         } else {
             if (!items) {
                 return { message: [] }
             } else {
                 const things = await Promise.all(items.map(async it => {
-                return (await wot.retrieveTD(it)).message as Thing | undefined
+                    return (await wot.retrieveTD(it)).message
                 }))
+                console.log(things)
                 return { message: things.filter(it => it) as unknown as Thing[] }
             }
         }
     } catch (err: unknown) {
         const error = errorHandler(err)
+        logger.debug(error.message)
         return { error: error.message }
     }
+}
+
+const sparqlDiscovery = async (sparql: string) => {
+    const test = wot.searchSPARQL(sparql)
+    console.log(test)
+    return {}
 }

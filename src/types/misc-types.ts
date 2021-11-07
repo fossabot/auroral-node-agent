@@ -11,7 +11,8 @@ export type KeyValue = {
 
 export enum AdapterMode {
     PROXY = 'proxy',
-    DUMMY = 'dummy'
+    DUMMY = 'dummy',
+    SEMANTIC = 'semantic'
 }
 
 export interface BasicResponse<T = any> {

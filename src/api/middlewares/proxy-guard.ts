@@ -12,7 +12,7 @@ import { Config } from '../../config'
 
 const VALID_RELATIONSHIPS = Object.values(RelationshipType)
 
-type proxyGuardController = expressTypes.Controller<{ id: string }, { sparql: JsonType }, {}, void, PermissionLocals>
+type proxyGuardController = expressTypes.Controller<{ id: string }, { sparql: string }, {}, void, PermissionLocals>
 
 export const validatePermissions = () => {
     return function (req, res, next) {
@@ -30,6 +30,8 @@ export const validatePermissions = () => {
             res.locals.relationship = RelationshipType.ME
             return next()
          }
+
+        logger.debug('Validating discovery request permissions...')
 
         // CASE is NOT local request - Test relationship
         discovery.getRelationship(sourceoid).then(
@@ -60,6 +62,7 @@ export const validatePermissions = () => {
                             errorCallback(err)
                             res.locals.items = []
                             res.locals.relationship = RelationshipType.OTHER
+                            return next()
                         }
                     )
                 }
@@ -82,6 +85,7 @@ export const validatePermissions = () => {
                     errorCallback(err2)
                     res.locals.items = []
                     res.locals.relationship = RelationshipType.OTHER
+                    return next()
                 }
             )
         })
