@@ -56,9 +56,9 @@ const _buildTD = (data: RegistrationJSONBasic): RegistrationBody => {
 const _buildTDWoT = (oid: string, data: Thing): RegistrationBody => {
     return {
         oid,
-        properties: Object.keys(data.properties).toString(),
-        actions: Object.keys(data.actions).toString(),
-        events: Object.keys(data.events).toString(),
+        properties: data.properties ? Object.keys(data.properties).toString() : undefined,
+        actions: data.actions ? Object.keys(data.actions).toString() : undefined,
+        events: data.events ? Object.keys(data.events).toString() : undefined,
         name: data.title,
         type: 'Device', // TBD: Force to only accepted until ready // data['@type'],
         adapterId: 'dummy' // TBD: Update this and add groupId or other props when ready

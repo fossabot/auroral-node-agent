@@ -5,7 +5,7 @@
 
  import { logger, errorHandler } from '../utils'
  import { gateway } from '../microservices/gateway'
- import { addItem, removeItem, getItem } from '../persistance/persistance'
+ import { addItem, getItem } from '../persistance/persistance'
  import { RegistrationResultPost } from '../types/gateway-types'
  import { RegistrationBody } from '../persistance/models/registrations'
  import { Config } from '../config'
