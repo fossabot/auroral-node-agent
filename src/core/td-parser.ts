@@ -43,7 +43,9 @@ const _buildTD = (data: RegistrationJSONBasic): RegistrationBody => {
     _validate(data)
     const oid = uuidv4()
     return { 
-        ...data, 
+        name: data.name,
+        type: data.type,
+        adapterId: data.adapterId, 
         oid, 
         properties: data.properties ? data.properties.toString() : undefined,
         actions: data.actions ? data.actions.toString() : undefined,

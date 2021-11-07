@@ -57,9 +57,17 @@
              return []
          }
          try {
+             const itemsForCloud = items.map(it => {
+                 return {   
+                    name: it.name,
+                    type: it.type,
+                    adapterId: it.adapterId, 
+                    oid: it.oid  
+                }
+             })
              const result = await gateway.postRegistrations({
                  agid: Config.GATEWAY.ID,
-                 items
+                 items: itemsForCloud
              })
              if (result.error) {
                  throw new Error('Platform parsing failed, please revise error: ' + JSON.stringify(result.message[0].error))
@@ -99,23 +107,6 @@
          } catch (err) {
              const error = errorHandler(err)
              throw new Error(error.message)
-         }
-     },
-     /**
-     * Remove object from platform
-     */
-     removeObject: async (body: { oids: string[] }) => {
-         try {
-             const wrapper = {
-                 agid: Config.GATEWAY.ID,
-                 oids: body.oids
-             }
-             const result = await gateway.removeRegistrations(wrapper)
-             await removeItem('registrations', body.oids)
-             logger.info(result)
-             return Promise.resolve('Successful deregistration')
-         } catch (err) {
-             return Promise.reject(err)
          }
      },
      /**

@@ -792,12 +792,6 @@
     "bodyUnRegistry": {
       "type":"object",
       "properties": {
-        "agid" : {
-          "description": "ID of the agent",
-          "type": "string",
-          "required": true,
-          "default": "000-0000-000"
-        },
         "oids": {
           "type":"array",
           "description": "OIDs of those objects you would like to unregister",

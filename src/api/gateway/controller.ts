@@ -107,8 +107,9 @@ type removeRegistrationsCtrl = expressTypes.Controller<{}, { oids: string[] }, {
 export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => {
     const body = req.body
     try {
-      // Logout and remove from AURORAL cloud and CS
+      // Logout
       await gtwServices.doLogouts(body.oids, false)
+      // Remove from AURORAL platform
       await gateway.removeRegistrations(body)
       // Remove from WoT
       if (Config.WOT.ENABLED) {
@@ -121,6 +122,7 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
       }
       // Remove from agent
       await removeItem('registrations', req.body.oids)
+      logger.info('Items successfully removed!')
       return responseBuilder(HttpStatusCode.OK, res, null, null)
     } catch (err) {
       const error = errorHandler(err)
