@@ -3,6 +3,7 @@ import { expressTypes } from '../../types/index'
 import { HttpStatusCode } from '../../utils/http-status-codes'
 import { logger, errorHandler } from '../../utils'
 import { responseBuilder } from '../../utils/response-builder'
+import { discovery } from '../../core/discovery'
 
 // Other imports
 import * as persistance from '../../persistance/persistance'
@@ -116,3 +117,31 @@ export const healthCheck: healthCheckCtrl = async (req, res) => {
         return responseBuilder(error.status, res, error.message)
 	}
 }
+
+type getPartnerInfoCtrl = expressTypes.Controller<{cid: string}, {}, {}, {name: string, nodes: string[]}, {}>
+ 
+export const getPartnerInfo: getPartnerInfoCtrl = async (req, res) => {
+        const { cid } = req.params
+        try {
+                const partnerInfo = await discovery.getPartnerInfo(cid)
+                return responseBuilder(HttpStatusCode.OK, res, null, partnerInfo)
+        } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(error.status, res, error.message)
+        }
+}
+
+type getPartnersCtrl = expressTypes.Controller<{}, {}, {},  string[] , {}>
+ 
+export const getPartners: getPartnersCtrl = async (req, res) => {
+        try {
+                const partners = await discovery.getPartners()
+                return responseBuilder(HttpStatusCode.OK, res, null, partners)
+        } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(error.status, res, error.message)
+        }
+}
+
