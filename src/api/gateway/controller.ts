@@ -11,6 +11,7 @@ import { gtwServices } from '../../core/gateway'
 import { ConsumptionResponse, RegistrationResultPost } from '../../types/gateway-types'
 import { Registration, RegistrationJSON, RegistrationJSONBasic } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
+import { discovery } from '../../core/discovery'
 import { tdParser, tdParserWoT } from '../../core/td-parser'
 import { Config } from '../../config'
 import { wot } from '../../microservices/wot'
@@ -138,7 +139,7 @@ type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string[], 
  * Check what remote objects can you see
  * Returns array of OIDs
  */
- export const discovery: discoveryCtrl = async (req, res) => {
+ export const discoveryLocal: discoveryCtrl = async (req, res) => {
     const { id } = req.params
       try {
       const data = await gateway.discovery(id)
@@ -171,6 +172,33 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
         return responseBuilder(error.status, res, error.message)
       }
   }
+
+type getPartnerInfoCtrl = expressTypes.Controller<{cid: string}, {}, {}, {name: string, nodes: string[]}, {}>
+ 
+export const getPartnerInfo: getPartnerInfoCtrl = async (req, res) => {
+        const { cid } = req.params
+        try {
+                const partnerInfo = await discovery.getPartnerInfo(cid)
+                return responseBuilder(HttpStatusCode.OK, res, null, partnerInfo)
+        } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(error.status, res, error.message)
+        }
+}
+
+type getPartnersCtrl = expressTypes.Controller<{}, {}, {},  string[] , {}>
+ 
+export const getPartners: getPartnersCtrl = async (req, res) => {
+        try {
+                const partners = await discovery.getPartners()
+                return responseBuilder(HttpStatusCode.OK, res, null, partners)
+        } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(error.status, res, error.message)
+        }
+}
 
 // ***** Consume remote resources *****
 

@@ -22,8 +22,10 @@ GtwRouter
    .post('/registration', ctrl.postRegistrations)
    .post('/registration/remove', ctrl.removeRegistrations)
   // ***** Discovery *****
-   .get('/discovery', ctrl.discovery)
-   .get('/discovery/:id', ctrl.discovery)
+   .get('/partners/', ctrl.getPartners)
+   .get('/partners/:cid', ctrl.getPartnerInfo)
+   .get('/discovery', ctrl.discoveryLocal)
+   .get('/discovery/:id', ctrl.discoveryLocal)
    .post('/discovery/:id', ctrl.discoveryRemote)
    .post('/discovery/:id/:originId', ctrl.discoveryRemote)
   // ***** Consume remote resources *****

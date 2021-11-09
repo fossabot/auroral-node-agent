@@ -166,43 +166,6 @@
         }
       }
     },
-    "/admin/partners": {
-      "get": {
-        "description": "Displays all partners that are in friendship with our organisation.",
-        "tags": ["admin"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ApiResponseArray"
-            }
-          }
-        }
-      }
-    },
-    "/admin/partner/{cid}": {
-      "get": {
-        "description": "Get info about my partners organisation",
-        "tags": ["admin"],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "cid",
-            "description": "Partners organisation CID",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/PartnersResponseObject"
-            }
-          }
-        }
-      }
-    },
     "/api/properties/{id}/{oid}/{pid}": {
       "get": {
         "description": "Request to get a remote property",
@@ -621,6 +584,43 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/partners": {
+      "get": {
+        "description": "Displays all partners that are in friendship with our organisation.",
+        "tags": ["discovery"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseArray"
+            }
+          }
+        }
+      }
+    },
+    "/api/partners/{cid}": {
+      "get": {
+        "description": "Get info about my partners organisation",
+        "tags": ["discovery"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cid",
+            "description": "Partners organisation CID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PartnersResponseObject"
             }
           }
         }

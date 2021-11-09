@@ -39,7 +39,5 @@ AgentRouter
 .get('/exports', ctrl.exportFiles)
 // HEALTHCHECK endpoints
 .get('/healthcheck', ctrl.healthCheck)
-.get('/partner/:cid', ctrl.getPartnerInfo)
-.get('/partners/', ctrl.getPartners)
    
 export { AgentRouter }
