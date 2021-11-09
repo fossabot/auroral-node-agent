@@ -11,14 +11,14 @@ import { getData, Method, Interaction } from '../../core/proxy'
 
 // Controllers
 
-type PropertyCtrl = expressTypes.Controller<{ id: string, pid: string }, {}, {}, JsonType, {}>
+type PropertyCtrl = expressTypes.Controller<{ id: string, pid: string }, {}, {}, { wrapper: any }, {}>
  
 export const getProperty: PropertyCtrl = async (req, res) => {
   const { id, pid } = req.params
 	try {
     logger.info('Requested READ property ' + pid + ' from ' + id)
     const data = await getData(id, { method: Method.GET, interaction: Interaction.PROPERTY, id: pid })
-    return responseBuilder(HttpStatusCode.OK, res, null, data)
+    return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
     logger.error(error.message)
@@ -31,7 +31,7 @@ export const setProperty: PropertyCtrl = async (req, res) => {
 	try {
     logger.info('Requested UPDATE property ' + pid + ' from ' + id)
     const data = await getData(id, { method: Method.PUT, interaction: Interaction.PROPERTY, id: pid })
-    return responseBuilder(HttpStatusCode.OK, res, null, data)
+    return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
 		logger.error(error.message)

@@ -51,7 +51,7 @@ export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-type getRegistrationsTdCtrl = expressTypes.Controller<{ id: string }, {}, {}, Thing | string | undefined, {}>
+type getRegistrationsTdCtrl = expressTypes.Controller<{ id: string }, {}, {}, Thing | string, {}>
  
 export const getRegistrationsTd: getRegistrationsTdCtrl = async (req, res) => {
     const { id } = req.params
@@ -63,11 +63,11 @@ export const getRegistrationsTd: getRegistrationsTdCtrl = async (req, res) => {
                 result = 'You need to enable WoT to use this function'
         }
         return responseBuilder(HttpStatusCode.OK, res, null, result)
-	} catch (err) {
-                const error = errorHandler(err)
-                logger.error(error.message)
-                return responseBuilder(error.status, res, error.message)
-	}
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
 }
 
 type importsCtrl = expressTypes.Controller<{}, {}, {}, null, {}>

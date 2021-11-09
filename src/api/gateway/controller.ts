@@ -19,7 +19,7 @@ import { Thing } from '../../types/wot-types'
 
 // Controllers
 
-type loginCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string, {}>
+type loginCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
 
 /**
  * Login endpoint
@@ -29,7 +29,7 @@ export const login: loginCtrl = async (req, res) => {
   const { id } = req.params
 	try {
     await gateway.login(id)
-    return responseBuilder(HttpStatusCode.OK, res, null, 'success')
+    return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -37,7 +37,7 @@ export const login: loginCtrl = async (req, res) => {
 	}
 }
  
-type logoutCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string, {}>
+type logoutCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
 
 /**
  * Logout endpoint
@@ -47,7 +47,7 @@ export const logout: logoutCtrl = async (req, res) => {
   const { id } = req.params
 	try {
     await gateway.logout(id)
-    return responseBuilder(HttpStatusCode.OK, res, null, 'success')
+    return responseBuilder(HttpStatusCode.OK, res, null, null)
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -92,7 +92,7 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         // Register TD in NM (Dont send type nor interaction patterns)
         const result = await gtwServices.registerObject(items)
         // TBD Unregister from WoT on Error
-        return responseBuilder(HttpStatusCode.OK, res, null, result)
+        return responseBuilder(HttpStatusCode.CREATED, res, null, result)
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -202,7 +202,7 @@ export const getPartners: getPartnersCtrl = async (req, res) => {
 
 // ***** Consume remote resources *****
 
-type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, {}, {}, ConsumptionResponse, {}>
+type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, {}, {}, any, {}>
 
 /**
  * Request remote property
@@ -210,9 +210,17 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
  export const getProperty: getPropertyCtrl = async (req, res) => {
     const { id, oid, pid } = req.params
       try {
-      const data = await gateway.getProperty(id, oid, pid)
-      logger.info(`Property ${pid} of ${oid} received`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data)
+        const data = await gateway.getProperty(id, oid, pid)
+        // Parse response to get only the final payload
+        if (data.error) {
+          const response = data.message[0].error
+          logger.warn(`Property ${pid} of ${oid} could not be retrieved`)
+          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, response)
+        } else {
+          const response = data.message[0].message.wrapper
+          logger.info(`Property ${pid} of ${oid} received`)
+          return responseBuilder(HttpStatusCode.OK, res, null, response)
+        }      
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -235,7 +243,7 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
       } 
       const data = await gateway.putProperty(id, oid, pid, body)
       logger.info(`Property ${pid} of ${oid} set`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data)
+      return responseBuilder(HttpStatusCode.CREATED, res, null, data)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

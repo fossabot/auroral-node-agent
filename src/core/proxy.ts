@@ -80,8 +80,8 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
             return Promise.resolve({ success: true, value: 100, object: oid, interaction: options.interaction })
         } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
             return options.id && options.method ?
-            proxy.retrieveInteractionFromWot(oid, options.id, options.method, options.interaction, options.body) :
-            Promise.resolve({ success: false, message: 'Missing parameters' })
+                proxy.retrieveInteractionFromWot(oid, options.id, options.method, options.interaction, options.body) :
+                Promise.resolve({ success: false, message: 'Missing parameters' })
         } else {
             return options.id && options.method ?
                 proxy.retrieveInteraction(oid, options.id, options.method, options.interaction, options.body) :

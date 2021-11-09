@@ -24,6 +24,16 @@ const callApi = got.extend({
     decompress: true // accept-encoding header gzip
 })
 
+const callSemantic = got.extend({
+    // prefixUrl: Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT,
+    responseType: 'text',
+    isStream: false,
+    retry: 2, // Retries on failure N times
+    throwHttpErrors: true, // If true 4XX and 5XX throw an error
+    timeout: 30000, // 30sec to timeout
+    decompress: true // accept-encoding header gzip
+})
+
 const ApiHeader = { 
     'Content-Type': 'application/json; charset=utf-8',
     Accept: 'application/json',
@@ -71,7 +81,7 @@ export const proxy = {
             if (forms) {
                 const url = forms[0].href
                 logger.debug('Calling: ' + method + ' ' + url)
-                return request(url , method, undefined, { ...ApiHeader, Authorization })
+                return requestSemantic(url , method, undefined, { ...ApiHeader, Authorization })
             } else {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + id + ' does not specify url to access data...' })
             }
@@ -86,6 +96,15 @@ export const proxy = {
 const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     return response.body
+}
+
+const requestSemantic = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {
+    const response = await callSemantic(endpoint, { method, json, headers, searchParams })
+    try {
+        return JSON.parse(response.body)
+    } catch (err: unknown) {
+        return response.body
+    }
 }
 
 const getInteractionsForms = (interaction: Interaction, thing: Thing, id: string) => {
