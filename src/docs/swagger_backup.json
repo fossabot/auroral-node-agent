@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "AURORAL node interface - developed by bAvenir. The REST API is divided in two main groups; the API (Calls that use the Gateway to contact the AURORAL platform) and the ADMIN (calls oriented to monitor and make use to the agent resources)",
+    "description": "AURORAL node interface - developed by bAvenir. The REST API is divided in two main groups; the API (Calls that use the Gateway to contact the VICINITY platform) and the ADMIN (calls oriented to monitor and make use to the agent resources)",
     "version": "1.0.0",
     "title": "Auroral agent",
     "license": {
@@ -17,11 +17,11 @@
   "tags": [
     {
       "name": "auth",
-      "description": "API - Manual login of local infrastructure into AURORAL"
+      "description": "API - Manual login of local infrastructure into VICINITY"
     },
     {
       "name": "registry",
-      "description": "API - Manual registration of new devices or services into AURORAL"
+      "description": "API - Manual registration of new devices or services into VICINITY"
     },
     {
       "name": "discovery",
@@ -93,13 +93,13 @@
     },
     "/admin/registrations": {
       "get": {
-        "description": "Retrieve all the IDs of objects registered with your adapter and stored locally. Response list of OIDs.",
+        "description": "Retrieve all the IDs of objects registered with your adapter and stored locally.",
         "tags": ["admin"],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/ArrayOfStrings"
+              "$ref": "#/definitions/ApiResponseArray"
             }
           }
         }
@@ -107,7 +107,7 @@
     },
     "/admin/registrations/{id}": {
       "get": {
-        "description": "Obtain the information of a concrete registered item by providing the ID as parameter.",
+        "description": "Obtain the information of a concrete registered item by providing the ID as parameter",
         "tags": ["admin"],
         "parameters": [
           {
@@ -119,7 +119,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
           }
         }
       }
@@ -138,7 +141,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
           }
         }
       }
@@ -160,7 +166,7 @@
     },
     "/api/properties/{id}/{oid}/{pid}": {
       "get": {
-        "description": "Request to get a remote property.",
+        "description": "Request to get a remote property",
         "tags": ["consumption"],
         "parameters": [
           {
@@ -231,6 +237,243 @@
         }
       }
     },
+    "/api/events/remote/{id}/{oid}/{eid}": {
+      "get": {
+        "description": "Get status of a remote event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Subscribe to remote event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Unsubscribe to remote event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/events/local/{id}/{eid}": {
+      "post": {
+        "description": "Create my event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Put a message in my event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "description": "Body of the message",
+            "type": "object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete my event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/events/subscribe": {
+      "get": {
+        "description": "Subscribe to all events existing in the file mapper.json. Agent will listen and collect messages in those channels.",
+        "tags": ["consumption"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Unsubscribe to all events existing in the file mapper.json. Agent will stop listening.",
+        "tags": ["consumption"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/login/{id}": {
       "get": {
         "description": "Login your gateway instance or any object registered with it (Providing its id)",
@@ -279,7 +522,7 @@
     },
     "/api/registration": {
       "post": {
-        "description": "Register an object in the AURORAL platform. If WoT is enabled you have to use thing description format.",
+        "description": "Register an object in the VICINITY platform",
         "tags": ["registry"],
         "parameters": [
           {
@@ -306,7 +549,7 @@
         }
       },
       "get": {
-        "description": "See what objects has your gateway registered in the platform. Response list of OIDs.",
+        "description": "See what objects has your gateway registered in the platform",
         "tags": ["registry"],
         "responses": {
           "200": {
@@ -320,7 +563,7 @@
     },
     "/api/registration/remove": {
       "post": {
-        "description": "UnRegister an object from the AURORAL platform",
+        "description": "UnRegister an object from the VICINITY platform",
         "tags": ["registry"],
         "parameters": [
           {
@@ -346,7 +589,7 @@
     },
     "/api/partners": {
       "get": {
-        "description": "Displays all partners that are in friendship with our organisation. Response list of CIDs.",
+        "description": "Displays all partners that are in friendship with our organisation.",
         "tags": ["discovery"],
         "parameters": [],
         "responses": {
@@ -383,7 +626,7 @@
     },
     "/api/discovery": {
       "get": {
-        "description": "See what remote objects can you reach with your Gateway. You will see other gateways of your organisation or partnered organisations. Response list of OIDs.",
+        "description": "See what remote objects can you reach with your Gateway. You will see other gateways of your organisation or partnered organisations",
         "tags": ["discovery"],
         "responses": {
           "200": {
@@ -397,7 +640,7 @@
     },
     "/api/discovery/{id}": {
       "get": {
-        "description": "See what remote objects can you reach which each OID. To see objects of other organisations you need to agree on a contract for exchanging data. Get what your gateway can see by not providing oid parameter. Response list of OIDs.",
+        "description": "See what remote objects can you reach which each OID. To see objects of other organisations you need to agree on a contract for exchanging data. Get what your gateway can see by not providing oid parameter.",
         "tags": ["discovery"],
         "parameters": [
           {
@@ -418,7 +661,7 @@
         }
       },
       "post": {
-        "description": "Remote discovery. Get thing descriptions of remote infrastructures that your gateway can see. Response list of things descriptions.",
+        "description": "Remote discovery. Get thing descriptions of remote infrastructures that your gateway can see",
         "tags": ["discovery"],
         "parameters": [
           {
@@ -450,7 +693,7 @@
     },
     "/api/discovery/{id}/{originId}": {
       "post": {
-        "description": "Remote discovery. Get thing descriptions of remote objects that some of your objects can see. Set the id of the object with the OID parameter and set the object initiating the request with originID. Response list of things descriptions.",
+        "description": "Remote discovery. Get thing descriptions of remote objects that some of your objects can see. Set the id of the object with the OID parameter and set the object initiating the request with originID.",
         "tags": ["discovery"],
         "parameters": [
           {
@@ -597,7 +840,7 @@
           "default": "MySmartSensor"
         },
         "type": {
-          "description": "AURORAL type to assign for the object",
+          "description": "VICINITY type to assign for the object",
           "type": "string",
           "required": true,
           "default": "Device"
