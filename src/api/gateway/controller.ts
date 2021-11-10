@@ -213,12 +213,13 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
         const data = await gateway.getProperty(id, oid, pid)
         // Parse response to get only the final payload
         if (data.error) {
-          const response = data.message[0].error
+          const response: string = data.statusCodeReason
           logger.warn(`Property ${pid} of ${oid} could not be retrieved`)
           return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, response)
         } else {
           const response = data.message[0].wrapper
           logger.info(`Property ${pid} of ${oid} received`)
+          console.log(response)
           return responseBuilder(HttpStatusCode.OK, res, null, response)
         }      
       } catch (err) {

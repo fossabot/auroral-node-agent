@@ -416,7 +416,7 @@ export const gateway = {
     * @param 
     * @returns {error: boolean, message: object} 
     */
-     getItemsPrivacy: async function (): Promise<ConsumptionResponse<IItemPrivacy[]>> {
+     getItemsPrivacy: async function (): Promise<ConsumptionResponse<IItemPrivacy>> {
         try {
             const Authorization = await getAuthorization()
             return request('security/privacy', 'GET', undefined, { ...ApiHeader, Authorization })

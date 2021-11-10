@@ -119,7 +119,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
           }
         }
       }
@@ -138,7 +141,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponseObject"
+            }
           }
         }
       }
@@ -189,7 +195,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK - formats: JSON, Turtle, plaintext "
+            "description": "OK - formats: JSON, Turtle, plaintext ",
+            "schema": {
+              "$ref": "#/definitions/ApiJsonObject"
+            }
           }
         }
       },
@@ -225,7 +234,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/ApiResponseObject"
+              "$ref": "#/definitions/ApiJsonObject"
             }
           }
         }
@@ -527,6 +536,9 @@
       }
     },
     "ApiJsonObject": {
+      "type": "object"
+    },
+    "ApiStringObject": {
       "type": "object"
     },
 
