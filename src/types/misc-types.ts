@@ -32,3 +32,26 @@ export interface IItemPrivacy {
     privacy: ItemPrivacy, // Privacy level of the item
 }
 
+// Header content types
+
+export enum CONTENT_TYPE_ENUM {
+    RDFN3 = 'text/rdf+n3',
+	N3 = 'text/n3', 
+    NTRIPLES = 'text/ntriples', 
+    RDFTTL = 'text/rdf+ttl',
+    RDFNT = 'text/rdf+nt', 
+    PLAIN = 'text/plain', 
+    RDFTURTLE = 'text/rdf+turtle', 
+    TURTLE = 'text/turtle',
+	APPTURTLE = 'application/turtle', 
+    APPXTURTLE = 'application/x-turtle', 
+    APPXNICETURTLE = 'application/x-nice-turtle', 
+    JSON = 'application/json',
+	ODATAJSON = 'application/odata+json', 
+    JSONLD = 'application/ld+json', 
+    XTRIG = 'application/x-trig', 
+    RDFXML = 'application/rdf+xml'
+}
+
+export const CONTENT_TYPE_LIST = Object.values(CONTENT_TYPE_ENUM)
+

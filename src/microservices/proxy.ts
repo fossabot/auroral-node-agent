@@ -5,7 +5,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType } from '../types/misc-types'
+import { JsonType, CONTENT_TYPE_ENUM, CONTENT_TYPE_LIST } from '../types/misc-types'
 import { Config } from '../config'
 import { Interaction } from '../core/proxy'
 import { wot } from './wot'
@@ -80,8 +80,8 @@ export const proxy = {
             const forms = getInteractionsForms(interaction, thing, id)
             if (forms) {
                 const url = forms[0].href
-                logger.debug('Calling: ' + method + ' ' + url)
-                return requestSemantic(url , method, undefined, { ...ApiHeader, Authorization })
+                const headers = validateContentType(forms[0].contentType)
+                return requestSemantic(url , method, undefined, { ...headers, Authorization })
             } else {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + id + ' does not specify url to access data...' })
             }
@@ -116,6 +116,19 @@ const getInteractionsForms = (interaction: Interaction, thing: Thing, id: string
             return events[id].forms
         default:
             throw new Error('Wrong interaction')
+    }
+}
+
+const validateContentType = (x?: CONTENT_TYPE_ENUM): { 'Content-Type': CONTENT_TYPE_ENUM, 'Accept': CONTENT_TYPE_ENUM } => {
+    if (x) {
+        if (!CONTENT_TYPE_LIST.indexOf(x.toLowerCase() as CONTENT_TYPE_ENUM)) {
+            logger.warn('Not valid Content-Type provided in TD: ' + x + ' , reverting to default: ' + CONTENT_TYPE_ENUM.PLAIN)
+            return { 'Content-Type': CONTENT_TYPE_ENUM.PLAIN, 'Accept': CONTENT_TYPE_ENUM.PLAIN }
+        }
+        return { 'Content-Type': x, 'Accept': x }
+    } else {
+        logger.warn('Missing Content-Type in TD, reverting to default: ' + CONTENT_TYPE_ENUM.PLAIN)
+        return { 'Content-Type': CONTENT_TYPE_ENUM.PLAIN, 'Accept': CONTENT_TYPE_ENUM.PLAIN }
     }
 }
 

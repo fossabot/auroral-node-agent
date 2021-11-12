@@ -55,6 +55,13 @@ services:
     command:
     - /usr/local/etc/redis/redis.conf
     image: redis:buster
+  # helio:
+  #   image: acimmino/helio-publisher:latest
+  #   ports:
+  #     - '9999:9999'
+  #   volumes:
+  #   - ./mapping:/helio/mapping
+  #   - ./helio-storage:/helio/helio-storage
   # triplestore:
   #   image: acimmino/helio-cloud-rdf4jstore:latest
   #   ports:

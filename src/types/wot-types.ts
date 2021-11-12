@@ -16,7 +16,7 @@
 // Ignored because of circular definitions
 /* eslint-disable no-use-before-define */
 
-import { JsonType } from './misc-types'
+import { JsonType, CONTENT_TYPE_ENUM } from './misc-types'
 
 export const DEFAULT_CONTEXT = 'https://www.w3.org/2019/wot/td/v1'
 export const DEFAULT_CONTEXT_LANGUAGE = 'en'
@@ -96,7 +96,7 @@ export interface ThingInteraction {
 }
 
 export class ExpectedResponse implements ExpectedResponse {
-    contentType?: string
+    contentType?: CONTENT_TYPE_ENUM
 }
 
 /** Implements the Interaction Form description */
@@ -104,12 +104,12 @@ export class Form implements Form {
     href: string
     subprotocol?: string
     op?: string | Array<string>
-    contentType?: string
+    contentType?: CONTENT_TYPE_ENUM
     security?: Array<string> // WoT.Security
     scopes?: Array<string>
     response?: ExpectedResponse
 
-    constructor(href: string, contentType?: string) {
+    constructor(href: string, contentType?: CONTENT_TYPE_ENUM) {
         this.href = href
         if (contentType) {
             this.contentType = contentType
@@ -130,14 +130,14 @@ export interface Link {
 }
 
 export interface ExpectedResponse {
-    contentType?: string
+    contentType?: CONTENT_TYPE_ENUM
 }
 
 export interface Form {
     href: string
     subprotocol?: string
     op?: string | Array<string>
-    contentType?: string // media type + parameter(s), e.g., text/plaincharset=utf8
+    contentType?: CONTENT_TYPE_ENUM // media type + parameter(s), e.g., text/plaincharset=utf8
     security?: Array<string> // Set of security definition names, chosen from those defined in securityDefinitions  // Security
     scopes?: Array<string>
     response?: ExpectedResponse
