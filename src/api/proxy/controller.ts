@@ -28,9 +28,10 @@ export const getProperty: PropertyCtrl = async (req, res) => {
  
 export const setProperty: PropertyCtrl = async (req, res) => {
   const { id, pid } = req.params
+  const body = req.body
 	try {
     logger.info('Requested UPDATE property ' + pid + ' from ' + id)
-    const data = await getData(id, { method: Method.PUT, interaction: Interaction.PROPERTY, id: pid })
+    const data = await getData(id, { method: Method.PUT, interaction: Interaction.PROPERTY, id: pid, body })
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
@@ -56,21 +57,25 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       }
   }
 
-type DiscoveryCtrl = expressTypes.Controller<{ id: string }, { sparql: string }, {}, JsonType, PermissionLocals>
+type DiscoveryCtrl = expressTypes.Controller<{ id: string }, { sparql: string }, {}, { wrapper: JsonType }, PermissionLocals>
 
 export const discovery: DiscoveryCtrl = async (req, res) => {
     const { id } = req.params
     const { sparql } = req.body
     const { relationship, items } = res.locals
       try {
-        if (sparql) {
+        if (!sparql) {
           logger.info('Received discovery to ' + id)
         } else {
+          if (typeof sparql !== 'string') {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Sparql query has to be a string')
+          }
           logger.info('Received Sparql discovery to ' + id)
           logger.debug(sparql)
         }
         const data = await getData(id, { interaction: Interaction.DISCOVERY, sparql }, relationship, items)
-        return responseBuilder(HttpStatusCode.OK, res, null, data)
+        logger.debug('Returning data')
+        return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

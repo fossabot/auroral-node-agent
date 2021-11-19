@@ -228,6 +228,16 @@
             "required": true,
             "description": "Property of the remote object - PID",
             "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Update property",
+            "type": "object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApiJsonObject"
+            }
           }
         ],
         "responses": {
@@ -441,9 +451,10 @@
             "in": "body",
             "name": "body",
             "description": "SPARQL query: Filter out specific content that you wish to see. I.E: Get me only thermometers",
+            "required": false,
             "type": "object",
             "schema": {
-              "$ref": "#/definitions/SparqlResponseObject"
+              "$ref": "#/definitions/SparqlRequestObject"
             }
           }
         ],
@@ -451,7 +462,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/ApiJsonObject"
+              "$ref": "#/definitions/ArrayOfJsons"
             }
           }
         }
@@ -483,7 +494,7 @@
             "type": "object",
             "required": false,
             "schema": {
-              "$ref": "#/definitions/SparqlResponseObject"
+              "$ref": "#/definitions/SparqlRequestObject"
             }
           }
         ],
@@ -541,7 +552,6 @@
     "ApiStringObject": {
       "type": "object"
     },
-
     "ApiResponseObject": {
       "type": "object",
       "properties": {
@@ -558,6 +568,12 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "ArrayOfJsons": {
+      "type": "array",
+      "items": {
+        "type": "object"
       }
     },
     "RegistrationSuccesArray": {
@@ -665,6 +681,16 @@
     },
     "SparqlResponseObject": {
       "type": "object"
+    },
+    "SparqlRequestObject": {
+      "properties": {
+        "sparql": {
+          "description": "Sparql query",
+          "type": "string",
+          "required": false,
+          "default": ""
+        }
+      }
     }
   }
 }

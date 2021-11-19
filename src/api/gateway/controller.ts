@@ -161,11 +161,12 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
  */
  export const discoveryRemote: discoveryRemoteCtrl = async (req, res) => {
     const { id, originId } = req.params
-    const { sparql } = req.body
-      try {
+    const sparql = req.body  
+    try {
         const params = { sparql, originId }
-        const data = (await gateway.discoveryRemote(id, params)).map(it => it.message)
-        return responseBuilder(HttpStatusCode.OK, res, null, data)
+        const data = (await gateway.discoveryRemote(id, params)).wrapper
+        console.log(data)
+        return responseBuilder(HttpStatusCode.OK, res, null, data.message)
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -243,8 +244,16 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
         return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
       } 
       const data = await gateway.putProperty(id, oid, pid, body)
-      logger.info(`Property ${pid} of ${oid} set`)
-      return responseBuilder(HttpStatusCode.CREATED, res, null, data)
+      // Parse response to get only the final payload
+      if (data.error) {
+        const response: string = data.statusCodeReason
+        logger.info(`Property ${pid} of ${oid} could not be set`)
+        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, response)
+      } else {
+        const response = data.message[0].wrapper
+        logger.info(`Property ${pid} of ${oid} set`)
+        return responseBuilder(HttpStatusCode.OK, res, null, response)
+      }      
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

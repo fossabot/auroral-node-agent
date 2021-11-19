@@ -103,7 +103,7 @@ const semanticDiscovery = async (relationship?: string, items?: string[]): Promi
             const things = await Promise.all(allItems.map(async it => {
                 return (await wot.retrieveTD(it)).message
             }))
-            return things as BasicResponse<Thing[]>
+            return { message: things } as BasicResponse<Thing[]>
         } else {
             if (!items) {
                 return { message: [] }
@@ -111,7 +111,6 @@ const semanticDiscovery = async (relationship?: string, items?: string[]): Promi
                 const things = await Promise.all(items.map(async it => {
                     return (await wot.retrieveTD(it)).message
                 }))
-                console.log(things)
                 return { message: things.filter(it => it) as unknown as Thing[] }
             }
         }

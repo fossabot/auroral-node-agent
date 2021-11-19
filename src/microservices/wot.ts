@@ -182,7 +182,7 @@ export const wot = {
             const searchParams = (new URLSearchParams([['query', query]])).toString()
             const response = await request('api/search/sparql', 'GET', undefined, ApiHeader, searchParams)
             if (response.statusCode === 400) {
-                throw new Error('JSONPath expression not provided or contains syntax errors')
+                throw new Error('SPARQL expression not provided or contains syntax errors')
             }
             return buildResponse(response.body as JsonType)
         } catch (err) {

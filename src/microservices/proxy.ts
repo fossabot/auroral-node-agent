@@ -54,7 +54,7 @@ export const proxy = {
      */ 
     retrieveInteraction: async function(oid: string, id: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
         logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + id)
-        return request('api/' + interaction + '/' + oid + '/' + id , method, undefined, { ...ApiHeader, Authorization })
+        return request('api/' + interaction + '/' + oid + '/' + id , method, body, { ...ApiHeader, Authorization })
     },
     /**
      * Access adapter to get discovery info
@@ -81,7 +81,7 @@ export const proxy = {
             if (forms) {
                 const url = forms[0].href
                 const headers = validateContentType(forms[0].contentType)
-                return requestSemantic(url , method, undefined, { ...headers, Authorization })
+                return requestSemantic(url , method, body, { ...headers, Authorization })
             } else {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + id + ' does not specify url to access data...' })
             }
