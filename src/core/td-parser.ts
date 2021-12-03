@@ -47,6 +47,9 @@ const _buildTD = (data: RegistrationJSONBasic): RegistrationBody => {
         type: data.type,
         adapterId: data.adapterId, 
         oid, 
+        labels: data.labels,
+        avatar: data.avatar,
+        groups: data.groups,
         properties: data.properties ? data.properties.toString() : undefined,
         actions: data.actions ? data.actions.toString() : undefined,
         events: data.events ? data.events.toString() : undefined

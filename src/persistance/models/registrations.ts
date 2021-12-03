@@ -18,11 +18,29 @@ const PRIV_ARRAY = ['Private', 'For Friends', 'Public']
 // Body when received or returned by application
 export type RegistrationJSON = RegistrationJSONBasic | Thing
 
+export enum ItemDomainType {
+    ENERGY = 'Energy',
+    UNDEFINED = 'Undefined',
+    MOBILITY = 'Mobility',
+    HEALTH = 'Health',
+    FARMING = 'Farming',
+    TOURISM = 'Tourism',
+    WEATHER = 'Weather',
+    INDOORQUALITY = 'Indoor quality'
+}
+
+export type ItemLabelsObj = {
+    domain: ItemDomainType,
+}
+
 export interface RegistrationJSONBasic {
     type: string
     adapterId: string
     name: string
     properties?: string[]
+    labels?: ItemLabelsObj
+    avatar?: string
+    groups?: string[]
     events?: string[]
     actions?: string[]
     version?: string
@@ -36,6 +54,9 @@ export interface RegistrationBody {
     adapterId: string
     name: string
     properties?: string
+    labels?: ItemLabelsObj
+    avatar?: string
+    groups?: string[]
     events?: string // Stringify to register in REDIS
     actions?: string // Stringify to register in REDIS
     version?: string // Stringify to register in REDIS

@@ -58,13 +58,24 @@
          }
          try {
              const itemsForCloud = items.map(it => {
-                 return {   
+                 const item : RegistrationBody = {
                     name: it.name,
                     type: it.type,
                     adapterId: it.adapterId, 
                     oid: it.oid  
-                }
+                 }
+                 if (it.labels) {
+                    item.labels = it.labels
+                 }
+                 if (it.groups) {
+                    item.groups = it.groups
+                 }
+                 if (it.avatar) {
+                    item.avatar = it.avatar
+                 }
+                 return  item  
              })
+             console.log(itemsForCloud)
              const result = await gateway.postRegistrations({
                  agid: Config.GATEWAY.ID,
                  items: itemsForCloud
