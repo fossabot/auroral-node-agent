@@ -32,6 +32,23 @@ export interface IItemPrivacy {
     privacy: ItemPrivacy, // Privacy level of the item
 }
 
+// Interfaces for Contracts
+export interface ContractType {
+    ctid: string,
+    cid: string
+}
+
+export interface ContractItemType extends ContractType {
+    cid: string,
+    ctid: string,
+    oid: string,
+    rw?: boolean // Store as string in redis
+}
+
+export interface WholeContractType extends ContractType {
+    items: { oid: string, rw: boolean }[]
+}
+
 // Header content types
 
 export enum CONTENT_TYPE_ENUM {

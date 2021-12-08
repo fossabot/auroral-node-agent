@@ -31,7 +31,7 @@ done
 echo Build and push image ${IMAGE_NAME} with tag ${ENV}
 
 # Do login
-docker login ${GIT_REGISTRY}
+docker login ${REGISTRY}
 
 # Compile ts into js
 tsc
@@ -40,16 +40,16 @@ tsc
 docker buildx use multiplatform
 
 # Build for AMD64/ARM64 & push to github
-docker buildx build --platform linux/amd64,linux/arm64 --tag ${GIT_REGISTRY}/${IMAGE_NAME}:${GIT_ENV} -f Dockerfile . --push
-docker pull ${GIT_REGISTRY}/${IMAGE_NAME}:${GIT_ENV}
+docker buildx build --platform linux/amd64,linux/arm64 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile . --push
+docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
 
 # Build for ARMv7 & push to github
-docker buildx build --platform linux/arm/v7 --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}_armv7 -f Dockerfile.armv7 . --push
-docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}_armv7
+# docker buildx build --platform linux/arm/v7 --tag ${REGISTRY}/${IMAGE_NAME}:armv7 -f Dockerfile.armv7 . --push
+# docker pull ${REGISTRY}/${IMAGE_NAME}:armv7
 
 # Push to Private registry
-docker login ${REGISTRY}
-docker image tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} ${REGISTRY}/${IMAGE_NAME}:${ENV}
-docker push ${REGISTRY}/${IMAGE_NAME}:${ENV}
-docker image tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}_armv7 ${REGISTRY}/${IMAGE_NAME}:armv7
-docker push ${REGISTRY}/${IMAGE_NAME}:armv7
+docker login ${GIT_REGISTRY}
+docker image tag ${REGISTRY}/${IMAGE_NAME}:${ENV} ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}
+docker push ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}
+# docker image tag ${REGISTRY}/${IMAGE_NAME}:armv7 ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}_armv7
+# docker push ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}_armv7

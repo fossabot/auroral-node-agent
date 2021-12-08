@@ -12,6 +12,8 @@ import { Configuration } from '../../persistance/models/configurations'
 import { Thing } from '../../types/wot-types'
 import { wot } from '../../microservices/wot'
 import { Config } from '../../config'
+import { security } from '../../core/security'
+import { WholeContractType } from '../../types/misc-types'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -63,6 +65,41 @@ export const getRegistrationsTd: getRegistrationsTdCtrl = async (req, res) => {
                 result = 'You need to enable WoT to use this function'
         }
         return responseBuilder(HttpStatusCode.OK, res, null, result)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
+}
+
+type getContractCtrl = expressTypes.Controller<{ id: string }, {}, {}, WholeContractType, {}>
+ 
+export const getContract: getContractCtrl = async (req, res) => {
+    const { id } = req.params
+    try {
+        const result = await security.getContract(id)
+        return responseBuilder(HttpStatusCode.OK, res, null, result)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
+}
+
+type delContractCtrl = expressTypes.Controller<{ id: string }, {}, {}, string, {}>
+ 
+export const delContract: delContractCtrl = async (req, res) => {
+    const { id } = req.params
+    try {
+        const ctid = (await security.getContract(id)).ctid
+        if (ctid && ctid !== 'NOT_EXISTS') {
+            await security.delContract({ cid: id, ctid })
+            return responseBuilder(HttpStatusCode.OK, res, null, 'Contract with ' + id + ' was removed')
+        } else {
+            logger.warn('Contract with organisation ' + id + ' does not exist, not removing...')
+            // Return 202, accepted but not acted upon...
+            return responseBuilder(HttpStatusCode.ACCEPTED, res, null, 'Contract with ' + id + ' was NOT removed')
+        }
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

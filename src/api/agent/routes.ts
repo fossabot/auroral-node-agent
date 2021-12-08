@@ -21,6 +21,9 @@ AgentRouter
 .get('/registrations', ctrl.getRegistrations)
 .get('/registrations/:id', ctrl.getRegistrations)
 .get('/registrations/td/:id', ctrl.getRegistrationsTd)
+// Contract information
+.get('/registrations/contracts/:id', ctrl.getContract)
+.delete('/registrations/contracts/:id', ctrl.delContract)
 // IN AURORAL WE CURRENTLY DONT PERSIST INTERACTIONS INFO
 // .get('/properties', ctrl.getProperties)
 // .get('/properties/:id', ctrl.getProperties)

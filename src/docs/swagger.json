@@ -149,6 +149,54 @@
         }
       }
     },
+    "/admin/registrations/contracts/{id}": {
+      "get": {
+        "description": "Contract info stored locally. Retrieve the items that you are sharing with a given organisation.",
+        "tags": ["admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Organisation id - CID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiJsonObject"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Remove locally stored contract data (DEVELOPMENT USAGE).",
+        "tags": ["admin"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Organisation id - CID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiStringResponse"
+            }
+          },
+          "202": {
+            "description": "ACCEPTED, NOT PROCESSED",
+            "schema": {
+              "$ref": "#/definitions/ApiStringResponse"
+            }
+          }
+        }
+      }
+    },
     "/admin/configuration": {
       "get": {
         "description": "Configuration status of the adapter",
@@ -549,8 +597,8 @@
     "ApiJsonObject": {
       "type": "object"
     },
-    "ApiStringObject": {
-      "type": "object"
+    "ApiStringResponse": {
+      "type": "string"
     },
     "ApiResponseObject": {
       "type": "object",

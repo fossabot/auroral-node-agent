@@ -6,7 +6,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, BasicResponse, IItemPrivacy, RelationshipType } from '../types/misc-types'
+import { JsonType, BasicResponse, IItemPrivacy, RelationshipType, ContractType, WholeContractType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
 import { DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
@@ -48,7 +48,7 @@ export const gateway = {
     login: async function(oid?: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
+            return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not logged in ...')
@@ -66,7 +66,7 @@ export const gateway = {
     logout: async function(oid?: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization })
+            return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not logged in ...')
@@ -85,7 +85,7 @@ export const gateway = {
     getRegistrations: async function(): Promise<string[]> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })).message
+            return (await request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as string[]
         } catch (err) {
             const error = errorHandler(err)
             logger.warn(`Error getting ${Config.GATEWAY.ID} objects ...`)
@@ -103,7 +103,7 @@ export const gateway = {
     postRegistrations: async function(body: { items: RegistrationBody[], agid: string }): Promise<RegistrationResult> {
         try {
             const Authorization = await getAuthorization()
-            return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization })
+            return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization }) as unknown as RegistrationResult
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -121,7 +121,7 @@ export const gateway = {
         try {
             const Authorization = await getAuthorization()
             const data: RemovalBody = { ...body, agid: Config.GATEWAY.ID }
-            return request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', data, { ...ApiHeader, Authorization })
+            return request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', data, { ...ApiHeader, Authorization }) as unknown as DeleteResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)        
@@ -147,7 +147,7 @@ export const gateway = {
     discovery: async function(oid?: string): Promise<string[]> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request('objects', 'GET', undefined, { ...ApiHeader, Authorization })
+            return request('objects', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as string[]
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -166,7 +166,8 @@ export const gateway = {
         try {
             const { originId, sparql } = params
             const Authorization = await getAuthorization(originId)
-            return (await request(`objects/${oid}`, 'POST', sparql, { ...ApiHeader, Authorization })).message[0]
+            const ans = await request(`objects/${oid}`, 'POST', sparql, { ...ApiHeader, Authorization }) as unknown as { message: any[] }
+            return ans.message[0] as unknown as { wrapper: BasicResponse< Registration[]> | BasicResponse<Thing []> }
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -184,7 +185,7 @@ export const gateway = {
     getCid: async function(reqid: string): Promise<string> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/cid/${reqid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message
+            return (await request(`agents/cid/${reqid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as string
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -201,7 +202,7 @@ export const gateway = {
     getPartners: async function(): Promise<string[]> {
         try {
             const Authorization = await getAuthorization()
-            return (await request('agents/partners', 'GET', undefined, { ...ApiHeader, Authorization })).message
+            return (await request('agents/partners', 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as string[] 
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -218,7 +219,7 @@ export const gateway = {
     getPartnerInfo: async function(cid: string): Promise<{ name: string, nodes: string[]}> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/partner/${cid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message
+            return (await request(`agents/partner/${cid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as { name: string, nodes: string[]}
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -238,7 +239,7 @@ export const gateway = {
     getProperty: async function(oid: string, remote_oid: string, pid: string): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`objects/${remote_oid}/properties/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization })
+            return request(`objects/${remote_oid}/properties/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -255,7 +256,7 @@ export const gateway = {
     putProperty: async function(oid: string, remote_oid: string, pid: string, body: JsonType): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`objects/${remote_oid}/properties/${pid}`, 'PUT', body, { ...ApiHeader, Authorization })
+            return request(`objects/${remote_oid}/properties/${pid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -272,7 +273,7 @@ export const gateway = {
     activateEventChannel: async function(oid: string, eid: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization })
+            return request(`events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -289,7 +290,7 @@ export const gateway = {
     publishEvent: async function(oid: string, eid: string, body: JsonType): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`events/${eid}`, 'PUT', body, { ...ApiHeader, Authorization })
+            return request(`events/${eid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -306,7 +307,7 @@ export const gateway = {
     deactivateEventChannel: async function(oid: string, eid: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization })
+            return request(`events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -323,7 +324,7 @@ export const gateway = {
     statusRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`objects/${remote_oid}/events/${eid}`, 'GET', undefined, { ...ApiHeader, Authorization })
+            return request(`objects/${remote_oid}/events/${eid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -341,7 +342,7 @@ export const gateway = {
     subscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`objects/${remote_oid}/events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization })
+            return request(`objects/${remote_oid}/events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -359,7 +360,7 @@ export const gateway = {
     unsubscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<BasicResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`objects/${remote_oid}/events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization })
+            return request(`objects/${remote_oid}/events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -387,7 +388,7 @@ export const gateway = {
             const Authorization = await getAuthorization(oid)
             const data = await request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
             // Store redundant variable data to catch any errors from GOT here
-            return data
+            return data as unknown as BasicResponse
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
@@ -404,7 +405,7 @@ export const gateway = {
     getRelationship: async function (rid: string): Promise<BasicResponse<RelationshipType>> {
         try {
             const Authorization = await getAuthorization()
-            return request(`security/relationship/${rid}`, 'GET', undefined, { ...ApiHeader, Authorization })
+            return request(`security/relationship/${rid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<RelationshipType>
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -419,7 +420,22 @@ export const gateway = {
      getItemsPrivacy: async function (): Promise<ConsumptionResponse<IItemPrivacy>> {
         try {
             const Authorization = await getAuthorization()
-            return request('security/privacy', 'GET', undefined, { ...ApiHeader, Authorization })
+            return request('security/privacy', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse<IItemPrivacy>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
+    /**
+    * Get a privacy status of all node items
+    * @async
+    * @param 
+    * @returns {error: boolean, message: object} 
+    */
+     getContracts: async function (cid: string): Promise<WholeContractType> {
+        try {
+            const Authorization = await getAuthorization()
+            return (await request('security/contracts/' + cid, 'GET', undefined, { ...ApiHeader, Authorization })).message as WholeContractType
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -442,7 +458,7 @@ const getAuthorization = async (oid?: string): Promise<string> => {
     }
 }
 
-const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {
+const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<{ message: JsonType[] | JsonType, error: boolean}> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     return response.body
 }
