@@ -383,6 +383,30 @@
             }
           }
         }
+      },
+      "put": {
+        "description": "Update registered items",
+        "tags": ["registry"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Update details",
+            "type": "object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/bodyItemUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UpdateResponseArray"
+            }
+          }
+        }
       }
     },
     "/api/registration/remove": {
@@ -644,6 +668,23 @@
         }
       }
     },
+    "UpdateResponseArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/UpdateResponseObject"
+      }
+    },
+    "UpdateResponseObject": {
+      "type": "object",
+      "properties": {
+        "oid": {
+          "type": "string"
+        },
+        "error": {
+          "type": "boolean"
+        }
+      }
+    },
     "PartnersResponseObject": {
       "type": "array",
       "description": "Array of partners.",
@@ -682,6 +723,57 @@
           "type": "string",
           "description": "Id of the object in your infrastructure",
           "required": true,
+          "default": "1234"
+        },
+        "properties": {
+          "type": "array",
+          "description": "Array of pid's. You can use only those you previously registered in the adapter",
+          "items": {
+            "type": "string"
+          }
+        },
+        "events": {
+          "type": "array",
+          "description": "Array of eid's. You can use only those you previously registered in the adapter",
+          "items": {
+            "type": "string"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "description": "Array of aid's. You can use only those you previously registered in the adapter",
+          "items": {
+            "type": "string"
+          }
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the registered device if applicable"
+        },
+        "description": {
+          "type": "string",
+          "description": "Additional info"
+        }
+      }
+    },
+    "bodyItemUpdate": {
+      "properties": {
+        "oid": {
+          "description": "Object ID",
+          "type": "string",
+          "required": true,
+          "default": "<oid>"
+        },
+        "name": {
+          "description": "new item name",
+          "type": "string",
+          "required": false,
+          "default": ""
+        },
+        "adapterId": {
+          "type": "string",
+          "description": "Id of the object in your infrastructure",
+          "required": false,
           "default": "1234"
         },
         "properties": {

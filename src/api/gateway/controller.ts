@@ -8,8 +8,8 @@ import { responseBuilder } from '../../utils/response-builder'
 import { JsonType } from '../../types/misc-types'
 import { gateway } from '../../microservices/gateway'
 import { gtwServices } from '../../core/gateway'
-import { ConsumptionResponse, RegistrationResultPost } from '../../types/gateway-types'
-import { Registration, RegistrationJSON, RegistrationJSONBasic } from '../../persistance/models/registrations'
+import { ConsumptionResponse, RegistrationResultPost, RegistrationUpdateResult } from '../../types/gateway-types'
+import { Registration, RegistrationBody, RegistrationJSON, RegistrationJSONBasic, RegistrationUpdate } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
 import { discovery } from '../../core/discovery'
 import { tdParser, tdParserWoT } from '../../core/td-parser'
@@ -89,6 +89,7 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         } else {
           items = await tdParser(body as RegistrationJSONBasic)
         }
+        
         // Register TD in NM (Dont send type nor interaction patterns)
         const result = await gtwServices.registerObject(items)
         // TBD Unregister from WoT on Error
@@ -98,6 +99,51 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         logger.error(error.message)
         return responseBuilder(error.status, res, error.message)
 	}
+}
+
+type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationUpdate | RegistrationUpdate[], {}, [ { oid: string, error?: boolean } ], {}>
+
+/**
+ * Register things in the platform
+ */
+ export const modifyRegistration: modifyRegistrationCtrl = async (req, res) => {
+  const body = req.body
+  try {
+      // Two ways available depending if WoT enabled
+      if (Config.WOT.ENABLED) {
+        logger.warn('NOT IMPLEMENTED')
+        return responseBuilder(HttpStatusCode.NOT_IMPLEMENTED, res, null)
+      } 
+      const itemsArray = Array.isArray(body) ? body : [body]
+      var items : RegistrationUpdate[]= []
+      itemsArray.forEach(it =>{
+        //  test if OID exists
+        if(it.oid == undefined){
+          throw new Error("Some objects do not have OIDs")
+        }
+        items.push({
+          oid: it.oid,
+          name: it.name,
+          adapterId: it.adapterId, 
+          labels: it.labels,
+          avatar: it.avatar,
+          groups: it.groups,
+          description: it.description,
+          properties: it.properties ,
+          actions: it.actions ,
+          events: it.events 
+        } as RegistrationUpdate)
+      })
+
+      // Update in NM and redis
+      const result = await gtwServices.updateObject(items)
+
+      return responseBuilder(HttpStatusCode.OK, res, null, result.message)
+} catch (err) {
+      const error = errorHandler(err)
+      logger.error(error.message)
+      return responseBuilder(error.status, res, error.message)
+}
 }
 
 type removeRegistrationsCtrl = expressTypes.Controller<{}, { oids: string[] }, {}, null, {}>

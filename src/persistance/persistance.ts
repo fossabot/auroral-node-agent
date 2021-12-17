@@ -9,7 +9,7 @@ import { logger, errorHandler } from '../utils'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
 import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
-import { registrationFuncs, Registration, RegistrationJSON } from './models/registrations'
+import { registrationFuncs, Registration, RegistrationJSON, RegistrationUpdate, RegistrationnUpdateRedis } from './models/registrations'
 import { Config } from '../config'
 import { Configuration, addConfigurationInfo, removeConfigurationInfo } from './models/configurations'
 
@@ -105,6 +105,24 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
         } else {
             throw new Error('Wrong type')
         }
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        throw new Error(error.message)
+    }
+}
+
+
+/**
+ * Update item in db
+ * @async
+ * @param {string} type 
+ * @param {object} data 
+ * @returns boolean 
+ */
+ export const updateItem = async ( data: RegistrationnUpdateRedis ): Promise<void> => {
+    try {
+        await registrationFuncs.updateItem(data)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

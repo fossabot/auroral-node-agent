@@ -20,6 +20,7 @@ GtwRouter
    .get('/logout/:id', ctrl.logout)
    .get('/registration', ctrl.getRegistrations)
    .post('/registration', ctrl.postRegistrations)
+   .put('/registration', ctrl.modifyRegistration)
    .post('/registration/remove', ctrl.removeRegistrations)
   // ***** Discovery *****
    .get('/partners/', ctrl.getPartners)

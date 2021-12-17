@@ -45,7 +45,44 @@ export interface RegistrationJSONBasic {
     actions?: string[]
     version?: string
     description?: string
-    privacy?: string
+    privacy?: string,
+    oid?: string
+}
+
+
+export interface RegistrationnUpdateRedis {
+    oid: string
+    adapterId?: string
+    name?: string
+    description?: string
+    properties?: string
+    events?: string // Stringify to register in REDIS
+    actions?: string // Stringify to register in REDIS
+}
+
+export interface RegistrationnUpdateNm {
+    oid: string
+    adapterId: string
+    name: string
+    labels?: ItemLabelsObj
+    avatar?: string
+    groups?: string[]
+    version?: string
+    description?: string
+}
+
+export interface RegistrationUpdate {
+    oid: string
+    adapterId: string
+    name: string
+    properties?: string[]
+    labels?: ItemLabelsObj
+    avatar?: string
+    groups?: string[]
+    events?: string[]
+    actions?: string[]
+    version?: string
+    description?: string
 }
 
 // Body ready to register
@@ -63,6 +100,7 @@ export interface RegistrationBody {
     description?: string
     oid: string
 }
+
 
 export enum ItemPrivacy {
     PUBLIC = 2,
@@ -94,6 +132,32 @@ export const registrationFuncs = {
     // Add item to db
     addItem: async (data: Registration): Promise<void> => {
         await storeItems([data])
+    },
+    // update sotred item
+    updateItem: async (item: RegistrationnUpdateRedis): Promise<void> => {
+        if (!item.oid) {
+            throw new Error(`Object with misses some oid, its update could not be stored...`)
+        }
+        const exists = await redisDb.sismember('registrations', item.oid)
+        if (exists) {
+            if (item.name) {
+                await redisDb.hset(item.oid, 'name', item.name)
+            }
+            if (item.adapterId) {
+                await redisDb.hset(item.oid, 'adapterId', item.adapterId)
+            }
+            if (item.properties != undefined) {
+                redisDb.hset(item.oid, 'properties', item.properties)
+            }
+            if (item.events!= undefined) {
+                redisDb.hset(item.oid, 'events', item.events)
+            }
+            if (item.actions!= undefined) {
+                redisDb.hset(item.oid, 'actions', item.actions)
+            }
+        } else {
+            throw new Error("Object does not exists - not updated")
+        }
     },
     // Remove item from db
     removeItem: async (ids: string | string[]): Promise<void> => {
@@ -175,7 +239,6 @@ export const registrationFuncs = {
 }
 
 // Private functions
-
 const storeItems = async (array: Registration[]) => {
     for (let i = 0, l = array.length; i < l; i++) {
         const data = array[i]

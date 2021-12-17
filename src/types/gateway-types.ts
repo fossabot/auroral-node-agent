@@ -38,6 +38,14 @@ export interface RegistrationResult {
         password: string | null
         name: string
         error?: boolean
+    }] 
+}
+
+export interface RegistrationUpdateResult {
+    error: boolean
+    message: [{
+        oid: string
+        error?: boolean
     }]
 }
 

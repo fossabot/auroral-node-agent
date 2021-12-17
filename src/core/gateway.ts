@@ -5,9 +5,9 @@
 
  import { logger, errorHandler } from '../utils'
  import { gateway } from '../microservices/gateway'
- import { addItem, getItem } from '../persistance/persistance'
- import { RegistrationResultPost } from '../types/gateway-types'
- import { RegistrationBody } from '../persistance/models/registrations'
+ import { addItem,  getItem, updateItem } from '../persistance/persistance'
+ import { RegistrationResultPost, RegistrationUpdateResult } from '../types/gateway-types'
+ import { RegistrationBody, RegistrationnUpdateNm, RegistrationnUpdateRedis, RegistrationUpdate } from '../persistance/models/registrations'
  import { Config } from '../config'
  
  export const gtwServices = {
@@ -120,6 +120,51 @@
              throw new Error(error.message)
          }
      },
+     updateObject: async (items: RegistrationUpdate[]): Promise<RegistrationUpdateResult> => {
+        if (!items) {
+            throw new Error('any items to update')
+        }
+        try {
+            const nmItems = filterNmProperities(items)
+            const result = await gateway.updateRegistration({
+                agid: Config.GATEWAY.ID,
+                items: nmItems
+            })
+            if (result.error) {
+                throw new Error('Platform parsing failed, please revise error: ' + JSON.stringify(result.message[0].error))
+            }
+            result.message.forEach(async (it) => {
+                if (!it.error) {
+                    try {
+                        const itemUpdate = items.filter(x => x.oid === it.oid)[0]
+                        const redistItem = filterRedisProperities(itemUpdate) 
+                        // Update redis DB
+                        await updateItem(redistItem)
+                        logger.info(it.oid + ' successfully updated!')
+                    } catch (err) {
+                        const error = errorHandler(err)
+                        logger.warn(it.oid + ' had a updating issue...')
+                        logger.error(error.message)
+                    }
+                } else {
+                    logger.warn(it.oid + ' could not be updated...')
+                }
+            })
+            // Do login of infrastructure with small delay to avoid race conditions
+           setTimeout(
+               async () => {
+                   // Get objects OIDs stored locally
+                   const registrations = await getItem('registrations') as string[]
+                   gtwServices.doLogins(registrations)
+               }, 
+               5000)
+           // Return and end registration
+           return { error: false, message: result.message }
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
      /**
       * Compare Local infrastracture with platform
       * Both should have the same objects registered
@@ -139,4 +184,40 @@
              return false
          }
      }
+    }
+    
+    function filterRedisProperities(item: RegistrationUpdate): RegistrationnUpdateRedis{
+        if(!item.oid){
+            throw new Error("Item does not have oid")
+        }
+        const itemRedis: RegistrationnUpdateRedis= {
+            oid: item.oid,
+            name: item.name,
+            adapterId: item.adapterId,
+            properties: item.properties ? item.properties.toString() : undefined,
+            actions: item.actions ? item.actions.toString() : undefined,
+            events: item.events ? item.events.toString() : undefined
+        }
+        return itemRedis
+    }
+    function filterNmProperities(items: RegistrationUpdate[]): RegistrationnUpdateNm[]{
+        let nmItems: RegistrationnUpdateNm[] = []
+        items.forEach(item =>{
+            if(!item.oid){
+                throw new Error("Item does not have oid")
+            }
+            const itemNm: RegistrationnUpdateNm= {
+                oid: item.oid,
+                name: item.name,
+                adapterId: item.adapterId,
+                labels: item.labels,
+                avatar: item.avatar,
+                groups: item.groups != undefined? [...item.groups] : undefined,
+                version: item.version,
+                description: item.description,
+            }
+            nmItems.push(itemNm)
+        })
+        return nmItems
+       
     }

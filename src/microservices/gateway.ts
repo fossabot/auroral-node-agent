@@ -9,8 +9,8 @@ import got, { Method, Headers } from 'got'
 import { JsonType, BasicResponse, IItemPrivacy, RelationshipType, ContractType, WholeContractType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
-import { DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult } from '../types/gateway-types'
-import { Registration, RegistrationBody } from '../persistance/models/registrations'
+import { DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult, RegistrationUpdateResult } from '../types/gateway-types'
+import { Registration, RegistrationBody, RegistrationJSON, RegistrationnUpdateNm, RegistrationUpdate } from '../persistance/models/registrations'
 import { getCredentials } from '../persistance/persistance'
 import { Thing } from '../types/wot-types'
 
@@ -111,6 +111,23 @@ export const gateway = {
     },
 
     /**
+     * Update object under your gateway;
+     * (Using the access point credentials generated for it);
+     * @async
+     * @param {body: Array of TDs}
+     * @returns {error: boolean, message: array of TDs} 
+     */
+     updateRegistration: async function(body: { items: RegistrationnUpdateNm[], agid: string }): Promise<RegistrationUpdateResult> {
+        try {
+            const Authorization = await getAuthorization()
+            return request(`agents/${Config.GATEWAY.ID}/objects`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as RegistrationUpdateResult
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
+
+    /**
      * Remove object/s under your gateway;
      * (Using the access point credentials generated for it);
      * @async
@@ -130,7 +147,6 @@ export const gateway = {
 
     /**
      * @TBD:
-     * Soft update
      * Hard update
      */
 
