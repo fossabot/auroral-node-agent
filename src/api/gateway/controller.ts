@@ -108,42 +108,42 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationUpdate | R
  */
  export const modifyRegistration: modifyRegistrationCtrl = async (req, res) => {
   const body = req.body
-  try {
-      // Two ways available depending if WoT enabled
-      if (Config.WOT.ENABLED) {
-        logger.warn('NOT IMPLEMENTED')
-        return responseBuilder(HttpStatusCode.NOT_IMPLEMENTED, res, null)
-      } 
-      const itemsArray = Array.isArray(body) ? body : [body]
-      var items : RegistrationUpdate[]= []
-      itemsArray.forEach(it =>{
-        //  test if OID exists
-        if(it.oid == undefined){
-          throw new Error("Some objects do not have OIDs")
-        }
-        items.push({
-          oid: it.oid,
-          name: it.name,
-          adapterId: it.adapterId, 
-          labels: it.labels,
-          avatar: it.avatar,
-          groups: it.groups,
-          description: it.description,
-          properties: it.properties ,
-          actions: it.actions ,
-          events: it.events 
-        } as RegistrationUpdate)
-      })
+      try {
+          // Two ways available depending if WoT enabled
+          if (Config.WOT.ENABLED) {
+            logger.warn('NOT IMPLEMENTED')
+            return responseBuilder(HttpStatusCode.NOT_IMPLEMENTED, res, null)
+          } 
+          const itemsArray = Array.isArray(body) ? body : [body]
+          const items : RegistrationUpdate[] = []
+          itemsArray.forEach(it => {
+            //  test if OID exists
+            if (it.oid === undefined) {
+              throw new Error('Some objects do not have OIDs')
+            }
+            items.push({
+              oid: it.oid,
+              name: it.name,
+              adapterId: it.adapterId, 
+              labels: it.labels,
+              avatar: it.avatar,
+              groups: it.groups,
+              description: it.description,
+              properties: it.properties ,
+              actions: it.actions ,
+              events: it.events 
+            } as RegistrationUpdate)
+          })
 
-      // Update in NM and redis
-      const result = await gtwServices.updateObject(items)
+          // Update in NM and redis
+          const result = await gtwServices.updateObject(items)
 
-      return responseBuilder(HttpStatusCode.OK, res, null, result.message)
-} catch (err) {
-      const error = errorHandler(err)
-      logger.error(error.message)
-      return responseBuilder(error.status, res, error.message)
-}
+          return responseBuilder(HttpStatusCode.OK, res, null, result.message)
+    } catch (err) {
+          const error = errorHandler(err)
+          logger.error(error.message)
+          return responseBuilder(error.status, res, error.message)
+    }
 }
 
 type removeRegistrationsCtrl = expressTypes.Controller<{}, { oids: string[] }, {}, null, {}>
