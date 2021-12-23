@@ -3,8 +3,8 @@ Parsing middlewares
 */
 import { v4 as uuidv4 } from 'uuid'
 import { Thing } from '../types/wot-types'
-import { RegistrationJSON, RegistrationBody, RegistrationJSONBasic } from '../persistance/models/registrations'
-import { getCountOfItems } from '../persistance/persistance'
+import { RegistrationJSON, RegistrationBody, RegistrationJSONBasic, RegistrationUpdate } from '../persistance/models/registrations'
+import { getCountOfItems, getItem } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
 import { errorHandler } from '../utils/error-handler'
 import { logger } from '../utils'
@@ -16,7 +16,14 @@ export const tdParser = async (body : RegistrationJSONBasic | RegistrationJSONBa
     // Check num registrations not over 100
     await _checkNumberOfRegistrations(itemsArray.length)
     // Create TDs array
-    return itemsArray.map(it => _buildTD(it))
+    return itemsArray.map(it => {
+        // validate required properities
+        _validate(it)
+        // generate uuid 
+        const oid = uuidv4()
+        // get proper thing description
+        return _buildTD(oid, it)
+    })
 }
 
 export const tdParserWoT = async (body : Thing | Thing[]): Promise<RegistrationBody[]> => {
@@ -37,11 +44,56 @@ export const tdParserWoT = async (body : Thing | Thing[]): Promise<RegistrationB
     return items.filter(it => it) as RegistrationBody[]
 }
 
+export const tdParserUpdate = async (body : RegistrationUpdate | RegistrationUpdate[] ): Promise<RegistrationUpdate[]> => {
+    const itemsArray = Array.isArray(body) ? body : [body]
+    const registrations = await getItem('registrations') as string[]
+    // test if registered 
+    itemsArray.forEach((item)=>{
+        if (item.oid === undefined) {
+        }
+        if(!registrations.includes(item.oid)){
+            throw new Error('Some objects are not registered [' + item.oid +'}')
+        }
+    })
+    const itemsUpdate = itemsArray.map(it => {
+        // get proper thing description
+        return _buildTDUpdate(it.oid, it)
+    })
+    return itemsUpdate
+
+}
+
+export const tdParserUpdateWot= async (body : Thing | Thing[] ): Promise<RegistrationUpdate[]> => {
+    const itemsArray = Array.isArray(body) ? body : [body]
+    const registrations = await getItem('registrations') as string[]
+    // test if registered 
+    itemsArray.forEach((item)=>{
+        if (item['@id'] === undefined) {
+            throw new Error('Some objects do not have OIDs')
+        }
+        // get oid 
+        const oidTemp = item['@id'].split(":")
+        if(oidTemp.length != 2)
+        {
+            throw new Error('Some objects have bad format of oid [' + item['@id'] +'}')
+        }
+        const oid = oidTemp[1]
+        if(!registrations.includes(oid)){
+            throw new Error('Some objects are not registered [' + oid +'}')
+        }
+    })
+    const itemsUpdate = await Promise.all(itemsArray.map(async (it) => {
+        // get proper thing description
+        const oid = it['@id']!.split(":")[1]
+        await wot.upsertTD(oid, { '@id': 'oid:' + oid, ...it })
+        return _buildTDWoTUpdate(oid, it)
+    }))
+    return itemsUpdate
+}
+
 // PRIVATE
 
-const _buildTD = (data: RegistrationJSONBasic): RegistrationBody => {
-    _validate(data)
-    const oid = uuidv4()
+const _buildTD = (oid: string, data: RegistrationJSONBasic): RegistrationBody => {
     return { 
         name: data.name,
         type: data.type,
@@ -65,6 +117,30 @@ const _buildTDWoT = (oid: string, data: Thing): RegistrationBody => {
         name: data.title,
         type: 'Device', // TBD: Force to only accepted until ready // data['@type'],
         adapterId: 'dummy' // TBD: Update this and add groupId or other props when ready
+    }
+}
+
+const _buildTDUpdate = (oid: string, data: RegistrationUpdate): RegistrationUpdate => {
+    return { 
+        name: data.name,
+        adapterId: data.adapterId, 
+        oid, 
+        labels: data.labels,
+        avatar: data.avatar,
+        groups: data.groups,
+        properties: data.properties ? data.properties: undefined,
+        actions: data.actions ? data.actions: undefined,
+        events: data.events ? data.events: undefined
+    }
+}
+const _buildTDWoTUpdate = (oid: string, data: Thing): RegistrationUpdate => {
+    return { 
+        oid,
+        properties: data.properties ? Object.keys(data.properties): undefined,
+        actions: data.actions ? Object.keys(data.actions): undefined,
+        events: data.events ? Object.keys(data.events): undefined,
+        name: data.title,
+        adapterId: oid // TBD: Update this and add groupId or other props when ready
     }
 }
 
