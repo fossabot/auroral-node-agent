@@ -134,6 +134,7 @@ const _buildTDUpdate = (oid: string, data: RegistrationJSON): RegistrationUpdate
         events: data.events ? data.events : undefined
     }
 }
+
 const _buildTDWoTUpdate = (oid: string, data: RegistrationJSON): RegistrationUpdate => {
     return { 
         oid,
