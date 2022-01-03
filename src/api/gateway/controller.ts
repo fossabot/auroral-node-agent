@@ -9,7 +9,7 @@ import { JsonType } from '../../types/misc-types'
 import { gateway } from '../../microservices/gateway'
 import { gtwServices } from '../../core/gateway'
 import { ConsumptionResponse, RegistrationResultPost, RegistrationUpdateResult } from '../../types/gateway-types'
-import { Registration, RegistrationBody, RegistrationJSON, RegistrationJSONBasic, RegistrationUpdate } from '../../persistance/models/registrations'
+import { Registration, RegistrationBody, RegistrationJSON, RegistrationUpdate } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
 import { discovery } from '../../core/discovery'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../core/td-parser'
@@ -85,9 +85,9 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         if (Config.WOT.ENABLED) {
           // Validate and Store TD in WoT** (Build TD from user input based on ontology)
           logger.debug('Validate and register with WoT')
-          items = await tdParserWoT(body as Thing)
+          items = await tdParserWoT(body)
         } else {
-          items = await tdParser(body as RegistrationJSONBasic)
+          items = await tdParser(body)
         }
         
         // Register TD in NM (Dont send type nor interaction patterns)
@@ -101,7 +101,7 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationUpdate | RegistrationUpdate[] | Thing | Thing[], {}, [ { oid: string, error?: boolean } ], {}>
+type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, [ { oid: string, error?: boolean } ], {}>
 
 /**
  * Register things in the platform
@@ -113,11 +113,11 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationUpdate | R
           // Two ways available depending if WoT enabled
           if (Config.WOT.ENABLED) {
             logger.debug('Update thing in WoT')
-            items = await tdParserUpdateWot(body as Thing)
+            items = await tdParserUpdateWot(body)
           } 
           else{
             logger.debug('Update thing without WoT')
-            items = await tdParserUpdate(body as RegistrationUpdate)
+            items = await tdParserUpdate(body)
           }
 
           // Update in NM and redis

@@ -9,7 +9,7 @@ import { logger, errorHandler } from '../utils'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
 import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
-import { registrationFuncs, Registration, RegistrationJSON, RegistrationUpdate, RegistrationnUpdateRedis } from './models/registrations'
+import { registrationFuncs, Registration, RegistrationUpdate, RegistrationnUpdateRedis, RegistrationJSON, RegistrationNonSemantic } from './models/registrations'
 import { Config } from '../config'
 import { Configuration, addConfigurationInfo, removeConfigurationInfo } from './models/configurations'
 
@@ -161,7 +161,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
  * @param {string} id [OPTIONAL]
  * @returns object 
  */
- export const getItem = async (type: RegistrationOrInteractionEnum, id?: string): Promise<RegistrationJSON | Interaction | string[]>  => {
+ export const getItem = async (type: RegistrationOrInteractionEnum, id?: string): Promise<RegistrationNonSemantic | Interaction | string[]>  => {
     try {
         let result
         if (type === REGISTRATIONS) {

@@ -16,7 +16,7 @@ import { Thing } from '../../types/wot-types'
 const PRIV_ARRAY = ['Private', 'For Friends', 'Public']
 
 // Body when received or returned by application
-export type RegistrationJSON = RegistrationJSONBasic | Thing
+// export type RegistrationJSON = RegistrationJSONBasic 
 
 export enum ItemDomainType {
     ENERGY = 'Energy',
@@ -32,11 +32,11 @@ export enum ItemDomainType {
 export type ItemLabelsObj = {
     domain: ItemDomainType,
 }
-
-export interface RegistrationJSONBasic {
+export interface RegistrationJSON {
+    oid?: string,
     type: string
-    adapterId: string
     name: string
+    adapterId?: string
     properties?: string[]
     labels?: ItemLabelsObj
     avatar?: string
@@ -46,7 +46,34 @@ export interface RegistrationJSONBasic {
     version?: string
     description?: string
     privacy?: string,
-    oid?: string
+    td?: Thing
+}
+
+export interface RegistrationNonSemantic {
+    type: string
+    name: string
+    adapterId?: string
+    properties?: string[]
+    labels?: ItemLabelsObj
+    avatar?: string
+    groups?: string[]
+    events?: string[]
+    actions?: string[]
+    version?: string
+    description?: string
+    privacy?: string,
+}
+
+export interface RegistrationSemantic {
+    type?: string
+    adapterId?: string
+    labels?: ItemLabelsObj
+    avatar?: string
+    groups?: string[]
+    version?: string
+    description?: string
+    privacy?: string,
+    td?: Thing
 }
 
 
@@ -62,8 +89,8 @@ export interface RegistrationnUpdateRedis {
 
 export interface RegistrationnUpdateNm {
     oid: string
-    adapterId: string
-    name: string
+    adapterId?: string
+    name?: string
     labels?: ItemLabelsObj
     avatar?: string
     groups?: string[]
@@ -73,8 +100,8 @@ export interface RegistrationnUpdateNm {
 
 export interface RegistrationUpdate {
     oid: string
-    adapterId: string
-    name: string
+    adapterId?: string
+    name?: string
     properties?: string[]
     labels?: ItemLabelsObj
     avatar?: string
@@ -185,7 +212,7 @@ export const registrationFuncs = {
     // Get item from db;
     // Returns object if ID provided;
     // Returns array of ids if ID not provided;
-    getItem: async (id?: string): Promise<RegistrationJSONBasic | string[]> => {
+    getItem: async (id?: string): Promise<RegistrationNonSemantic | string[]> => {
         if (id) {
             const data = await redisDb.hgetall(id)
             // Return to user
