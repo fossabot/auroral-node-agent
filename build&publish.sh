@@ -4,6 +4,8 @@ USAGE="$(basename "$0") [ -h ] [ -e env ]
 -- Flags:
       -h  shows help
       -e  environment [ dev (default), prod, ... ]"
+# BUILD PLATFORMS
+PLATFORMS=linux/amd64,linux/arm64,linux/arm/v7
 
 # Default configuration
 ENV=dev
@@ -39,17 +41,23 @@ tsc
 # Multiarch builder
 docker buildx use multiplatform
 
-# Build for AMD64/ARM64 & push to github
-docker buildx build --platform linux/amd64,linux/arm64 --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} -f Dockerfile . --push
+# Build images & push to private registry
+docker buildx build --platform ${PLATFORMS} \
+                    --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} \
+                    --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                    --build-arg BUILD_VERSION="1.0" \
+                    -f Dockerfile . --push
+# Pull local arch version
 docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
 
-# Build for ARMv7 & push to github
-docker buildx build --platform linux/arm/v7 --tag ${REGISTRY}/${IMAGE_NAME}:armv7 -f Dockerfile.armv7 . --push
-docker pull ${REGISTRY}/${IMAGE_NAME}:armv7
 
-# Push to Private registry
 docker login ${GIT_REGISTRY}
-docker image tag ${REGISTRY}/${IMAGE_NAME}:${ENV} ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}
-docker push ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}
-docker image tag ${REGISTRY}/${IMAGE_NAME}:armv7 ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}_armv7
-docker push ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}_armv7
+
+# Build images & push to github
+docker buildx build --platform ${PLATFORMS} \
+                    --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} \
+                    --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                    --build-arg BUILD_VERSION="1.0" \
+                    -f Dockerfile . --push
+# Pull local arch version 
+docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}
