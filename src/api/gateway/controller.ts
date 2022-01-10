@@ -8,8 +8,8 @@ import { responseBuilder } from '../../utils/response-builder'
 import { JsonType } from '../../types/misc-types'
 import { gateway } from '../../microservices/gateway'
 import { gtwServices } from '../../core/gateway'
-import { ConsumptionResponse, RegistrationResultPost, RegistrationUpdateResult } from '../../types/gateway-types'
-import { Registration, RegistrationBody, RegistrationJSON, RegistrationUpdate } from '../../persistance/models/registrations'
+import { ConsumptionResponse, RegistrationResultPost } from '../../types/gateway-types'
+import { Registration, RegistrationJSON, RegistrationUpdate } from '../../persistance/models/registrations'
 import { removeItem } from '../../persistance/persistance'
 import { discovery } from '../../core/discovery'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../core/td-parser'
@@ -109,13 +109,12 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | Reg
  export const modifyRegistration: modifyRegistrationCtrl = async (req, res) => {
   const body = req.body
       try {
-          let items: RegistrationUpdate[];
+          let items: RegistrationUpdate[]
           // Two ways available depending if WoT enabled
           if (Config.WOT.ENABLED) {
             logger.debug('Update thing in WoT')
             items = await tdParserUpdateWot(body)
-          } 
-          else{
+          } else {
             logger.debug('Update thing without WoT')
             items = await tdParserUpdate(body)
           }
