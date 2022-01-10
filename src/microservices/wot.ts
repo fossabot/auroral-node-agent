@@ -56,7 +56,7 @@ export const wot = {
      */
     upsertTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
-            const response = await request(`api/things/oid:${oid}`, 'PUT', body, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'PUT', body, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
             }
@@ -100,7 +100,7 @@ export const wot = {
      */
      updatePartialTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
-            const response = await request(`api/things/oid:${oid}`, 'PATCH', undefined, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'PATCH', undefined, ApiHeader)
             if (response.statusCode === 400) {
                 throw new Error('Invalid serialization or TD')
             }
@@ -123,7 +123,7 @@ export const wot = {
      */
     deleteTD: async function(oid: string): Promise<BasicResponse<null>> {
         try {
-            const response = await request(`api/things/oid:${oid}`, 'DELETE', undefined, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'DELETE', undefined, ApiHeader)
             if (response.statusCode === 404) {
                 throw new Error('TD with the given id not found')
             }
@@ -143,7 +143,7 @@ export const wot = {
      */
      retrieveTD: async function(oid: string): Promise<BasicResponse<Thing>> {
         try {
-            const response = await request(`api/things/oid:${oid}`, 'GET', undefined, ApiHeader)
+            const response = await request(`api/things/${oid}`, 'GET', undefined, ApiHeader)
             if (response.statusCode === 404) {
                 throw new Error('TD with the given id not found')
             }

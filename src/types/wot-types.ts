@@ -30,7 +30,7 @@ export declare type MultiLanguage = Record<string, unknown> // object?
 
 /** Implements the Thing Description as software object */
 export class Thing {
-    '@id'?: string
+    id?: string // Update to @id ?? Discuss with UPM
     '@context': string
     '@type': string
     title: string
@@ -72,7 +72,7 @@ export class Thing {
     }
 
     public setId = (id: string): void => {
-        this['@id'] = id
+        this.id = id
     }
 
     public buildThing = (data: Thing): void => {
@@ -354,7 +354,7 @@ export abstract class ThingEvent implements ThingInteraction {
 //         { "saref": "https://w3id.org/saref#" }
 //     ],
 //     "title": "MyLampThing",
-//     "@id" : "bb2b1770-3308-4d74-be2e-aaa6faccf018",
+//     "id" : "bb2b1770-3308-4d74-be2e-aaa6faccf018",
 //     "@type": "saref:LightSwitch",
 //     "securityDefinitions": {"basic_sc": {
 //         "scheme": "basic",
