@@ -2,14 +2,23 @@
   "swagger": "2.0",
   "info": {
     "description": "AURORAL node interface - developed by bAvenir. The REST API is divided in two main groups; the API (Calls that use the Gateway to contact the AURORAL platform) and the ADMIN (calls oriented to monitor and make use to the agent resources)",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "title": "Auroral agent",
     "license": {
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     }
   },
-  "basePath": "",
+  "securityDefinitions": {
+    "basicAuth": {
+      "type": "basic"
+    }
+  },
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
   "externalDocs": {
     "description": "Find out more about AURORAL",
     "url": "https://www.auroral.eu"
@@ -44,12 +53,16 @@
       "description": "ADMIN - Test connection status of the adapter components (Server, Gateway and Storage)"
     }
   ],
-  "schemes": ["http"],
+  "schemes": [
+    "http"
+  ],
   "paths": {
     "/admin/healthcheck": {
       "get": {
         "description": "See status of the adapter main components",
-        "tags": ["healthcheck"],
+        "tags": [
+          "healthcheck"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -57,6 +70,9 @@
             "schema": {
               "$ref": "#/definitions/ApiResponseObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -64,7 +80,9 @@
     "/admin/exports": {
       "get": {
         "description": "Save registrations and interactions to file. BackUp option",
-        "tags": ["import/export"],
+        "tags": [
+          "import/export"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -72,6 +90,9 @@
             "schema": {
               "$ref": "#/definitions/ApiResponse"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -79,7 +100,9 @@
     "/admin/imports": {
       "get": {
         "description": "Get into adapter registrations and interactions from file. Restore option",
-        "tags": ["import/export"],
+        "tags": [
+          "import/export"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -87,6 +110,9 @@
             "schema": {
               "$ref": "#/definitions/ApiResponse"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -94,13 +120,18 @@
     "/admin/registrations": {
       "get": {
         "description": "Retrieve all the IDs of objects registered with your adapter and stored locally. Response list of OIDs.",
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/ArrayOfStrings"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -108,10 +139,13 @@
     "/admin/registrations/{id}": {
       "get": {
         "description": "Obtain the information of a concrete registered item by providing the ID as parameter.",
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "parameters": [
           {
             "in": "path",
+            "required": true,
             "name": "id",
             "description": "Object id - OID",
             "type": "string"
@@ -123,6 +157,9 @@
             "schema": {
               "$ref": "#/definitions/ApiResponseObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -130,10 +167,13 @@
     "/admin/registrations/td/{id}": {
       "get": {
         "description": "Obtain the TD concrete registered item by providing the ID as parameter",
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "parameters": [
           {
             "in": "path",
+            "required": true,
             "name": "id",
             "description": "Object id - OID",
             "type": "string"
@@ -145,6 +185,9 @@
             "schema": {
               "$ref": "#/definitions/ApiResponseObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -152,10 +195,13 @@
     "/admin/registrations/contracts/{id}": {
       "get": {
         "description": "Contract info stored locally. Retrieve the items that you are sharing with a given organisation.",
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "parameters": [
           {
             "in": "path",
+            "required": true,
             "name": "id",
             "description": "Organisation id - CID",
             "type": "string"
@@ -167,15 +213,21 @@
             "schema": {
               "$ref": "#/definitions/ApiJsonObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       },
       "delete": {
         "description": "Remove locally stored contract data (DEVELOPMENT USAGE).",
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "parameters": [
           {
             "in": "path",
+            "required": true,
             "name": "id",
             "description": "Organisation id - CID",
             "type": "string"
@@ -193,6 +245,9 @@
             "schema": {
               "$ref": "#/definitions/ApiStringResponse"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -200,7 +255,9 @@
     "/admin/configuration": {
       "get": {
         "description": "Configuration status of the adapter",
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -208,6 +265,9 @@
             "schema": {
               "$ref": "#/definitions/ApiResponseObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -215,7 +275,9 @@
     "/api/properties/{id}/{oid}/{pid}": {
       "get": {
         "description": "Request to get a remote property.",
-        "tags": ["consumption"],
+        "tags": [
+          "consumption"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -247,12 +309,17 @@
             "schema": {
               "$ref": "#/definitions/ApiJsonObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       },
       "put": {
         "description": "Request the update of a remote property",
-        "tags": ["consumption"],
+        "tags": [
+          "consumption"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -281,7 +348,6 @@
             "in": "body",
             "name": "body",
             "description": "Update property",
-            "type": "object",
             "required": true,
             "schema": {
               "$ref": "#/definitions/ApiJsonObject"
@@ -294,6 +360,9 @@
             "schema": {
               "$ref": "#/definitions/ApiJsonObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -301,11 +370,14 @@
     "/api/login/{id}": {
       "get": {
         "description": "Login your gateway instance or any object registered with it (Providing its id)",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "id",
+            "required": true,
             "description": "Object id - OID",
             "type": "string",
             "default": "0000-0000-0000"
@@ -314,6 +386,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           },
           "500": {
             "description": "Error"
@@ -324,11 +399,14 @@
     "/api/logout/{id}": {
       "get": {
         "description": "Logout your gateway instance or any object registered with it (Providing its id)",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "id",
+            "required": true,
             "description": "Object id - OID",
             "type": "string",
             "default": "0000-0000-0000"
@@ -337,6 +415,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           },
           "500": {
             "description": "Error"
@@ -347,13 +428,14 @@
     "/api/registration": {
       "post": {
         "description": "Register an object in the AURORAL platform. If WoT is enabled you have to use thing description format.",
-        "tags": ["registry"],
+        "tags": [
+          "registry"
+        ],
         "parameters": [
           {
             "in": "body",
             "name": "body",
             "description": "Registration info",
-            "type": "object",
             "required": true,
             "schema": {
               "$ref": "#/definitions/bodyRegistry"
@@ -367,6 +449,9 @@
               "$ref": "#/definitions/RegistrationSuccesArray"
             }
           },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
           "500": {
             "description": "Error"
           }
@@ -374,25 +459,31 @@
       },
       "get": {
         "description": "See what objects has your gateway registered in the platform. Response list of OIDs.",
-        "tags": ["registry"],
+        "tags": [
+          "registry"
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/ArrayOfStrings"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       },
       "put": {
         "description": "Update registered items",
-        "tags": ["registry"],
+        "tags": [
+          "registry"
+        ],
         "parameters": [
           {
             "in": "body",
             "name": "body",
             "description": "Update details",
-            "type": "object",
             "required": true,
             "schema": {
               "$ref": "#/definitions/bodyItemUpdate"
@@ -405,6 +496,9 @@
             "schema": {
               "$ref": "#/definitions/UpdateResponseArray"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -412,13 +506,14 @@
     "/api/registration/remove": {
       "post": {
         "description": "UnRegister an object from the AURORAL platform",
-        "tags": ["registry"],
+        "tags": [
+          "registry"
+        ],
         "parameters": [
           {
             "in": "body",
             "name": "body",
             "description": "List of OIDs that have to be removed from the platform",
-            "type": "object",
             "required": true,
             "schema": {
               "$ref": "#/definitions/bodyUnRegistry"
@@ -429,6 +524,9 @@
           "200": {
             "description": "OK"
           },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
           "500": {
             "description": "Not removed"
           }
@@ -438,7 +536,9 @@
     "/api/partners": {
       "get": {
         "description": "Displays all partners that are in friendship with our organisation. Response list of CIDs.",
-        "tags": ["discovery"],
+        "tags": [
+          "discovery"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -446,6 +546,9 @@
             "schema": {
               "$ref": "#/definitions/ArrayOfStrings"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -453,11 +556,14 @@
     "/api/partners/{cid}": {
       "get": {
         "description": "Get info about my partners organisation",
-        "tags": ["discovery"],
+        "tags": [
+          "discovery"
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "cid",
+            "required": true,
             "description": "Partners organisation CID",
             "type": "string"
           }
@@ -468,6 +574,9 @@
             "schema": {
               "$ref": "#/definitions/PartnersResponseObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -475,13 +584,18 @@
     "/api/discovery": {
       "get": {
         "description": "See what remote objects can you reach with your Gateway. You will see other gateways of your organisation or partnered organisations. Response list of OIDs.",
-        "tags": ["discovery"],
+        "tags": [
+          "discovery"
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/ArrayOfStrings" 
+              "$ref": "#/definitions/ArrayOfStrings"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -489,12 +603,15 @@
     "/api/discovery/{id}": {
       "get": {
         "description": "See what remote objects can you reach which each OID. To see objects of other organisations you need to agree on a contract for exchanging data. Get what your gateway can see by not providing oid parameter. Response list of OIDs.",
-        "tags": ["discovery"],
+        "tags": [
+          "discovery"
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "id",
             "description": "Object id - OID",
+            "required": true,
             "type": "string",
             "default": "0000-0000-0000"
           }
@@ -503,18 +620,24 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/ArrayOfStrings" 
+              "$ref": "#/definitions/ArrayOfStrings"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       },
       "post": {
         "description": "Remote discovery. Get thing descriptions of remote infrastructures that your gateway can see. Response list of things descriptions.",
-        "tags": ["discovery"],
+        "tags": [
+          "discovery"
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "id",
+            "required": true,
             "description": "Object id - OID",
             "type": "string",
             "default": "0000-0000-0000"
@@ -524,7 +647,6 @@
             "name": "body",
             "description": "SPARQL query: Filter out specific content that you wish to see. I.E: Get me only thermometers",
             "required": false,
-            "type": "object",
             "schema": {
               "$ref": "#/definitions/SparqlRequestObject"
             }
@@ -536,6 +658,9 @@
             "schema": {
               "$ref": "#/definitions/ArrayOfJsons"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
@@ -543,11 +668,14 @@
     "/api/discovery/{id}/{originId}": {
       "post": {
         "description": "Remote discovery. Get thing descriptions of remote objects that some of your objects can see. Set the id of the object with the OID parameter and set the object initiating the request with originID. Response list of things descriptions.",
-        "tags": ["discovery"],
+        "tags": [
+          "discovery"
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "id",
+            "required": true,
             "description": "Object id - OID",
             "type": "string",
             "default": "0000-0000-0000"
@@ -555,6 +683,7 @@
           {
             "in": "path",
             "name": "originId",
+            "required": true,
             "description": "Object id - OID",
             "type": "string",
             "default": "0000-0000-0000"
@@ -563,7 +692,6 @@
             "in": "body",
             "name": "body",
             "description": "SPARQL query: Filter out specific content that you wish to see. I.E: Get me only thermometers",
-            "type": "object",
             "required": false,
             "schema": {
               "$ref": "#/definitions/SparqlRequestObject"
@@ -576,9 +704,17 @@
             "schema": {
               "$ref": "#/definitions/ApiJsonObject"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
           }
         }
       }
+    }
+  },
+  "responses": {
+    "Unauthorized": {
+      "description": "Unauthorized"
     }
   },
   "definitions": {
@@ -590,30 +726,6 @@
           "default": false
         },
         "message": {
-          "type": "string"
-        }
-      }
-    },
-    "ApiResponseArray": {
-      "type": "object",
-      "properties": {
-        "error": {
-          "type": "boolean",
-          "default": false
-        },
-        "message": {
-          "type": "array",
-          "description": "Array of oid's.",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "ApiResponseErrorJson": {
-      "type": "object",
-      "properties": {
-        "error": {
           "type": "string"
         }
       }
@@ -709,20 +821,15 @@
       "properties": {
         "name": {
           "description": "Human readable name for the object",
-          "type": "string",
-          "required": true,
-          "default": "MySmartSensor"
+          "type": "string"
         },
         "type": {
           "description": "AURORAL type to assign for the object",
-          "type": "string",
-          "required": true,
-          "default": "Device"
+          "type": "string"
         },
         "adapterId": {
           "type": "string",
           "description": "Id of the object in your infrastructure",
-          "required": true,
           "default": "1234"
         },
         "properties": {
@@ -760,21 +867,16 @@
       "properties": {
         "oid": {
           "description": "Object ID",
-          "type": "string",
-          "required": true,
-          "default": "<oid>"
+          "type": "string"
         },
         "name": {
           "description": "new item name",
           "type": "string",
-          "required": false,
           "default": ""
         },
         "adapterId": {
           "type": "string",
-          "description": "Id of the object in your infrastructure",
-          "required": false,
-          "default": "1234"
+          "description": "Id of the object in your infrastructure"
         },
         "properties": {
           "type": "array",
@@ -827,7 +929,6 @@
         "sparql": {
           "description": "Sparql query",
           "type": "string",
-          "required": false,
           "default": ""
         }
       }
