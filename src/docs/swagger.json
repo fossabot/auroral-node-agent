@@ -298,6 +298,215 @@
         }
       }
     },
+    "/api/events/remote/{id}/{oid}/{eid}": {
+      "get": {
+        "description": "Get status of a remote event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Subscribe to remote event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Unsubscribe to remote event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "REMOTE Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "Event of the remote object - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/events/local/{id}/{eid}": {
+      "post": {
+        "description": "Create my event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Put a message in my event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "description": "Body of the message",
+            "type": "object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete my event channel",
+        "tags": ["consumption"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Object id - OID",
+            "type": "string",
+            "default": "0000-0000-0000"
+          },
+          {
+            "in": "path",
+            "name": "eid",
+            "required": true,
+            "description": "ID of my event - EID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/login/{id}": {
       "get": {
         "description": "Login your gateway instance or any object registered with it (Providing its id)",

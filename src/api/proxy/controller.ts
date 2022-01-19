@@ -5,9 +5,12 @@ import { logger, errorHandler } from '../../utils'
 import { responseBuilder } from '../../utils/response-builder'
 
 // Other imports
-import { JsonType } from '../../types/misc-types'
+import { AdapterMode, JsonType } from '../../types/misc-types'
 import { PermissionLocals } from '../../types/locals-types'
 import { getData, Method, Interaction } from '../../core/proxy'
+import { Config } from '../../config'
+import { proxy } from '../../microservices/proxy'
+
 
 // Controllers
 
@@ -40,16 +43,16 @@ export const setProperty: PropertyCtrl = async (req, res) => {
 	}
 }
 
-type EventCtrl = expressTypes.Controller<{ id: string, eid: string }, { body: JsonType }, {}, JsonType, {}>
+type EventCtrl = expressTypes.Controller<{ id: string, eid: string }, { body: JsonType }, {}, {}, {}>
 
 export const receiveEvent: EventCtrl = async (req, res) => {
     const { id, eid } = req.params
-    const { body } = req.body
+    const  body  = req.body
       try {
-      logger.info('Received event ' + eid + ' from ' + id)
-      logger.info(body)
-      const data = await getData(id, { method: Method.GET, interaction: Interaction.EVENT, id: eid })
-      return responseBuilder(HttpStatusCode.OK, res, null, data)
+        const data = await getData(id, { method: Method.POST, interaction: Interaction.EVENT, id: eid, body: body })
+        // console.log(data)
+     
+      return responseBuilder(HttpStatusCode.OK, res, null, {})
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
