@@ -75,6 +75,22 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
                 return { message: {} }
             }
         }
+    } else if (options.interaction === Interaction.EVENT) {
+      if (Config.ADAPTER.MODE === AdapterMode.PROXY) {
+            logger.debug('Sending event to proxy')
+            return options.id && options.method && options.body ?
+                proxy.retrieveInteraction(oid, options.id!, options.method!, options.interaction, options.body) :
+                Promise.resolve({ success: false, message: 'Missing parameters' })
+        } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
+            logger.debug('Sending event to semtantic url')
+            return options.id && options.method && options.body ?
+                proxy.retrieveInteractionFromWot(oid, options.id!, options.method!, options.interaction, options.body) :
+                Promise.resolve({ success: false, message: 'Missing parameters' })
+        } else {
+            logger.info('Received event ' + options.id + ' from ' + oid)
+            logger.info(options.body)
+            return Promise.resolve({ success: true, object: oid, interaction: options.interaction })
+        }
     } else {
         if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
             return Promise.resolve({ success: true, value: 100, object: oid, interaction: options.interaction })
@@ -89,6 +105,7 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
         }
     }
 }
+
 
 // PRIVATE
 
