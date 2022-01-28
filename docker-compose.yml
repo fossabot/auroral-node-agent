@@ -2,8 +2,8 @@ version: '2.4'
 
 services:
   auroral-agent:
-    image: auroral-agent
-    # image: registry.bavenir.eu/auroral_agent:dev
+    # image: auroral-agent
+    image: registry.bavenir.eu/auroral_agent:dev
     volumes:
     - ./.env:/app/.env:ro
     - .:/app:delegated
@@ -38,8 +38,8 @@ services:
     - GID=9999
     # ports:
     # - 5222:5222
-    # image: registry.bavenir.eu/auroral_gateway:dev
-    image: auroral-gateway
+    image: registry.bavenir.eu/auroral_gateway:dev
+    # image: auroral-gateway
   cache-db:
     # restart: always
     # ports:
