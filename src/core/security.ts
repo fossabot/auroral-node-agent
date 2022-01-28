@@ -42,13 +42,19 @@ export const security = {
             }
         } else {
             const contract = await redisDb.hgetall(ctid)
-            const keys = Object.keys(contract)
-            const items: { oid: string, rw: boolean }[] = []
-            for (const key of keys) {
-                items.push({ oid: key, rw: contract[key] === 'true' })
-            }
-            return {
-                cid, ctid, items
+            if (contract) {
+                const keys = Object.keys(contract)
+                const items: { oid: string, rw: boolean }[] = []
+                for (const key of keys) {
+                    items.push({ oid: key, rw: contract[key] === 'true' })
+                }
+                return {
+                    cid, ctid, items
+                }
+            } else {
+                return {
+                    cid, ctid, items: []
+                }
             }
         }
     },

@@ -46,6 +46,8 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
         if (Config.GATEWAY.ID === oid) {
             if (Config.WOT.ENABLED) {
                 if (options.sparql) {
+                    console.log('SPARQL query again...')
+                    console.log(options.sparql)
                     return sparqlDiscovery(options.sparql)
                 } else {
                     return semanticDiscovery(relationship, items)

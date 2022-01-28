@@ -9,6 +9,8 @@
 redis/data
 agent/
 tests/
+triplestore/
+wothive/
 gateway/keystore/
 gateway/data/
 redis/data

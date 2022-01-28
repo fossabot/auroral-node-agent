@@ -63,14 +63,17 @@ services:
   #   - ./mapping:/helio/mapping
   #   - ./helio-storage:/helio/helio-storage
   triplestore:
-    image: acimmino/helio-cloud-rdf4jstore:latest
+    image: acimmino/auroral-fuseky:latest
     volumes:
-      - ./triplestore:/usr/src/helio-cloud-rdf4jstore/rdf4j
+      - triplestore:/fuseki
     ports:
-      - '4567:4567'
+      - '3030:3030'
   wothive:
     image: acimmino/wot-hive:latest
-    volumes:
-      - ./wothive/configuration.json:/usr/src/wothive/configuration.json
+    # volumes:
+    #   - ./wothive/configuration.json:/usr/src/wothive/configuration.json
     ports:
       - '9000:9000'
+volumes:
+    triplestore:
+        external: true

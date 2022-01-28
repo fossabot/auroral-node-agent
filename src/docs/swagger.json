@@ -636,7 +636,7 @@
     },
     "/api/registration": {
       "post": {
-        "description": "Register an object in the AURORAL platform. If WoT is enabled you have to use thing description format.",
+        "description": "Register an object in the AURORAL platform. If WoT is enabled you have to send the thing description instead of the separate interaction patterns (properties, events, actions).",
         "tags": [
           "registry"
         ],
@@ -1041,8 +1041,14 @@
           "description": "Id of the object in your infrastructure",
           "default": "1234"
         },
+        "td": {
+          "type": "object",
+          "required": false,
+          "description": "Thing description object in JSON-LD" 
+        },
         "properties": {
           "type": "array",
+          "required": false,
           "description": "Array of pid's. You can use only those you previously registered in the adapter",
           "items": {
             "type": "string"
@@ -1050,6 +1056,7 @@
         },
         "events": {
           "type": "array",
+          "required": false,
           "description": "Array of eid's. You can use only those you previously registered in the adapter",
           "items": {
             "type": "string"
@@ -1057,6 +1064,7 @@
         },
         "actions": {
           "type": "array",
+          "required": false,
           "description": "Array of aid's. You can use only those you previously registered in the adapter",
           "items": {
             "type": "string"
@@ -1087,8 +1095,14 @@
           "type": "string",
           "description": "Id of the object in your infrastructure"
         },
+        "td": {
+          "type": "object",
+          "required": false,
+          "description": "Thing description object in JSON-LD" 
+        },
         "properties": {
           "type": "array",
+          "required": false,
           "description": "Array of pid's. You can use only those you previously registered in the adapter",
           "items": {
             "type": "string"
@@ -1096,6 +1110,7 @@
         },
         "events": {
           "type": "array",
+          "required": false,
           "description": "Array of eid's. You can use only those you previously registered in the adapter",
           "items": {
             "type": "string"
@@ -1103,6 +1118,7 @@
         },
         "actions": {
           "type": "array",
+          "required": false,
           "description": "Array of aid's. You can use only those you previously registered in the adapter",
           "items": {
             "type": "string"

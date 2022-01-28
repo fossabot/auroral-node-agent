@@ -62,16 +62,10 @@
                     name: it.name,
                     type: it.type,
                     adapterId: it.adapterId, 
-                    oid: it.oid  
-                 }
-                 if (it.labels) {
-                    item.labels = it.labels
-                 }
-                 if (it.groups) {
-                    item.groups = it.groups
-                 }
-                 if (it.avatar) {
-                    item.avatar = it.avatar
+                    oid: it.oid,
+                    labels: it.labels ? it.labels : undefined,
+                    groups: it.groups ? it.groups : undefined,
+                    avatar: it.avatar ? it.avatar : undefined
                  }
                  return  item  
              })
@@ -186,11 +180,11 @@
      }
     }
     
-    function filterRedisProperities(item: RegistrationUpdate): RegistrationnUpdateRedis{
-        if(!item.oid){
-            throw new Error("Item does not have oid")
+    function filterRedisProperities(item: RegistrationUpdate): RegistrationnUpdateRedis {
+        if (!item.oid) {
+            throw new Error('Item does not have oid')
         }
-        const itemRedis: RegistrationnUpdateRedis= {
+        const itemRedis: RegistrationnUpdateRedis = {
             oid: item.oid,
             name: item.name,
             adapterId: item.adapterId,
@@ -200,24 +194,23 @@
         }
         return itemRedis
     }
-    function filterNmProperities(items: RegistrationUpdate[]): RegistrationnUpdateNm[]{
-        let nmItems: RegistrationnUpdateNm[] = []
-        items.forEach(item =>{
-            if(!item.oid){
-                throw new Error("Item does not have oid")
+    function filterNmProperities(items: RegistrationUpdate[]): RegistrationnUpdateNm[] {
+        const nmItems: RegistrationnUpdateNm[] = []
+        items.forEach(item => {
+            if (!item.oid) {
+                throw new Error('Item does not have oid')
             }
-            const itemNm: RegistrationnUpdateNm= {
+            const itemNm: RegistrationnUpdateNm = {
                 oid: item.oid,
                 name: item.name,
                 adapterId: item.adapterId,
                 labels: item.labels,
                 avatar: item.avatar,
-                groups: item.groups != undefined? [...item.groups] : undefined,
+                groups: item.groups != undefined ? [...item.groups] : undefined,
                 version: item.version,
                 description: item.description,
             }
             nmItems.push(itemNm)
         })
         return nmItems
-       
     }

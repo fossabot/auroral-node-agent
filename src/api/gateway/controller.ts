@@ -142,6 +142,8 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
       await gtwServices.doLogouts(body.oids, false)
       // Remove from AURORAL platform
       await gateway.removeRegistrations(body)
+      // Remove from agent
+      await removeItem('registrations', req.body.oids)
       // Remove from WoT
       if (Config.WOT.ENABLED) {
         await Promise.all(
@@ -151,8 +153,6 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
           })
         )
       }
-      // Remove from agent
-      await removeItem('registrations', req.body.oids)
       logger.info('Items successfully removed!')
       return responseBuilder(HttpStatusCode.OK, res, null, null)
     } catch (err) {
@@ -195,7 +195,6 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
     try {
         const params = { sparql, originId }
         const data = (await gateway.discoveryRemote(id, params)).wrapper
-        console.log(data)
         return responseBuilder(HttpStatusCode.OK, res, null, data.message)
       } catch (err) {
         const error = errorHandler(err)

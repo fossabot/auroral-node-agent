@@ -2,8 +2,7 @@
 Parsing middlewares
 */
 import { v4 as uuidv4 } from 'uuid'
-import { Thing } from '../types/wot-types'
-import {  RegistrationBody,RegistrationUpdate, RegistrationJSON } from '../persistance/models/registrations'
+import { RegistrationBody,RegistrationUpdate, RegistrationJSON } from '../persistance/models/registrations'
 import { getCountOfItems, getItem } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
 import { errorHandler } from '../utils/error-handler'
@@ -37,7 +36,7 @@ export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]):
     const items = await Promise.all(itemsArray.map(async it => {
             try {
                 const oid = uuidv4()
-                await wot.upsertTD(oid, { 'id': 'urn:uuid:' + oid, ...it.td })
+                await wot.upsertTD(oid, { 'id': oid, ...it.td })
                 return _buildTDWoT(oid, it)
             } catch (err) {
                 const error = errorHandler(err)
@@ -84,7 +83,7 @@ export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJS
     })
     const itemsUpdate = await Promise.all(itemsArray.map(async (it) => {
         // get proper thing description
-        await wot.upsertTD(it.oid!, { 'id': 'urn:uuid:' + it.oid!, ...it.td })
+        await wot.upsertTD(it.oid!, { 'id': it.oid!, ...it.td })
         return _buildTDWoTUpdate(it.oid!, it!)
     }))
     return itemsUpdate
