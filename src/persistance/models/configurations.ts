@@ -10,7 +10,7 @@ export type Configuration = {
     last_configuration_update: string
     last_privacy_update: string
     last_partners_update: string
-    // registrations: string
+    registrations: string
     // propierties: string
     // actions: string
     events: string

@@ -6,11 +6,11 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, BasicResponse, IItemPrivacy, RelationshipType, ContractType, WholeContractType } from '../types/misc-types'
+import { JsonType, BasicResponse, IItemPrivacy, RelationshipType, WholeContractType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler } from '../utils'
-import { DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult, RegistrationUpdateResult } from '../types/gateway-types'
-import { Registration, RegistrationBody, RegistrationJSON, RegistrationnUpdateNm, RegistrationUpdate } from '../persistance/models/registrations'
+import { DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult, RegistrationUpdateResult, IdDiscoveryType } from '../types/gateway-types'
+import { Registration, RegistrationBody, RegistrationnUpdateNm } from '../persistance/models/registrations'
 import { getCredentials } from '../persistance/persistance'
 import { Thing } from '../types/wot-types'
 
@@ -160,10 +160,10 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
      */
-    discovery: async function(oid?: string): Promise<string[]> {
+    discovery: async function(oid?: string): Promise<IdDiscoveryType> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request('objects', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as string[]
+            return request('objects', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as IdDiscoveryType
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)

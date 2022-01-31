@@ -60,3 +60,7 @@ export interface RemovalBody {
     agid: string,
     oids: string[]
 }
+
+export interface IdDiscoveryType {
+    objects: { oid: string }[]
+}

@@ -1,14 +1,14 @@
-import { expressTypes } from '../../types/index'
-import { security } from '../../core/security'
-import { discovery } from '../../core/discovery'
+import { expressTypes } from '../../../types/index'
+import { security } from '../../../core/security'
+import { discovery } from '../../../core/discovery'
 
 // Other imports
-import { IItemPrivacy, JsonType, RelationshipType } from '../../types/misc-types'
-import { PermissionLocals } from '../../types/locals-types'
-import { HttpStatusCode } from '../../utils/http-status-codes'
-import { ItemPrivacy } from '../../persistance/models/registrations'
-import { logger, errorHandler, responseBuilder } from '../../utils'
-import { Config } from '../../config'
+import { IItemPrivacy, JsonType, RelationshipType } from '../../../types/misc-types'
+import { PermissionLocals } from '../../../types/locals-types'
+import { HttpStatusCode } from '../../../utils/http-status-codes'
+import { ItemPrivacy } from '../../../persistance/models/registrations'
+import { logger, errorHandler, responseBuilder } from '../../../utils'
+import { Config } from '../../../config'
 
 const VALID_RELATIONSHIPS = Object.values(RelationshipType)
 

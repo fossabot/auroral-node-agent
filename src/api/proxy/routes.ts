@@ -1,20 +1,20 @@
 /**
  * routes.js
  * Proxy router interface
- * Endpoint 'agent'
+ * Endpoint 'proxy'
  * Gateway calls endpoint agent/... to send data collected from the network to the adapters
  * @interface
  */
  
- // Express router
+// Express router
 import { Router } from 'express'
-// Middlewares
+// Persistance
 import { redisDb } from '../../persistance/redis'
 // Controllers
 import * as ctrl from './controller'
 // Middlewares
-import { validatePermissions } from '../middlewares/proxy-guard'
-import { listenForNotifications } from '../middlewares/notification-listener'
+import { validatePermissions } from './middlewares/proxy-guard'
+import { listenForNotifications } from './middlewares/notification-listener'
 
 const ProxyRouter = Router()
 

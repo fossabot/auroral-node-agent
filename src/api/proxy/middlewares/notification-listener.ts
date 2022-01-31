@@ -1,10 +1,10 @@
-import { expressTypes } from '../../types/index'
-import { discovery } from '../../core/discovery'
-import { security } from '../../core/security'
-import { ContractItemType, ContractType , JsonType } from '../../types/misc-types'
+import { expressTypes } from '../../../types/index'
+import { discovery } from '../../../core/discovery'
+import { security } from '../../../core/security'
+import { ContractItemType, ContractType , JsonType } from '../../../types/misc-types'
 
 // Other imports
-import { logger, errorHandler, responseBuilder, HttpStatusCode } from '../../utils'
+import { logger, errorHandler, responseBuilder, HttpStatusCode } from '../../../utils'
 
 type notifListenerController = expressTypes.Controller<{ agid: string, nid: XmppNotificationTypes }, {}, {}, void, {}>
 

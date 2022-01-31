@@ -112,7 +112,6 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     }
 }
 
-
 /**
  * Update item in db
  * @async
@@ -120,7 +119,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
  * @param {object} data 
  * @returns boolean 
  */
- export const updateItem = async ( data: RegistrationnUpdateRedis ): Promise<void> => {
+ export const updateItem = async (data: RegistrationnUpdateRedis): Promise<void> => {
     try {
         await registrationFuncs.updateItem(data)
     } catch (err) {
@@ -277,17 +276,7 @@ export const reloadConfigInfo = async function(cid: string, name: string, nodes:
  * @returns object
  */
  export const getConfigInfo = async (): Promise<JsonType>  => {
-    try {
-        const agentConfig = await redisDb.hgetall('configuration') as unknown as Configuration
-        return {
-            'INFO': agentConfig,
-            'CONFIGURATION': Config
-        }
-    } catch (err) {
-        const error = errorHandler(err)
-        logger.error(error.message)
-        throw new Error('Problem retrieving configuration information...')
-    }
+    return redisDb.hgetall('configuration')
 }
 
 // CACHE

@@ -2,8 +2,7 @@ import cors from 'cors'
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
 import { responseBuilder, HttpStatusCode } from './utils'
-import { AgentRouter } from './api/agent/routes'
-import { GtwRouter } from './api/gateway/routes'
+import { MainRouter } from './api/main/routes'
 import { ProxyRouter } from './api/proxy/routes'
 import { Config } from './config'
 import { logger } from './utils/logger'
@@ -43,8 +42,7 @@ app.use((req, res, next) => {
 })
  
 // API endpoints of the Agent
-app.use('/admin', AgentRouter)
-app.use('/api', GtwRouter)
+app.use('/api', MainRouter)
 app.use('/agent', ProxyRouter)
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swagger_options))
 
