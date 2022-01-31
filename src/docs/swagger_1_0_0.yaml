@@ -20,8 +20,10 @@ tags:
     description: Login/Logout of local infrastructure into AURORAL
   - name: Registry
     description: Registration of new devices or services into AURORAL
-  - name: Discovery
-    description: Discover local or remote objects visible to you
+  - name: Local Discovery
+    description: Retrieve metadata about your local infrastructure
+  - name: Remote Discovery
+    description: Discover remote resources and retrieve their metadata
   - name: Consumption
     description: Resource consumption calls, request properties or publish events among others
       among others
@@ -199,7 +201,7 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         default:
           description: Error
-  /api/discovery/neighbours:
+  /api/discovery/local/neighbours:
     get:
       summary: Gateway's reachable objects
       description: See what remote objects can you reach with your Gateway. You will see
@@ -207,7 +209,7 @@ paths:
       security:
         - basicAuth: []
       tags:
-        - Discovery
+        - Local Discovery
       responses:
         "200":
           description: OK
@@ -219,7 +221,7 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         default:
           description: Error
-  /api/discovery/neighbours/{id}:
+  /api/discovery/local/neighbours/{id}:
     get:
       summary: Item's reachable objects
       description: See what remote objects can you reach which each OID. To see objects of
@@ -228,7 +230,7 @@ paths:
       security:
         - basicAuth: []
       tags:
-        - Discovery
+        - Local Discovery
       parameters:
         - in: path
           name: id
@@ -248,14 +250,14 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         default:
           description: Error
-  /api/discovery/td-local/{id}:
+  /api/discovery/local/td/{id}:
     get:
       summary: Discover a local item's semantic description
       description: Obtain the TD of a concrete registered item by providing the ID as parameter
       security:
         - basicAuth: []
       tags:
-        - Discovery
+        - Local Discovery
       parameters:
         - in: path
           required: true
@@ -274,7 +276,28 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         default:
           description: Error
-  /api/discovery/td-remote/{id}/{originId}:
+  /api/discovery/local/semantic:
+    post:
+      summary: SPARQL query to your infrastructure
+      description: Send a discovery query to your gateway to retrieve semantic data from your infrastructure
+      security:
+        - basicAuth: []
+      tags:
+        - Local Discovery
+      requestBody:
+        $ref: "#/components/requestBodies/SparqlRequestObject"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiJsonObject"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          description: Error
+  /api/discovery/remote/td/{id}/{originId}:
     post:
       summary: Discover a remote item's semantic description
       description: Remote discovery. Get thing descriptions of remote objects that some of
@@ -283,7 +306,7 @@ paths:
       security:
         - basicAuth: []
       tags:
-        - Discovery
+        - Remote Discovery
       parameters:
         - in: path
           name: id
@@ -299,8 +322,6 @@ paths:
           schema:
             type: string
             default: 0000-0000-0000
-      requestBody:
-        $ref: "#/components/requestBodies/SparqlRequestObject"
       responses:
         "200":
           description: OK

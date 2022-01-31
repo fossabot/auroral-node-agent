@@ -7,7 +7,7 @@
 import got, { Method, Headers } from 'got'
 import { JsonType, CONTENT_TYPE_ENUM, CONTENT_TYPE_LIST } from '../types/misc-types'
 import { Config } from '../config'
-import { Interaction } from '../core/proxy'
+import { Interaction } from '../core/data'
 import { wot } from './wot'
 import { logger } from '../utils/logger'
 import { Thing } from '../types/wot-types'

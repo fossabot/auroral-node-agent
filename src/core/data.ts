@@ -108,7 +108,6 @@ export const getData = async (oid: string, options: Options, relationship?: Rela
     }
 }
 
-
 // PRIVATE
 
 const semanticDiscovery = async (relationship?: string, items?: string[]): Promise<BasicResponse<Thing | Thing[]>> => {

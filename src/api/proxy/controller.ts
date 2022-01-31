@@ -7,10 +7,9 @@ import { responseBuilder } from '../../utils/response-builder'
 // Other imports
 import { AdapterMode, JsonType } from '../../types/misc-types'
 import { PermissionLocals } from '../../types/locals-types'
-import { getData, Method, Interaction } from '../../core/proxy'
+import { getData, Method, Interaction } from '../../core/data'
 import { Config } from '../../config'
 import { proxy } from '../../microservices/proxy'
-
 
 // Controllers
 

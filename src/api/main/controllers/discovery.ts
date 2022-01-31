@@ -52,6 +52,28 @@ export const discoverLocalTd: discoveryLocalTdCtrl = async (req, res) => {
     }
 }
 
+type discoveryLocalSemanticCtrl = expressTypes.Controller<{}, { sparql: string }, {}, JsonType | string, {}>
+ 
+export const discoverLocalSemantic: discoveryLocalSemanticCtrl = async (req, res) => {
+    const { sparql } =  req.body
+    console.log(sparql)
+    try {
+        let result
+        if (!sparql) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing sparql query')
+        } else if (Config.WOT.ENABLED) {
+            result = (await wot.searchSPARQL(sparql)).message
+        } else {
+            result = 'You need to enable WoT to use this function'
+        }
+        return responseBuilder(HttpStatusCode.OK, res, null, result)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
+}
+
 type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: string }, { sparql?: JsonType }, {}, Registration[] | Thing[], {}>
 
 /**

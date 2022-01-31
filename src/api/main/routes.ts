@@ -30,12 +30,12 @@ MainRouter
 
   // ***** DISCOVERY endpoints *****
   // LOCAL
-   .get('/discovery/neighbours', discovery.discoveryLocal)
-   .get('/discovery/neighbours/:id', discovery.discoveryLocal)
-   .get('/discovery/td-local/:id', discovery.discoverLocalTd)
-  // TBD  .post('/discovery/semantic', ctrl.getRegistrationsTd) 
+   .get('/discovery/local/neighbours', discovery.discoveryLocal)
+   .get('/discovery/local/neighbours/:id', discovery.discoveryLocal)
+   .get('/discovery/local/td/:id', discovery.discoverLocalTd)
+   .post('/discovery/local/semantic', discovery.discoverLocalSemantic) 
   // REMOTE
-   .post('/discovery/td-remote/:id/:originId', discovery.discoveryRemote)
+   .post('/discovery/remote/td/:id/:originId', discovery.discoveryRemote)
   // TBD .post('/discovery/semantic/:agid', ctrl.discoveryRemote)
   // TBD discover neighbours from specific CID or CTID
   // TBD Federate sparql query

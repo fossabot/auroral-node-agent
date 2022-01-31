@@ -22,9 +22,23 @@ const callApi = got.extend({
     decompress: true // accept-encoding header gzip
 })
 
+const callSPARQL = got.extend({
+    prefixUrl: Config.WOT.HOST + ':' + Config.WOT.PORT,
+    responseType: 'text',
+    isStream: false,
+    retry: 2, // Retries on failure N times
+    throwHttpErrors: false, // If true 4XX and 5XX throw an error
+    timeout: 30000, // 30sec to timeout
+    decompress: true // accept-encoding header gzip
+})
+
 const ApiHeader = { 
     'Content-Type': 'application/td+json',
     simple: 'false' 
+}
+
+const SparqlHeader = {
+    'Content-Type': 'text/plain',
 }
 
 // INTERFACE
@@ -177,17 +191,16 @@ export const wot = {
      * @query {sparql: string}
      * @returns {error: boolean, message: string} 
      */
-     searchSPARQL: async function(query: string): Promise<BasicResponse<Thing[]>> {
+     searchSPARQL: async function(query: string): Promise<BasicResponse<JsonType>> {
         try {
-            const searchParams = (new URLSearchParams([['query', query]])).toString()
-            const response = await request('api/search/sparql', 'GET', undefined, ApiHeader, searchParams)
+            const response = await requestSPARQL('api/search/sparql', 'POST', query, SparqlHeader)
             if (response.statusCode === 400) {
                 throw new Error('SPARQL expression not provided or contains syntax errors')
             }
             return buildResponse(response.body as JsonType)
         } catch (err) {
             const error = errorHandler(err)
-            logger.warn('Error retrieving TDs ...')
+            logger.warn('Error processing SPARQL query ...')
             throw new Error(error.message)
         }
     }
@@ -197,6 +210,14 @@ export const wot = {
 
 const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<PlainResponse> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as PlainResponse
+    if (response.statusCode >= 500) {
+        throw new Error('Error reaching WoT server -- status code 500')
+    }
+    return response
+}
+
+const requestSPARQL = async (endpoint: string, method: Method, body?: string, headers?: Headers, searchParams?: string): Promise<PlainResponse> => {
+    const response = await callSPARQL(endpoint, { method, body, headers, searchParams }) as PlainResponse
     if (response.statusCode >= 500) {
         throw new Error('Error reaching WoT server -- status code 500')
     }
