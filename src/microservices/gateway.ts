@@ -178,11 +178,11 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
      */
-    discoveryRemote: async function(oid: string, params: { sparql?: JsonType, originId?: string }): Promise<{ wrapper: BasicResponse< Registration[]> | BasicResponse<Thing []> }> {
+    discoveryRemote: async function(oid: string, params: { sparql?: string, originId?: string }): Promise<{ wrapper: BasicResponse< Registration[]> | BasicResponse<Thing []> }> {
         try {
             const { originId, sparql } = params
             const Authorization = await getAuthorization(originId)
-            const ans = await request(`objects/${oid}`, 'POST', sparql, { ...ApiHeader, Authorization }) as unknown as { message: any[] }
+            const ans = await request(`objects/${oid}`, 'POST', { sparql }, { ...ApiHeader, Authorization }) as unknown as { message: any[] }
             return ans.message[0] as unknown as { wrapper: BasicResponse< Registration[]> | BasicResponse<Thing []> }
         } catch (err) {
             const error = errorHandler(err)

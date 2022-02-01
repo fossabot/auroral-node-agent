@@ -459,7 +459,13 @@
                     "Local Discovery"
                 ],
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/SparqlRequestObject"
+                    "content": {
+                        "text/plain": {
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    }
                 },
                 "responses": {
                     "200": {
@@ -467,7 +473,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiJsonObject"
+                                    "$ref": "#/components/schemas/ApiResponseObject"
                                 }
                             }
                         }
@@ -482,7 +488,7 @@
             }
         },
         "/api/discovery/remote/td/{id}/{originId}": {
-            "post": {
+            "get": {
                 "summary": "Discover a remote item's semantic description",
                 "description": "Remote discovery. Get thing descriptions of remote objects that some of your objects can see. Set the OID of the object you want to reach OID parameter and set the OID of the object initiating the request with originID (originID must be a neighbour of the target OID).",
                 "security": [
@@ -522,6 +528,47 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ApiJsonObject"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "default": {
+                        "description": "Error"
+                    }
+                }
+            }
+        },
+        "/api/discovery/remote/semantic/{id}": {
+            "post": {
+                "summary": "SPARQL query to remote infrastructure - EXPERIMENTAL",
+                "description": "Send a discovery query to a remote gateway to retrieve semantic data. Experimental version, a final version of this feature will be available in future releases",
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ],
+                "tags": [
+                    "Remote Discovery"
+                ],
+                "requestBody": {
+                    "content": {
+                        "text/plain": {
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseObject"
                                 }
                             }
                         }

@@ -48,42 +48,32 @@ export const proxy = {
     /**
      * Access adapter to get interaction info
      * @param oid
-     * @param id 
+     * @param iid // Interaction id
      * @param method 
      * @returns 
      */ 
-    retrieveInteraction: async function(oid: string, id: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
-        logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + id)
-        return request('api/' + interaction + '/' + oid + '/' + id , method, body, { ...ApiHeader, Authorization })
-    },
-    /**
-     * Access adapter to get discovery info
-     * @param oid
-     * @param body 
-     * @returns 
-     */ 
-    retrieveDiscovery: async function(oid: string, body?: JsonType): Promise<JsonType> {
-        logger.debug('Calling: POST ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/discovery/' + oid)
-        return request('api/discovery/' + oid, 'POST', body, { ...ApiHeader, Authorization })
+    sendMessageViaProxy: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
+        logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + iid)
+        return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization })
     },
     /**
      * Access adapter to get interaction info
      * Getting URL from WoT
      * @param oid
-     * @param id 
+     * @param iid 
      * @param method 
      * @returns 
      */ 
-     retrieveInteractionFromWot: async function(oid: string, id: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
+     sendMessageViaWot: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
         const thing = (await wot.retrieveTD(oid)).message
         if (thing) {
-            const forms = getInteractionsForms(interaction, thing, id)
+            const forms = getInteractionsForms(interaction, thing, iid)
             if (forms) {
                 const url = forms[0].href
                 const headers = validateContentType(forms[0].contentType)
                 return requestSemantic(url , method, body, { ...headers, Authorization })
             } else {
-                return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + id + ' does not specify url to access data...' })
+                return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + iid + ' does not specify url to access data...' })
             }
         } else {
             return Promise.resolve({ success: false, message: 'Thing ' + oid + ' not found in infrastructure...' })

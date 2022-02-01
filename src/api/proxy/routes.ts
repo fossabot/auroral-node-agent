@@ -16,16 +16,23 @@ import * as ctrl from './controller'
 import { validatePermissions } from './middlewares/proxy-guard'
 import { listenForNotifications } from './middlewares/notification-listener'
 
+// Types
+
+enum ReqType {
+     DISCOVERY = 'Discovery',
+     DATA = 'Data'
+}
+
 const ProxyRouter = Router()
 
 ProxyRouter
      // ***** Gateway proxy *****
-     .get('/objects/:id/properties/:pid', redisDb.getCached, ctrl.getProperty) // receive property request from gtw
-     .put('/objects/:id/properties/:pid', ctrl.setProperty) // receive request to upd property from gtw
+     .get('/objects/:oid/properties/:pid', validatePermissions(ReqType.DATA), redisDb.getCached, ctrl.getProperty) // receive property request from gtw
+     .put('/objects/:oid/properties/:pid', validatePermissions(ReqType.DATA), ctrl.setProperty) // receive request to upd property from gtw
      // .post('/objects/:oid/actions/:aid') // receive request to start action
      // .delete('/objects/:oid/actions/:aid') // receive request to stop action
-     .put('/objects/:id/events/:eid', ctrl.receiveEvent) // get event from channel where you are subscribed
-     .post('/objects/:id/discovery', validatePermissions(), ctrl.discovery) // Get discovery request (From local or remote, with or w/o sparql query)
+     .put('/objects/:oid/events/:eid', ctrl.receiveEvent) // get event from channel where you are subscribed
+     .post('/objects/:oid/discovery', validatePermissions(ReqType.DISCOVERY), ctrl.discovery) // Get discovery request (From remote, with or w/o sparql query)
      .post('/objects/:agid/notifications/:nid', listenForNotifications())
    
 export { ProxyRouter }

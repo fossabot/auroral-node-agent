@@ -76,7 +76,6 @@ export interface RegistrationSemantic {
     td?: Thing
 }
 
-
 export interface RegistrationnUpdateRedis {
     oid: string
     adapterId?: string
@@ -128,7 +127,6 @@ export interface RegistrationBody {
     oid: string
 }
 
-
 export enum ItemPrivacy {
     PUBLIC = 2,
     FOR_FRIENDS = 1,
@@ -163,7 +161,7 @@ export const registrationFuncs = {
     // update sotred item
     updateItem: async (item: RegistrationnUpdateRedis): Promise<void> => {
         if (!item.oid) {
-            throw new Error(`Object with misses some oid, its update could not be stored...`)
+            throw new Error('Object with misses some oid, its update could not be stored...')
         }
         const exists = await redisDb.sismember('registrations', item.oid)
         if (exists) {
@@ -173,17 +171,17 @@ export const registrationFuncs = {
             if (item.adapterId) {
                 await redisDb.hset(item.oid, 'adapterId', item.adapterId)
             }
-            if (item.properties != undefined) {
+            if (item.properties !== undefined) {
                 redisDb.hset(item.oid, 'properties', item.properties)
             }
-            if (item.events!= undefined) {
+            if (item.events !== undefined) {
                 redisDb.hset(item.oid, 'events', item.events)
             }
-            if (item.actions!= undefined) {
+            if (item.actions !== undefined) {
                 redisDb.hset(item.oid, 'actions', item.actions)
             }
         } else {
-            throw new Error("Object does not exists - not updated")
+            throw new Error('Object does not exists - not updated')
         }
     },
     // Remove item from db

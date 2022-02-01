@@ -38,7 +38,7 @@ const ApiHeader = {
 }
 
 const SparqlHeader = {
-    'Content-Type': 'text/plain',
+    'Content-Type': 'text/plain'
 }
 
 // INTERFACE

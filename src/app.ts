@@ -19,7 +19,6 @@ const app = express()
 app.set('port', Config.PORT || 4000)
 app.set('ip', Config.IP || 'localhost')
 app.set('env', Config.NODE_ENV || 'development')
-app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Load swagger docs
@@ -43,7 +42,7 @@ app.use((req, res, next) => {
  
 // API endpoints of the Agent
 app.use('/api', MainRouter)
-app.use('/agent', ProxyRouter)
+app.use('/agent', express.json(), ProxyRouter)
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swagger_options))
 
 /**

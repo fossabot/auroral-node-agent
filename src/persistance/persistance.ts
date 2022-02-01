@@ -248,6 +248,10 @@ export const combinationExists = async (oid: string, pid: string) => {
     }    
 }
 
+export const isRegistered = async (oid: string): Promise<boolean> => {
+    return Boolean(await redisDb.sismember('registrations', oid))
+}
+
 // Configuration info MANAGEMENT
 
 /**

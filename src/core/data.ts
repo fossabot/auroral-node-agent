@@ -3,14 +3,13 @@
  * Get responses from adapter
  */
 
-import { JsonType, AdapterMode, BasicResponse, RelationshipType } from '../types/misc-types'
+import { JsonType, AdapterMode, RelationshipType } from '../types/misc-types'
 import { Config } from '../config'
 import { proxy } from '../microservices/proxy'
 import { wot } from '../microservices/wot'
-import * as persistance from '../persistance/persistance'
-import { Thing } from '../types/wot-types'
 import { logger, errorHandler } from '../utils'
-import { registrationFuncs } from '../persistance/models/registrations'
+
+// Types
 
 export enum Method {
     POST = 'POST',
@@ -24,123 +23,87 @@ export enum Interaction {
     DISCOVERY = 'discovery'
 }
 
-enum registrationAndInteractions {
-    REGISTRATIONS = 'registrations',
-    PROPERTIES = 'properties',
-    ACTIONS = 'actions',
-    EVENTS = 'events'
-}
+// Public Methods
 
-export interface Options {
-    method?: Method
-    id?: string
-    body?: JsonType
-    sparql?: string
-    interaction: Interaction
-    relationship?: string
-    items?: string[]
-}
-
-export const getData = async (oid: string, options: Options, relationship?: RelationshipType, items?: string[]): Promise<JsonType> => {
-    if (options.interaction === Interaction.DISCOVERY) {
-        if (Config.GATEWAY.ID === oid) {
-            if (Config.WOT.ENABLED) {
-                if (options.sparql) {
-                    console.log('SPARQL query again...')
-                    console.log(options.sparql)
-                    return sparqlDiscovery(options.sparql)
-                } else {
-                    return semanticDiscovery(relationship, items)
-                }
-            } else {
-                // wot disabled 
-                if (relationship === RelationshipType.ME) {
-                    const registeredItems = await persistance.getItem(registrationAndInteractions.REGISTRATIONS) as unknown as string[]
-                    const returnItems = await Promise.all(registeredItems.map(async (it) => {
-                        return persistance.getItem(registrationAndInteractions.REGISTRATIONS, it)
-                    }))
-                    return { message: returnItems.filter(it => it) }
-                } else if (items !== undefined) {
-                    const returnItems = await Promise.all(items.map(async (it) => {
-                        return persistance.getItem(registrationAndInteractions.REGISTRATIONS, it)
-                    }))
-                    return { message: returnItems.filter(it => it) as unknown as Thing[] }
-                } else {
-                    return { message: {} }
-                }
-            }
-        } else {
-            // test if device is accesible 
-            if (items && items.indexOf(oid) || relationship === RelationshipType.ME) {
-                return Config.WOT.ENABLED ? wot.retrieveTD(oid) : persistance.getItem(registrationAndInteractions.REGISTRATIONS, oid)
-            } else {
-                return { message: {} }
-            }
-        }
-    } else if (options.interaction === Interaction.EVENT) {
-      if (Config.ADAPTER.MODE === AdapterMode.PROXY) {
-            logger.debug('Sending event to proxy')
-            return options.id && options.method && options.body ?
-                proxy.retrieveInteraction(oid, options.id!, options.method!, options.interaction, options.body) :
-                Promise.resolve({ success: false, message: 'Missing parameters' })
-        } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
-            logger.debug('Sending event to semtantic url')
-            return options.id && options.method && options.body ?
-                proxy.retrieveInteractionFromWot(oid, options.id!, options.method!, options.interaction, options.body) :
-                Promise.resolve({ success: false, message: 'Missing parameters' })
-        } else {
-            logger.info('Received event ' + options.id + ' from ' + oid)
-            logger.info(options.body)
-            return Promise.resolve({ success: true, object: oid, interaction: options.interaction })
-        }
-    } else {
-        if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
-            return Promise.resolve({ success: true, value: 100, object: oid, interaction: options.interaction })
-        } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
-            return options.id && options.method ?
-                proxy.retrieveInteractionFromWot(oid, options.id, options.method, options.interaction, options.body) :
-                Promise.resolve({ success: false, message: 'Missing parameters' })
-        } else {
-            return options.id && options.method ?
-                proxy.retrieveInteraction(oid, options.id, options.method, options.interaction, options.body) :
-                Promise.resolve({ success: false, message: 'Missing parameters' })
-        }
+export const Data = {
+    readProperty: async (oid: string, pid: string) => {
+        return reachAdapter(oid, pid, Method.GET, Interaction.PROPERTY)
+    },
+    updateProperty: async (oid: string, pid: string, body: JsonType) => {
+        return reachAdapter(oid, pid, Method.PUT, Interaction.PROPERTY, body)
+    },
+    receiveEvent: async (oid: string, eid: string, body: JsonType) => {
+        return reachAdapter(oid, eid, Method.PUT, Interaction.EVENT, body)
+    },
+    tdDiscovery: async (oid: string, originId: string, relationship: RelationshipType, items?: string[]) => {
+        return thingDiscovery(oid, originId, relationship, items)
+    },
+    sparqlDiscovery: async (oid: string, originId: string, relationship: RelationshipType, sparql: string, items?: string[]) => {
+        return semanticDiscovery(oid, originId, relationship, sparql, items)
     }
 }
 
 // PRIVATE
 
-const semanticDiscovery = async (relationship?: string, items?: string[]): Promise<BasicResponse<Thing | Thing[]>> => {
-    try {
-        let rel = relationship
-        if (!relationship) {
-            rel = RelationshipType.OTHER
-        }
-        if (rel === RelationshipType.ME) {
-            const allItems = await registrationFuncs.getItem() as string[]
-            const things = await Promise.all(allItems.map(async it => {
-                return (await wot.retrieveTD(it)).message
-            }))
-            return { message: things } as BasicResponse<Thing[]>
-        } else {
-            if (!items) {
-                return { message: [] }
+/**
+ * Access adapter to fetch actual values/measurements/...
+ * Update properties or send event messages
+ * @param oid 
+ * @param iid interaction ID (pid, eid, aid)
+ * @param method 
+ * @param interaction 
+ * @param body 
+ * @returns 
+ */
+const reachAdapter = async (oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType) => {
+        if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
+            if (interaction === Interaction.EVENT) {
+                logger.info('Event received in dummy mode...')
+                logger.info(body)
+                return Promise.resolve()
             } else {
-                const things = await Promise.all(items.map(async it => {
-                    return (await wot.retrieveTD(it)).message
-                }))
-                return { message: things.filter(it => it) as unknown as Thing[] }
+                return Promise.resolve({ success: true, value: 100, object: oid, interaction: interaction })
             }
+        } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
+            return iid && method ?
+                proxy.sendMessageViaWot(oid, iid, method, interaction, body) :
+                Promise.resolve({ success: false, message: 'Missing parameters' })
+        } else {
+            return iid && method ?
+                proxy.sendMessageViaProxy(oid, iid, method, interaction, body) :
+                Promise.resolve({ success: false, message: 'Missing parameters' })
+        }
+}
+
+const thingDiscovery = async(oid: string, origindId: string, relationship: RelationshipType, items?: string[]): Promise<JsonType> => {
+    if (relationship === RelationshipType.ME) {
+        logger.debug('Own item ' + origindId + ' granted access to TD of ' + oid)
+        return wot.retrieveTD(oid)
+    } else {
+        if (items &&  items.indexOf(oid) !== -1) {
+            logger.debug('Remote item ' + origindId + ' granted access to TD of ' + oid)
+            return wot.retrieveTD(oid)
+        } else {
+            logger.debug('Remote item ' + origindId + ' access restricted to TD of ' + oid)
+            return Promise.resolve({})
+        }
+    }
+}
+
+const semanticDiscovery = async (oid: string, originId: string, relationship: string, sparql: string, items?: string[]) => {
+    try {
+        if (Config.GATEWAY.ID !== oid) {
+            throw new Error('Sparql query has to be address to a AGID')
+        }
+        if (relationship === RelationshipType.ME) {
+            return wot.searchSPARQL(sparql)
+        } else {
+            logger.debug('SPARQL discovery to foreign Nodes is under construction')
+            throw new Error('SPARQL discovery to foreign Nodes is under construction')
         }
     } catch (err: unknown) {
         const error = errorHandler(err)
         logger.debug(error.message)
         return { error: error.message }
     }
-}
-
-const sparqlDiscovery = async (sparql: string) => {
-    const test = wot.searchSPARQL(sparql)
-    console.log(test)
-    return {}
 }

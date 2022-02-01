@@ -5,21 +5,21 @@ import { logger, errorHandler } from '../../utils'
 import { responseBuilder } from '../../utils/response-builder'
 
 // Other imports
-import { AdapterMode, JsonType } from '../../types/misc-types'
+import { JsonType } from '../../types/misc-types'
 import { PermissionLocals } from '../../types/locals-types'
-import { getData, Method, Interaction } from '../../core/data'
+import { Data } from '../../core/data'
 import { Config } from '../../config'
-import { proxy } from '../../microservices/proxy'
 
 // Controllers
 
-type PropertyCtrl = expressTypes.Controller<{ id: string, pid: string }, {}, {}, { wrapper: any }, {}>
+type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, {}, { wrapper: any }, PermissionLocals>
  
 export const getProperty: PropertyCtrl = async (req, res) => {
-  const { id, pid } = req.params
+  const { oid, pid } = req.params
+  const { originId } = res.locals
 	try {
-    logger.info('Requested READ property ' + pid + ' from ' + id)
-    const data = await getData(id, { method: Method.GET, interaction: Interaction.PROPERTY, id: pid })
+    logger.info('Requested READ property ' + pid + ' from ' + oid)
+    const data = await Data.readProperty(oid, pid)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
@@ -29,11 +29,12 @@ export const getProperty: PropertyCtrl = async (req, res) => {
 }
  
 export const setProperty: PropertyCtrl = async (req, res) => {
-  const { id, pid } = req.params
+  const { oid, pid } = req.params
   const body = req.body
+  const { originId } = res.locals
 	try {
-    logger.info('Requested UPDATE property ' + pid + ' from ' + id)
-    const data = await getData(id, { method: Method.PUT, interaction: Interaction.PROPERTY, id: pid, body })
+    logger.info('Requested UPDATE property ' + pid + ' from ' + oid)
+    const data = await Data.updateProperty(oid, pid, body)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
@@ -42,16 +43,15 @@ export const setProperty: PropertyCtrl = async (req, res) => {
 	}
 }
 
-type EventCtrl = expressTypes.Controller<{ id: string, eid: string }, { body: JsonType }, {}, {}, {}>
+type EventCtrl = expressTypes.Controller<{ oid: string, eid: string }, { body: JsonType }, {}, {}, {}>
 
 export const receiveEvent: EventCtrl = async (req, res) => {
-    const { id, eid } = req.params
+    const { oid, eid } = req.params
     const  body  = req.body
       try {
-        const data = await getData(id, { method: Method.POST, interaction: Interaction.EVENT, id: eid, body: body })
-        // console.log(data)
-     
-      return responseBuilder(HttpStatusCode.OK, res, null, {})
+        logger.info('Event received to ' + oid + ' from channel ' + eid)
+        await Data.receiveEvent(oid, eid, body)     
+        return responseBuilder(HttpStatusCode.OK, res, null, {})
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -59,28 +59,33 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       }
   }
 
-type DiscoveryCtrl = expressTypes.Controller<{ id: string }, { sparql: string }, {}, { wrapper: JsonType }, PermissionLocals>
+type DiscoveryCtrl = expressTypes.Controller<{ oid: string }, { sparql: string }, {}, { wrapper: JsonType }, PermissionLocals>
 
 export const discovery: DiscoveryCtrl = async (req, res) => {
-    const { id } = req.params
-    const { sparql } = req.body
+    const { oid } = req.params
+    const query = req.body.sparql // Gateway sends the sparql wrapped as a JSON
     const { relationship, items } = res.locals
-      try {
-        if (!sparql) {
-          logger.info('Received discovery to ' + id)
-        } else {
-          if (typeof sparql !== 'string') {
-            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Sparql query has to be a string')
-          }
-          logger.info('Received Sparql discovery to ' + id)
-          logger.debug(sparql)
+    const { originId } = res.locals
+    if (!Config.WOT.ENABLED) {
+      throw new Error('Remote Node does not support semantic discovery...')
+    }
+    try {
+      let data
+      if (!query) {
+        logger.info('Received TD discovery to ' + oid)
+        data = await Data.tdDiscovery(oid, originId, relationship, items)
+      } else {
+        if (typeof query !== 'string') {
+          return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Sparql query has to be a string')
         }
-        const data = await getData(id, { interaction: Interaction.DISCOVERY, sparql }, relationship, items)
-        logger.debug('Returning data')
-        return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
-      } catch (err) {
-        const error = errorHandler(err)
-        logger.error(error.message)
-        return responseBuilder(error.status, res, error.message)
+        logger.info('Received Sparql discovery to ' + oid)
+        logger.debug(query)
+        data = await Data.sparqlDiscovery(oid, originId, relationship, query, items)
       }
-  }
+      return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
+    } catch (err) {
+      const error = errorHandler(err)
+      logger.error(error.message)
+      return responseBuilder(error.status, res, error.message)
+    }
+}
