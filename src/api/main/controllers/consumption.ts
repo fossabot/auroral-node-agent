@@ -24,10 +24,10 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
         if (data.error) {
           const response: string = data.statusCodeReason
           logger.warn(`Property ${pid} of ${oid} could not be retrieved`)
-          return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, response)
+          return responseBuilder(data.statusCode, res, response)
         } else {
           const response = data.message[0].wrapper
-          logger.info(`Property ${pid} of ${oid} received`)
+          logger.debug(`Property ${pid} of ${oid} received`)
           console.log(response)
           return responseBuilder(HttpStatusCode.OK, res, null, response)
         }      
@@ -55,11 +55,11 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
       // Parse response to get only the final payload
       if (data.error) {
         const response: string = data.statusCodeReason
-        logger.info(`Property ${pid} of ${oid} could not be set`)
-        return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, response)
+        logger.warn(`Property ${pid} of ${oid} could not be set`)
+        return responseBuilder(data.statusCode, res, response)
       } else {
         const response = data.message[0].wrapper
-        logger.info(`Property ${pid} of ${oid} set`)
+        logger.debug(`Property ${pid} of ${oid} set`)
         return responseBuilder(HttpStatusCode.OK, res, null, response)
       }      
     } catch (err) {

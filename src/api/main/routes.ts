@@ -12,12 +12,17 @@ import { Router, json, text } from 'express'
 // Controllers
 import { auth, registry, collaborate, discovery, consume, admin } from './controllers' 
 // Middlewares
-import { checkDestination } from './middlewares/check-destination'
+import { checkDestination, isLocal } from './middlewares'
 
 export enum Method {
   POST = 'POST',
   GET = 'GET',
   PUT = 'PUT'
+}
+
+enum SemanticType {
+  SPARQL = 'Sparql',
+  TD = 'TD'
 }
 
 const MainRouter = Router()
@@ -43,8 +48,8 @@ MainRouter
    .get('/discovery/local/td/:id', json(), discovery.discoverLocalTd)
    .post('/discovery/local/semantic', text(), discovery.discoverLocalSemantic) // Expects plain text
   // REMOTE
-   .get('/discovery/remote/td/:id/:originId', json(), discovery.discoveryRemote)
-   .post('/discovery/remote/semantic/:id', text(), discovery.discoveryRemote)
+   .get('/discovery/remote/td/:id/:originId', json(), isLocal(SemanticType.TD), discovery.discoveryRemote)
+   .post('/discovery/remote/semantic/:id', text(), isLocal(SemanticType.SPARQL), discovery.discoveryRemote)
   // TBD .post('/discovery/semantic/:agid', ctrl.discoveryRemote)
   // TBD discover neighbours from specific CID or CTID
   // TBD Federate sparql query

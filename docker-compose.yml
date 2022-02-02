@@ -12,7 +12,7 @@ services:
       cache-db:
         condition: service_healthy
   proxy:
-    restart: always
+    restart: unless-stopped
     volumes:
     - ./nginx/logs:/var/log/nginx
     - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
@@ -27,7 +27,7 @@ services:
       # - 443:443
     image: nginx:stable
   gateway:
-    # restart: always
+    # restart: unless-stopped
     volumes:
     - ./gateway/log:/gateway/log
     - ./gateway/data:/gateway/data
@@ -41,7 +41,7 @@ services:
     image: registry.bavenir.eu/auroral_gateway:dev
     # image: auroral-gateway
   cache-db:
-    # restart: always
+    # restart: unless-stopped
     # ports:
     # - 6379:6379
     volumes:
@@ -66,14 +66,14 @@ services:
     image: acimmino/auroral-fuseky:latest
     volumes:
       - triplestore:/fuseki
-    ports:
-      - '3030:3030'
+    # ports:
+    #   - '3030:3030'
   wothive:
     image: acimmino/wot-hive:latest
     # volumes:
     #   - ./wothive/configuration.json:/usr/src/wothive/configuration.json
-    ports:
-      - '9000:9000'
+    # ports:
+    #   - '9000:9000'
 volumes:
     triplestore:
         external: true

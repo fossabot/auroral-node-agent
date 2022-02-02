@@ -1,4 +1,5 @@
 /** 
+ * CONSUMPTION REQUESTS
  * Verifies if the destination of the request is local or remote,
  * and if the OID requested belongs to the same node, 
  * the request is not sent to the XMPP network but directly to the adapter
@@ -12,7 +13,7 @@ import { JsonType } from '../../../types/misc-types'
 
 // Types
 
-export enum Method {
+enum Method {
     POST = 'POST',
     GET = 'GET',
     PUT = 'PUT'

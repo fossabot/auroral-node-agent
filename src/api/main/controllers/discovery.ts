@@ -87,8 +87,15 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
     const sparql = req.body  
     try {
         const params = { sparql, originId }
-        const data = (await gateway.discoveryRemote(id, params)).wrapper
-        return responseBuilder(HttpStatusCode.OK, res, null, data.message)
+        const data = await gateway.discoveryRemote(id, params)
+        if (data.error) {
+            const response: string = data.statusCodeReason
+            logger.warn('Discovery failed')
+            return responseBuilder(data.statusCode, res, response)
+          } else {
+            const response = data.message[0].wrapper.message
+            return responseBuilder(HttpStatusCode.OK, res, null, response)
+          } 
       } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

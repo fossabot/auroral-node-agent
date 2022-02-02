@@ -553,6 +553,18 @@
                 "tags": [
                     "Remote Discovery"
                 ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "description": "AGID",
+                        "schema": {
+                            "type": "string",
+                            "default": "0000-0000-0000"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "text/plain": {
@@ -573,8 +585,14 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
                         "description": "Error"
@@ -638,6 +656,9 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
                         "description": "Error"
@@ -711,6 +732,9 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
                     "default": {
                         "description": "Error"
                     }
@@ -771,6 +795,9 @@
                             }
                         }
                     },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
                     "default": {
                         "description": "Error"
                     }
@@ -828,6 +855,9 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
                         "description": "Error"
@@ -887,6 +917,9 @@
                             }
                         }
                     },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
                     "default": {
                         "description": "Error"
                     }
@@ -936,6 +969,9 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
                         "description": "Error"
@@ -994,6 +1030,9 @@
                             }
                         }
                     },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
                     "default": {
                         "description": "Error"
                     }
@@ -1041,6 +1080,9 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
                         "description": "Error"
@@ -1293,6 +1335,9 @@
             },
             "Unauthorized": {
                 "description": "Unauthorized"
+            },
+            "NotFound": {
+                "description": "Not Found"
             },
             "Forbidden": {
                 "description": "Forbidden"

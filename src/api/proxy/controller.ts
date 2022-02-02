@@ -59,11 +59,12 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       }
   }
 
-type DiscoveryCtrl = expressTypes.Controller<{ oid: string }, { sparql: string }, {}, { wrapper: JsonType }, PermissionLocals>
+type DiscoveryCtrl = expressTypes.Controller<{ oid: string }, { sparql: string } | undefined, {}, { wrapper: JsonType }, PermissionLocals>
 
 export const discovery: DiscoveryCtrl = async (req, res) => {
     const { oid } = req.params
-    const query = req.body.sparql // Gateway sends the sparql wrapped as a JSON
+    console.log(req.body)
+    const query = req.body ? req.body.sparql : undefined // Gateway sends the sparql wrapped as a JSON
     const { relationship, items } = res.locals
     const { originId } = res.locals
     if (!Config.WOT.ENABLED) {

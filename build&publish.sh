@@ -51,13 +51,13 @@ docker buildx build --platform ${PLATFORMS} \
 docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
 
 
-docker login ${GIT_REGISTRY}
+# docker login ${GIT_REGISTRY}
 
-# Build images & push to github
-docker buildx build --platform ${PLATFORMS} \
-                    --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} \
-                    --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-                    --build-arg BUILD_VERSION="1.0" \
-                    -f Dockerfile . --push
-# Pull local arch version 
-docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}
+# # Build images & push to github
+# docker buildx build --platform ${PLATFORMS} \
+#                     --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} \
+#                     --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+#                     --build-arg BUILD_VERSION="1.0" \
+#                     -f Dockerfile . --push
+# # Pull local arch version 
+# docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}

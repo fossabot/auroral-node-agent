@@ -51,13 +51,8 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
         }
     } catch (err) {
         const error = errorHandler(err)
-        if (error.code === 'ENOENT') {
-            logger.warn(`File ${type}.json not found`)
-            throw new Error(`File ${type}.json not found`)
-        } else {
-            logger.error(error.message)
-            throw new Error(error.message)
-        }
+        logger.error(error.message)
+        throw new Error(error.message)
     }
 }
 

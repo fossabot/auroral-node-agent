@@ -57,7 +57,7 @@ export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[
             throw new Error('Missing OID for some objects')
         }
         if (!registrations.includes(item.oid!)) {
-            throw new Error('Some objects are not registered [' + item.oid! + '}')
+            throw new Error('Some objects are not registered [' + item.oid! + ']')
         }
     })
     return itemsArray.map(it => {
