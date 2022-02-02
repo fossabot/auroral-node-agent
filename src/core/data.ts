@@ -55,12 +55,12 @@ export const Data = {
  * @param body 
  * @returns 
  */
-const reachAdapter = async (oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType) => {
+const reachAdapter = async (oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> => {
         if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
             if (interaction === Interaction.EVENT) {
                 logger.info('Event received in dummy mode...')
                 logger.info(body)
-                return Promise.resolve()
+                return Promise.resolve({ success: true })
             } else {
                 return Promise.resolve({ success: true, value: 100, object: oid, interaction: interaction })
             }
@@ -75,6 +75,14 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
         }
 }
 
+/**
+ * Retrieve Thing Description from WoT
+ * @param oid 
+ * @param origindId 
+ * @param relationship 
+ * @param items 
+ * @returns 
+ */
 const thingDiscovery = async(oid: string, origindId: string, relationship: RelationshipType, items?: string[]): Promise<JsonType> => {
     if (relationship === RelationshipType.ME) {
         logger.debug('Own item ' + origindId + ' granted access to TD of ' + oid)
@@ -90,6 +98,15 @@ const thingDiscovery = async(oid: string, origindId: string, relationship: Relat
     }
 }
 
+/**
+ * Send SPARQL to WoT
+ * @param oid 
+ * @param originId 
+ * @param relationship 
+ * @param sparql 
+ * @param items 
+ * @returns 
+ */
 const semanticDiscovery = async (oid: string, originId: string, relationship: string, sparql: string, items?: string[]) => {
     try {
         if (Config.GATEWAY.ID !== oid) {

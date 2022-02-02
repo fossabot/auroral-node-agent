@@ -11,7 +11,15 @@
 import { Router, json, text } from 'express'
 // Controllers
 import { auth, registry, collaborate, discovery, consume, admin } from './controllers' 
- 
+// Middlewares
+import { checkDestination } from './middlewares/check-destination'
+
+export enum Method {
+  POST = 'POST',
+  GET = 'GET',
+  PUT = 'PUT'
+}
+
 const MainRouter = Router()
 
 MainRouter
@@ -42,8 +50,8 @@ MainRouter
   // TBD Federate sparql query
 
   // ***** CONSUME remote resources *****
-   .get('/properties/:id/:oid/:pid', json(), consume.getProperty) // Request remote property
-   .put('/properties/:id/:oid/:pid', json(), consume.setProperty) // Update remote property
+   .get('/properties/:id/:oid/:pid', json(), checkDestination(Method.GET), consume.getProperty) // Request remote property
+   .put('/properties/:id/:oid/:pid', json(), checkDestination(Method.PUT), consume.setProperty) // Update remote property
    // .get('/actions/:id/:oid/:aid/:tid') // Get action status
    // .post('/actions/:id/:oid/:aid') // Start task on remote action
    // .put('/actions/:id/:oid/:aid') // Update status of task

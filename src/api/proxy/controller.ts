@@ -12,7 +12,7 @@ import { Config } from '../../config'
 
 // Controllers
 
-type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, {}, { wrapper: any }, PermissionLocals>
+type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, {}, { wrapper: JsonType }, PermissionLocals>
  
 export const getProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
@@ -30,7 +30,7 @@ export const getProperty: PropertyCtrl = async (req, res) => {
  
 export const setProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
-  const body = req.body
+  const body = req.body.wrapper
   const { originId } = res.locals
 	try {
     logger.info('Requested UPDATE property ' + pid + ' from ' + oid)
