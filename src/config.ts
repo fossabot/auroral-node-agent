@@ -30,6 +30,7 @@ export const Config = {
 	DB: {
 		HOST: process.env.DB_HOST!,
 		PORT: process.env.DB_PORT!,
+		PASSWORD: process.env.DB_PASSWORD!,
 		CACHE: process.env.DB_CACHE_ENABLED === 'true', // Enables caching values in Redis, reduce calls to adapter
 		CACHE_TTL: process.env.DB_CACHE_TTL! // Time to live of the values cached from the adapter
 	},

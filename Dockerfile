@@ -16,8 +16,8 @@ RUN npm ci && npm cache clean --force
 COPY --chown=node:node dist ./dist
 
 # RUN PHASE
-# FROM node:12-alpine
-FROM gcr.io/distroless/nodejs:12-debug
+FROM node:12-slim
+# FROM gcr.io/distroless/nodejs:12-debug
 COPY --from=build-env /app /app
 WORKDIR /app
 EXPOSE 3000

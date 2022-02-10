@@ -11,7 +11,8 @@ import { JsonType } from '../types/misc-types'
 
 const redisOptions = {
     port: Number(Config.DB.PORT), 
-    host: Config.DB.HOST
+    host: Config.DB.HOST,
+    auth_pass: Config.DB.PASSWORD
  } as ClientOpts
 
 const client = redis.createClient(redisOptions)

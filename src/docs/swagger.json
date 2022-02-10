@@ -1268,64 +1268,6 @@
                     }
                 }
             }
-        },
-        "/api/agent/exports": {
-            "get": {
-                "summary": "Backup to file",
-                "description": "Save registrations and interactions to file. BackUp option",
-                "security": [
-                    {
-                        "basicAuth": []
-                    }
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    }
-                }
-            }
-        },
-        "/api/agent/imports": {
-            "get": {
-                "summary": "Restore from file",
-                "description": "Get into adapter registrations and interactions from file. Restore option",
-                "security": [
-                    {
-                        "basicAuth": []
-                    }
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    }
-                }
-            }
         }
     },
     "components": {
