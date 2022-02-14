@@ -8,7 +8,6 @@
 **/log
 redis/data
 agent/
-tests/
 triplestore/
 wothive/
 gateway/keystore/
@@ -16,6 +15,7 @@ gateway/data/
 redis/data
 .env
 .token
+coverage/
 
 # Node artifact files
 node_modules/
