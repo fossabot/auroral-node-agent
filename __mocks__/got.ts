@@ -1,5 +1,3 @@
-// import got from jest.genMockFromModule('got')
-
 import { JsonType } from '../src/types/misc-types'
 
 // eslint-disable-next-line import/no-default-export

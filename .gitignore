@@ -16,6 +16,7 @@ redis/data
 .env
 .token
 coverage/
+.scannerwork/
 
 # Node artifact files
 node_modules/
