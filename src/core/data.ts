@@ -9,6 +9,13 @@ import { proxy } from '../microservices/proxy'
 import { wot } from '../microservices/wot'
 import { logger, errorHandler } from '../utils'
 
+// Constants 
+    
+/* Predefined graph filter syntax */
+const GRAPHSTART = ' GRAPH $g { '
+const GRAPHFILTER = ' } FILTER ( $g IN ( '
+const GRAPHEND = ' )) '
+
 // Types
 
 export enum Method {
@@ -137,10 +144,6 @@ const semanticDiscovery = async (oid: string, originId: string, relationship: st
  * @returns 
  */
 const filterOidsInSparql = (sparql: string, items: string[]): string => {
-    // Predefined graph filter syntax
-    const graphStart = ' GRAPH $g { '
-    const graphFilter = ' } FILTER ( $g IN ( '
-    const graphEnd = ' )) '
     // Locate positions to break original query and insert graph filtering
     const ini = sparql.indexOf('{')
     const end = sparql.lastIndexOf('}')
@@ -151,5 +154,5 @@ const filterOidsInSparql = (sparql: string, items: string[]): string => {
     const graphs = items.map(it => '<graph:' + it + '>')
     const graphStr = graphs.join(',')
     // Reconstruct and return query
-    return queryStart + graphStart + queryMid + graphFilter + graphStr + graphEnd + '}'
+    return queryStart + GRAPHSTART + queryMid + GRAPHFILTER + graphStr + GRAPHEND + '}'
 }
