@@ -115,12 +115,41 @@ const semanticDiscovery = async (oid: string, originId: string, relationship: st
         if (relationship === RelationshipType.ME) {
             return wot.searchSPARQL(sparql)
         } else {
-            logger.debug('SPARQL discovery to foreign Nodes is under construction')
-            throw new Error('SPARQL discovery to foreign Nodes is under construction')
+            if (items) {
+                const sparqlWithFilters = filterOidsInSparql(sparql, items)
+                return wot.searchSPARQL(sparqlWithFilters)
+            } else {
+                throw new Error('No items visible for your organisation in this SPARQL query...')
+            }
         }
     } catch (err: unknown) {
         const error = errorHandler(err)
         logger.debug(error.message)
         return { error: error.message }
     }
+}
+
+/**
+ * Enriches SPARQL to filter only OIDs or
+ * Graphs in semantic language that I am
+ * allowed to see
+ * @param sparql 
+ * @returns 
+ */
+const filterOidsInSparql = (sparql: string, items: string[]): string => {
+    // Predefined graph filter syntax
+    const graphStart = ' GRAPH $g { '
+    const graphFilter = ' } FILTER ( $g IN ( '
+    const graphEnd = ' )) '
+    // Locate positions to break original query and insert graph filtering
+    const ini = sparql.indexOf('{')
+    const end = sparql.lastIndexOf('}')
+    // Break original query
+    const queryStart = sparql.slice(0, ini + 1)
+    const queryMid = sparql.slice(ini + 1, end)
+    // Obtain graphs that need to be included in query
+    const graphs = items.map(it => '<graph:' + it + '>')
+    const graphStr = graphs.join(',')
+    // Reconstruct and return query
+    return queryStart + graphStart + queryMid + graphFilter + graphStr + graphEnd + '}'
 }
