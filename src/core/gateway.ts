@@ -69,7 +69,7 @@
                  }
                  return  item  
              })
-             console.log(itemsForCloud)
+             // Register in cloud
              const result = await gateway.postRegistrations({
                  agid: Config.GATEWAY.ID,
                  items: itemsForCloud
@@ -119,7 +119,7 @@
             throw new Error('any items to update')
         }
         try {
-            const nmItems = filterNmProperities(items)
+            const nmItems = _filterNmProperties(items)
             const result = await gateway.updateRegistration({
                 agid: Config.GATEWAY.ID,
                 items: nmItems
@@ -131,7 +131,7 @@
                 if (!it.error) {
                     try {
                         const itemUpdate = items.filter(x => x.oid === it.oid)[0]
-                        const redistItem = filterRedisProperities(itemUpdate) 
+                        const redistItem = _filterRedisProperties(itemUpdate) 
                         // Update redis DB
                         await updateItem(redistItem)
                         logger.info(it.oid + ' successfully updated!')
@@ -176,11 +176,13 @@
              const error = errorHandler(err)
              logger.warn(error.message)
              return false
-         }
-     }
+        }
     }
+}
     
-    function filterRedisProperities(item: RegistrationUpdate): RegistrationnUpdateRedis {
+//  Private functions
+
+    const _filterRedisProperties = (item: RegistrationUpdate): RegistrationnUpdateRedis => {
         if (!item.oid) {
             throw new Error('Item does not have oid')
         }
@@ -194,7 +196,8 @@
         }
         return itemRedis
     }
-    function filterNmProperities(items: RegistrationUpdate[]): RegistrationnUpdateNm[] {
+
+    const _filterNmProperties = (items: RegistrationUpdate[]): RegistrationnUpdateNm[] => {
         const nmItems: RegistrationnUpdateNm[] = []
         items.forEach(item => {
             if (!item.oid) {
@@ -206,7 +209,7 @@
                 adapterId: item.adapterId,
                 labels: item.labels,
                 avatar: item.avatar,
-                groups: item.groups != undefined ? [...item.groups] : undefined,
+                groups: item.groups !== undefined ? [...item.groups] : undefined,
                 version: item.version,
                 description: item.description,
             }

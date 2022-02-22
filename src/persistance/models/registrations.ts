@@ -192,7 +192,9 @@ export const registrationFuncs = {
         for (let i = 0, l = ids.length; i < l; i++) {
             const oid = ids[i]
             const todo = []
+            const adapterId = await redisDb.hget(oid, 'adapterId')
             todo.push(redisDb.srem('registrations', oid))
+            todo.push(redisDb.srem('adapterIds', adapterId))
             todo.push(redisDb.hdel(oid, 'credentials'))
             todo.push(redisDb.hdel(oid, 'password'))
             todo.push(redisDb.hdel(oid, 'type'))
@@ -260,6 +262,18 @@ export const registrationFuncs = {
     // Get count of items in model stored in db
     getCountOfItems: async (): Promise<number> => {
         return redisDb.scard('registrations')
+    },
+    existsAdapterId: async (adapterId: string): Promise<boolean> => {
+        const exists = await redisDb.sismember('adapterIds', adapterId)
+        return Boolean(exists)
+    },
+    sameAdapterId: async (oid: string, adapterId: string): Promise<boolean> => {
+        const oldAdapterId = await redisDb.hget(oid, 'adapterId')
+        if (oldAdapterId === adapterId) {
+            return true
+        } else {
+            throw new Error('REGISTRATION ERROR: On update is not allowed to change adapterId')
+        }
     }
 }
 
@@ -274,6 +288,7 @@ const storeItems = async (array: Registration[]) => {
         const exists = await redisDb.sismember('registrations', data.oid)
         if (!exists) {
             todo.push(redisDb.sadd('registrations', data.oid)) // Registrations array
+            todo.push(redisDb.sadd('adapterIds', data.adapterId)) // AdapterIDs array
             todo.push(redisDb.hset(data.oid, 'oid', data.oid))
             todo.push(redisDb.hset(data.oid, 'credentials', data.credentials))
             todo.push(redisDb.hset(data.oid, 'password', data.password))

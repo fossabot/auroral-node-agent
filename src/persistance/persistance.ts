@@ -193,6 +193,27 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     }
 }
 
+/**
+ * Check if adapter ID is duplicated
+ * @async
+ * @param {string} adapterId
+ * @returns boolean
+ */
+ export const existsAdapterId = async (adapterId: string): Promise<boolean> => {
+    return registrationFuncs.existsAdapterId(adapterId)
+}
+
+/**
+ * Check if new adapter ID is the same as the old
+ * @async
+ * @param {string} oid
+ * @param {string} adapterId
+ * @returns boolean
+ */
+ export const sameAdapterId = async (oid: string, adapterId: string): Promise<boolean> => {
+    return registrationFuncs.sameAdapterId(oid, adapterId)
+}
+
 // Useful functionalities
 
 /**

@@ -3,7 +3,7 @@ Parsing middlewares
 */
 import { v4 as uuidv4 } from 'uuid'
 import { RegistrationBody,RegistrationUpdate, RegistrationJSON } from '../persistance/models/registrations'
-import { getCountOfItems, getItem } from '../persistance/persistance'
+import { getCountOfItems, getItem, existsAdapterId, sameAdapterId } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
 import { errorHandler } from '../utils/error-handler'
 import { logger } from '../utils'
@@ -14,15 +14,28 @@ export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Pr
     const itemsArray = Array.isArray(body) ? body : [body]
     // Check num registrations not over 100
     await _checkNumberOfRegistrations(itemsArray.length)
+    // Collect all adapterIDs
+    const adapterIDs = itemsArray.map(it => it.adapterId).filter(it => it) as string[]
     // Create TDs array
-    return itemsArray.map(it => {
-        // validate required properities
-        _validate(it)
-        // generate uuid 
-        const oid = uuidv4()
-        // get proper thing description
-        return _buildTD(oid, it)
-    })
+    const items = await Promise.all(itemsArray.map(
+        async it => {
+            try {
+                // validate required properities
+                _validate(it)
+                // Check conflicts with adapterIDs
+                await _lookForAdapterIdConflicts(it.adapterId, adapterIDs)
+                // generate uuid 
+                const oid = uuidv4()
+                // get proper thing description
+                return _buildTD(oid, it)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return null
+            }
+        })
+    )
+    return items.filter(it => it) as RegistrationBody[] // Filter null objects
 }
 
 export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationBody[]> => {
@@ -33,10 +46,15 @@ export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]):
             throw new Error('Please include td')
         }
     })
-    const items = await Promise.all(itemsArray.map(async it => {
+    // Collect all adapterIDs
+    const adapterIDs = itemsArray.map(it => it.adapterId).filter(it => it) as string[]
+    const items = await Promise.all(itemsArray.map(
+        async it => {
             try {
+                // Check conflicts with adapterIDs
+                await _lookForAdapterIdConflicts(it.adapterId, adapterIDs)
                 const oid = uuidv4()
-                await wot.upsertTD(oid, { 'id': oid, ...it.td })
+                await wot.upsertTD(oid, { 'id': oid, ...it.td }) // WoT Validation
                 return _buildTDWoT(oid, it)
             } catch (err) {
                 const error = errorHandler(err)
@@ -60,10 +78,21 @@ export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[
             throw new Error('Some objects are not registered [' + item.oid! + ']')
         }
     })
-    return itemsArray.map(it => {
-        // get proper thing description
-        return _buildTDUpdate(it.oid!, it)
-    })
+    const itemsUpdate = await Promise.all(itemsArray.map(
+        async (it) => {
+            try {
+                // Check that adapterId does not change
+                await sameAdapterId(it.oid!, it.adapterId!)
+                // Get proper thing description
+                return _buildTDUpdate(it.oid!, it)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return null
+            }
+        })
+    )
+    return itemsUpdate.filter(it => it) as RegistrationUpdate[]
 }
 
 export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJSON []): Promise<RegistrationUpdate[]> => {
@@ -81,12 +110,22 @@ export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJS
             throw new Error('Some objects are not registered [' + item.oid + ']')
         }
     })
-    const itemsUpdate = await Promise.all(itemsArray.map(async (it) => {
-        // get proper thing description
-        await wot.upsertTD(it.oid!, { 'id': it.oid!, ...it.td })
-        return _buildTDWoTUpdate(it.oid!, it!)
-    }))
-    return itemsUpdate
+    const itemsUpdate = await Promise.all(itemsArray.map(
+        async (it) => {
+            try {
+                // Check that adapterId does not change
+                await sameAdapterId(it.oid!, it.adapterId!)
+                // Get proper thing description
+                await wot.upsertTD(it.oid!, { 'id': it.oid!, ...it.td }) // WoT Validation
+                return _buildTDWoTUpdate(it.oid!, it!)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return null
+            }
+        })
+    )
+    return itemsUpdate.filter(it => it) as RegistrationUpdate[]
 }
 
 // PRIVATE
@@ -125,7 +164,7 @@ const _buildTDUpdate = (oid: string, data: RegistrationJSON): RegistrationUpdate
     return { 
         oid, 
         name: data.name,
-        adapterId: data.adapterId, 
+        adapterId: data.adapterId ? data.adapterId : oid,
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
@@ -159,9 +198,6 @@ const _validate = (data: RegistrationJSON) => {
     if (!data.type) {
         throw new Error('REGISTRATION ERROR: Missing type')
     }
-    if (!data.adapterId) {
-        throw new Error('REGISTRATION ERROR: Missing adapterId')
-    }
 }
 
 /**
@@ -173,4 +209,22 @@ const _checkNumberOfRegistrations = async (newRegistrationsCount: number) => {
         throw new Error('You have reached max number of registrations!')
     }
     return true
+}
+
+/**
+ * Check for AdapterId conflicts during REGISTRATION
+ */
+const _lookForAdapterIdConflicts = async (adapterId: string | undefined, adapterIds: string[]) => {
+    // If adapterID is undefined it will be the same as the OID so no conflicts can occur
+    if (adapterId) {
+        // Test if same AdapterId appear more than once in the same array of registrations
+        const occurrences = adapterIds.reduce((a, v) => (v === adapterId ? a + 1 : a), 0)
+        if (occurrences > 1) {
+            throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
+        }
+        // Test is same AdapterId already exists in the agent
+        if (await existsAdapterId(adapterId)) {
+            throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
+        }
+    }
 }
