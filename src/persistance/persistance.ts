@@ -214,6 +214,16 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     return registrationFuncs.sameAdapterId(oid, adapterId)
 }
 
+/**
+ * Get OID by AdapterID
+ * @async
+ * @param {string} adapterId
+ * @returns string
+ */
+ export const getOidByAdapterId = async (adapterId: string): Promise<string> => {
+    return registrationFuncs.getOidByAdapterId(adapterId)
+}
+
 // Useful functionalities
 
 /**

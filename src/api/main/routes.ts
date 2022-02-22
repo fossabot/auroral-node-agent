@@ -40,6 +40,7 @@ MainRouter
    .post('/registration', json(), registry.postRegistrations)
    .put('/registration', json(), registry.modifyRegistration)
    .post('/registration/remove', json(), registry.removeRegistrations)
+   .get('/registration/oid/:adapterId', json(), registry.getOidByAdapter)
 
   // ***** DISCOVERY endpoints *****
   // LOCAL

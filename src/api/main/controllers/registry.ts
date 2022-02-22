@@ -10,7 +10,7 @@ import { gateway } from '../../../microservices/gateway'
 import { gtwServices } from '../../../core/gateway'
 import { RegistrationResultPost } from '../../../types/gateway-types'
 import { Registration, RegistrationJSON, RegistrationUpdate } from '../../../persistance/models/registrations'
-import { removeItem } from '../../../persistance/persistance'
+import { removeItem, getOidByAdapterId } from '../../../persistance/persistance'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../../core/td-parser'
 import { Config } from '../../../config'
 import { wot } from '../../../microservices/wot'
@@ -138,6 +138,23 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
       logger.info('Items successfully removed!')
       return responseBuilder(HttpStatusCode.OK, res, null, null)
     } catch (err) {
+      const error = errorHandler(err)
+      logger.error(error.message)
+      return responseBuilder(error.status, res, error.message)
+	}
+}
+
+type getOidByAdapterIdCtrl = expressTypes.Controller<{ adapterId: string }, {}, {}, string, {}>
+
+/**
+ * Retrieve things registered in the platform
+ */
+export const getOidByAdapter: getOidByAdapterIdCtrl = async (req, res) => {
+  const { adapterId } = req.params
+  try {
+    const data = await getOidByAdapterId(adapterId)
+    return responseBuilder(HttpStatusCode.OK, res, null, data)
+	} catch (err) {
       const error = errorHandler(err)
       logger.error(error.message)
       return responseBuilder(error.status, res, error.message)

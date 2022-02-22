@@ -195,6 +195,7 @@ export const registrationFuncs = {
             const adapterId = await redisDb.hget(oid, 'adapterId')
             todo.push(redisDb.srem('registrations', oid))
             todo.push(redisDb.srem('adapterIds', adapterId))
+            todo.push(redisDb.hdel(adapterId, 'oid'))
             todo.push(redisDb.hdel(oid, 'credentials'))
             todo.push(redisDb.hdel(oid, 'password'))
             todo.push(redisDb.hdel(oid, 'type'))
@@ -274,6 +275,9 @@ export const registrationFuncs = {
         } else {
             throw new Error('REGISTRATION ERROR: On update is not allowed to change adapterId')
         }
+    },
+    getOidByAdapterId: async (adapterId: string): Promise<string> => {
+        return redisDb.hget(adapterId, 'oid')
     }
 }
 
@@ -289,6 +293,7 @@ const storeItems = async (array: Registration[]) => {
         if (!exists) {
             todo.push(redisDb.sadd('registrations', data.oid)) // Registrations array
             todo.push(redisDb.sadd('adapterIds', data.adapterId)) // AdapterIDs array
+            todo.push(redisDb.hset(data.adapterId, 'oid', data.oid))
             todo.push(redisDb.hset(data.oid, 'oid', data.oid))
             todo.push(redisDb.hset(data.oid, 'credentials', data.credentials))
             todo.push(redisDb.hset(data.oid, 'password', data.password))
