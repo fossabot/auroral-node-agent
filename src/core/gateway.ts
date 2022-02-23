@@ -3,18 +3,27 @@
  * Implements support functionality
  */
 
- import { logger, errorHandler } from '../utils'
+ import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
  import { gateway } from '../microservices/gateway'
  import { addItem,  getItem, updateItem } from '../persistance/persistance'
  import { RegistrationResultPost, RegistrationUpdateResult } from '../types/gateway-types'
  import { RegistrationBody, RegistrationnUpdateNm, RegistrationnUpdateRedis, RegistrationUpdate } from '../persistance/models/registrations'
  import { Config } from '../config'
+import { RegistrationError } from '../types/misc-types'
  
+// Types
+
+type RegistrationRet = {
+    registrations: RegistrationResultPost[],
+    errors: RegistrationResultPost[]
+}
+
  export const gtwServices = {
-     doLogins: async (array: string[]): Promise<void> => {
+     doLogins: async (array: string[] | null): Promise<void> => {
          try {
+            const items: string[] = array ? array : await getItem('registrations') as string[]
              await gateway.login() // Start always the gateway first
-             array.forEach(async (it) => {
+             items.forEach(async (it) => {
                  try {
                      await gateway.login(it)
                  } catch (err) {
@@ -28,87 +37,79 @@
              logger.error(error.message)
          }
      },
-     doLogouts: async (array: string[], stopgtw: boolean = true): Promise<void> => {
-         try {
-             array.forEach(async (it) => {
-                 try {
-                     await gateway.logout(it)
-                 } catch (err) {
-                     const error = errorHandler(err)
-                     logger.error('Item ' + it + ' could not be logged out')
-                     logger.error(error.message)
-                 }
-             })
-             if (stopgtw) {
-                await gateway.logout() // Stop always the gateway last
-             }
-             logger.info('All logouts were successful')
-         } catch (err) {
-             const error = errorHandler(err)
-             logger.error(error.message)        
- }
+     doLogouts: async (array: string[] | null, stopgtw: boolean = true): Promise<void> => {
+        const items: string[] = array ? array : await getItem('registrations') as string[]
+        items.forEach(async (it) => {
+            try {
+                await gateway.logout(it)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error('Item ' + it + ' could not be logged out')
+                logger.error(error.message)
+            }
+        })
+        if (stopgtw) {
+            logger.info('Logging out Node instance...')
+            await gateway.logout() // Stop always the gateway last
+        }
      },
      /**
       * Register object in platform
       * Only 1 by 1 - No multiple registration accepted
       */
-     registerObject: async (items: RegistrationBody[]): Promise<RegistrationResultPost[]> => {
-         if (items.length === 0) {
-             return []
-         }
+     registerObject: async (items: RegistrationBody[]): Promise<RegistrationRet> => {
          try {
-             const itemsForCloud = items.map(it => {
-                 const item : RegistrationBody = {
-                    name: it.name,
-                    type: it.type,
-                    adapterId: it.adapterId, 
-                    oid: it.oid,
-                    labels: it.labels ? it.labels : undefined,
-                    groups: it.groups ? it.groups : undefined,
-                    avatar: it.avatar ? it.avatar : undefined
-                 }
-                 return  item  
-             })
+             const itemsForCloud = _buildItemsForCloud(items)
              // Register in cloud
              const result = await gateway.postRegistrations({
                  agid: Config.GATEWAY.ID,
                  items: itemsForCloud
              })
+             // Cloud returns global error
              if (result.error) {
-                 throw new Error('Platform parsing failed, please revise error: ' + JSON.stringify(result.message[0].error))
+                 throw new MyError('Registration failed in Cloud: ' + JSON.stringify(result.message[0].error), HttpStatusCode.BAD_REQUEST)
              }
-             result.message.forEach(async (it) => {
+             // Register items locally
+             const registrations: RegistrationResultPost[] = []
+             const errors: RegistrationResultPost[] = []
+             for (let i = 0, l = result.message.length; i < l; i++) {
+                 const it = result.message[i]
                  if (!it.error && it.password) {
-                     try {
-                         const td = items.filter(x => x.oid === it.oid)
-                         await addItem('registrations', 
-                             { 
-                                 ...td[0], 
-                                 oid: it.oid,
-                                 password: it.password,
-                                 created: new Date().toISOString(),
-                                 credentials: 'Basic ' + Buffer.from(it.oid + ':' + it.password, 'utf-8').toString('base64')
-                             })
-                         logger.info(it.name + ' with oid ' + it.oid + ' successfully registered!')
-                     } catch (err) {
-                         const error = errorHandler(err)
-                         logger.warn(it.name + ' with oid ' + it.oid + ' had a registration issue...')
-                         logger.error(error.message)
-                     }
-                 } else {
-                     logger.warn(it.name + ' with oid ' + it.oid + ' could not be registered...')
-                 }
-             })
+                    try {
+                        const td = items.filter(x => x.oid === it.oid)
+                        await addItem('registrations', 
+                            { 
+                                ...td[0], 
+                                oid: it.oid,
+                                password: it.password,
+                                created: new Date().toISOString(),
+                                credentials: 'Basic ' + Buffer.from(it.oid + ':' + it.password, 'utf-8').toString('base64')
+                            })
+                        logger.info(it.name + ' with oid ' + it.oid + ' successfully registered!')
+                        registrations.push(it)
+                    } catch (err) {
+                        const error = errorHandler(err)
+                        logger.warn(it.name + ' with oid ' + it.oid + ' had a registration issue...')
+                        logger.error(error.message)
+                        errors.push({ oid: it.oid, name: it.name, password: null, error: 'Error storing in REDIS' })
+                        // If REDIS registration fails remove it from cloud
+                        await _revertCloudRegistration(it.oid)
+                    }
+                } else {
+                    logger.warn(it.name + ' with oid ' + it.oid + ' could not be registered...')
+                    errors.push({ oid: it.oid, name: it.name, password: null, error: 'Error registering in cloud' })
+                }
+             }
              // Do login of infrastructure with small delay to avoid race conditions
             setTimeout(
                 async () => {
                     // Get objects OIDs stored locally
-                    const registrations = await getItem('registrations') as string[]
-                    gtwServices.doLogins(registrations)
+                    const oids = await getItem('registrations') as string[]
+                    gtwServices.doLogins(oids)
                 }, 
                 5000)
             // Return and end registration
-            return result.message
+            return { registrations, errors }
          } catch (err) {
              const error = errorHandler(err)
              throw new Error(error.message)
@@ -216,4 +217,29 @@
             nmItems.push(itemNm)
         })
         return nmItems
+    }
+
+    const _buildItemsForCloud = (items: RegistrationBody[]) => {
+        return items.map(it => {
+            const item : RegistrationBody = {
+               name: it.name,
+               type: it.type,
+               adapterId: it.adapterId, 
+               oid: it.oid,
+               labels: it.labels ? it.labels : undefined,
+               groups: it.groups ? it.groups : undefined,
+               avatar: it.avatar ? it.avatar : undefined
+            }
+            return item  
+        })
+    }
+
+    const _revertCloudRegistration = async (oid: string) => {
+        try {
+            await gateway.removeRegistrations({ oids: [oid] })
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error('Attempt to revert cloud registration failed ' + oid)
+            logger.error(error.message)
+        }
     }

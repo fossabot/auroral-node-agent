@@ -4,6 +4,7 @@ import { app } from './app'
 import { Config } from './config'
 import { logger } from './utils'
 import { initialize } from './core/main'
+import { gtwServices } from './core/gateway'
 
 /**
  * Error Handler. Provides full stack - only in dev
@@ -51,19 +52,25 @@ function shutdown() {
       logger.error(err)
       process.exitCode = 1
     }
-    process.exit()
+    gtwServices.doLogouts(null).then(() => {
+      logger.info('BYE!')
+      process.exit()
+    }).catch(() => {
+      logger.warn('AURORAL agent was stop but some connections were not closed')
+      process.exit()
+    })
   }) // decorated by stoppable module to handle keep alives 
 }
 
 // quit on ctrl-c when running docker in terminal
 process.on('SIGINT', () => {
-  logger.info('Got SIGINT (aka ctrl-c in docker). Graceful shutdown ')
+  logger.info('Got SIGINT (aka ctrl-c in docker). Gracefully shutting down... ')
   shutdown()
 })
 
 // quit properly on docker stop
 process.on('SIGTERM', () => {
-  logger.info('Got SIGTERM (docker container stop). Graceful shutdown ')
+  logger.info('Got SIGTERM (docker container stop). Gracefully shutting down... ')
   shutdown()
 })
 

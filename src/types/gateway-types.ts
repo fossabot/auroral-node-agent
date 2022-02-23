@@ -37,7 +37,7 @@ export interface RegistrationResult {
         oid: string
         password: string | null
         name: string
-        error?: boolean
+        error?: string
     }] 
 }
 
@@ -53,7 +53,7 @@ export interface RegistrationResultPost {
         oid: string
         password: string | null
         name: string
-        error?: boolean
+        error?: string
 }
 
 export interface RemovalBody {

@@ -7,38 +7,46 @@ import { getCountOfItems, getItem, existsAdapterId, sameAdapterId } from '../per
 import { wot } from '../microservices/wot'
 import { errorHandler } from '../utils/error-handler'
 import { logger } from '../utils'
+import { RegistrationResultPost } from '../types/gateway-types'
+
+// Types
+
+type RegistrationRet = {
+    registrations: RegistrationBody[],
+    errors: RegistrationResultPost[]
+}
 
 // PUBLIC
 
-export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationBody[]> => {
+export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     // Check num registrations not over 100
     await _checkNumberOfRegistrations(itemsArray.length)
     // Collect all adapterIDs
     const adapterIDs = itemsArray.map(it => it.adapterId).filter(it => it) as string[]
     // Create TDs array
-    const items = await Promise.all(itemsArray.map(
-        async it => {
-            try {
-                // validate required properities
-                _validate(it)
-                // Check conflicts with adapterIDs
-                await _lookForAdapterIdConflicts(it.adapterId, adapterIDs)
-                // generate uuid 
-                const oid = uuidv4()
-                // get proper thing description
-                return _buildTD(oid, it)
-            } catch (err) {
-                const error = errorHandler(err)
-                logger.error(error.message)
-                return null
-            }
-        })
-    )
-    return items.filter(it => it) as RegistrationBody[] // Filter null objects
+    const registrations: RegistrationBody[] = []
+    const errors: RegistrationResultPost[] = []
+    for (let i = 0, l = itemsArray.length; i < l; i++) {
+        try {
+            // validate required properities
+            _validate(itemsArray[i])
+            // Check conflicts with adapterIDs
+            await _lookForAdapterIdConflicts(itemsArray[i].adapterId, adapterIDs)
+            // generate uuid 
+            const oid = uuidv4()
+            // get proper thing description
+            registrations.push(_buildTD(oid, itemsArray[i]))
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            errors.push({ oid: itemsArray[i].adapterId || 'anonymous', name: itemsArray[i].name, error: error.message, password: null })
+        }
+    }
+    return { registrations, errors }
 }
 
-export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationBody[]> => {
+export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     await _checkNumberOfRegistrations(itemsArray.length)
     itemsArray.forEach(it => {
@@ -48,22 +56,22 @@ export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]):
     })
     // Collect all adapterIDs
     const adapterIDs = itemsArray.map(it => it.adapterId).filter(it => it) as string[]
-    const items = await Promise.all(itemsArray.map(
-        async it => {
-            try {
-                // Check conflicts with adapterIDs
-                await _lookForAdapterIdConflicts(it.adapterId, adapterIDs)
-                const oid = uuidv4()
-                await wot.upsertTD(oid, { 'id': oid, ...it.td }) // WoT Validation
-                return _buildTDWoT(oid, it)
-            } catch (err) {
-                const error = errorHandler(err)
-                logger.error(error.message)
-                return null
-            }
-        })
-    )
-    return items.filter(it => it) as RegistrationBody[]
+    const registrations: RegistrationBody[] = []
+    const errors: RegistrationResultPost[] = []
+    for (let i = 0, l = itemsArray.length; i < l; i++) {
+        try {
+            // Check conflicts with adapterIDs
+            await _lookForAdapterIdConflicts(itemsArray[i].adapterId, adapterIDs)
+            const oid = uuidv4()
+            await wot.upsertTD(oid, { 'id': oid, ...itemsArray[i].td }) // WoT Validation
+            registrations.push(_buildTDWoT(oid, itemsArray[i]))
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            errors.push({ oid: itemsArray[i].adapterId || 'anonymous', name: itemsArray[i].name, error: error.message, password: null })
+        }
+    }
+    return { registrations, errors }
 }
 
 export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationUpdate[]> => {

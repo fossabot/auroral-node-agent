@@ -72,10 +72,25 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
           items = await tdParser(body)
         }
         
+        // If all requests are parsed as wrong body
+        if (items.registrations.length === 0) {
+          return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null, items.errors)
+        }
+
         // Register TD in NM (Dont send type nor interaction patterns)
-        const result = await gtwServices.registerObject(items)
-        // TBD Unregister from WoT on Error
-        return responseBuilder(HttpStatusCode.CREATED, res, null, result)
+        const result = await gtwServices.registerObject(items.registrations)
+        
+        // Unregister from WoT on CLOUD or REDIS Error
+        await Promise.all(
+          result.errors.map(async it => {
+            logger.info('Reverting registration in WoT of OID: ' + it.oid)
+            await wot.deleteTD(it.oid)
+          })
+        )
+
+        // Build final response
+        const response = [...items.errors, ...result.registrations, ...result.errors]
+        return responseBuilder(HttpStatusCode.CREATED, res, null, response)
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

@@ -72,3 +72,8 @@ export enum CONTENT_TYPE_ENUM {
 
 export const CONTENT_TYPE_LIST = Object.values(CONTENT_TYPE_ENUM)
 
+export type RegistrationError = { 
+    adapterId: string, 
+    error: string 
+}
+

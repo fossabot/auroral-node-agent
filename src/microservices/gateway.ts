@@ -46,14 +46,8 @@ export const gateway = {
      * @returns {error: boolean, message: string} 
      */
     login: async function(oid?: string): Promise<BasicResponse> {
-        try {
-            const Authorization = await getAuthorization(oid)
-            return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
-        } catch (err) {
-            const error = errorHandler(err)
-            logger.warn('Object ' + oid + ' was not logged in ...')
-            throw new Error(error.message)
-        }
+        const Authorization = await getAuthorization(oid)
+        return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
     },
 
     /**
@@ -64,14 +58,8 @@ export const gateway = {
      * @returns {error: boolean, message: string} 
      */
     logout: async function(oid?: string): Promise<BasicResponse> {
-        try {
-            const Authorization = await getAuthorization(oid)
-            return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
-        } catch (err) {
-            const error = errorHandler(err)
-            logger.warn('Object ' + oid + ' was not logged in ...')
-            throw new Error(error.message)
-        }
+        const Authorization = await getAuthorization(oid)
+        return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
     },
 
     // ***** REGISTRATION *****
