@@ -6,16 +6,22 @@
  import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
  import { gateway } from '../microservices/gateway'
  import { addItem,  getItem, updateItem } from '../persistance/persistance'
- import { RegistrationResultPost, RegistrationUpdateResult } from '../types/gateway-types'
+ import { RegistrationResultPost } from '../types/gateway-types'
  import { RegistrationBody, RegistrationnUpdateNm, RegistrationnUpdateRedis, RegistrationUpdate } from '../persistance/models/registrations'
  import { Config } from '../config'
-import { RegistrationError } from '../types/misc-types'
+import { UpdateResult } from '../types/misc-types'
+import { wot } from '../microservices/wot'
  
 // Types
 
 type RegistrationRet = {
     registrations: RegistrationResultPost[],
     errors: RegistrationResultPost[]
+}
+
+type UpdateRet = {
+    updates: UpdateResult[],
+    errors: UpdateResult[]
 }
 
  export const gtwServices = {
@@ -58,107 +64,105 @@ type RegistrationRet = {
       * Only 1 by 1 - No multiple registration accepted
       */
      registerObject: async (items: RegistrationBody[]): Promise<RegistrationRet> => {
-         try {
-             const itemsForCloud = _buildItemsForCloud(items)
-             // Register in cloud
-             const result = await gateway.postRegistrations({
-                 agid: Config.GATEWAY.ID,
-                 items: itemsForCloud
-             })
-             // Cloud returns global error
-             if (result.error) {
-                 throw new MyError('Registration failed in Cloud: ' + JSON.stringify(result.message[0].error), HttpStatusCode.BAD_REQUEST)
-             }
-             // Register items locally
-             const registrations: RegistrationResultPost[] = []
-             const errors: RegistrationResultPost[] = []
-             for (let i = 0, l = result.message.length; i < l; i++) {
-                 const it = result.message[i]
-                 if (!it.error && it.password) {
-                    try {
-                        const td = items.filter(x => x.oid === it.oid)
-                        await addItem('registrations', 
-                            { 
-                                ...td[0], 
-                                oid: it.oid,
-                                password: it.password,
-                                created: new Date().toISOString(),
-                                credentials: 'Basic ' + Buffer.from(it.oid + ':' + it.password, 'utf-8').toString('base64')
-                            })
-                        logger.info(it.name + ' with oid ' + it.oid + ' successfully registered!')
-                        registrations.push(it)
-                    } catch (err) {
-                        const error = errorHandler(err)
-                        logger.warn(it.name + ' with oid ' + it.oid + ' had a registration issue...')
-                        logger.error(error.message)
-                        errors.push({ oid: it.oid, name: it.name, password: null, error: 'Error storing in REDIS' })
-                        // If REDIS registration fails remove it from cloud
-                        await _revertCloudRegistration(it.oid)
-                    }
-                } else {
-                    logger.warn(it.name + ' with oid ' + it.oid + ' could not be registered...')
-                    errors.push({ oid: it.oid, name: it.name, password: null, error: 'Error registering in cloud' })
-                }
-             }
-             // Do login of infrastructure with small delay to avoid race conditions
-            setTimeout(
-                async () => {
-                    // Get objects OIDs stored locally
-                    const oids = await getItem('registrations') as string[]
-                    gtwServices.doLogins(oids)
-                }, 
-                5000)
-            // Return and end registration
-            return { registrations, errors }
-         } catch (err) {
-             const error = errorHandler(err)
-             throw new Error(error.message)
-         }
-     },
-     updateObject: async (items: RegistrationUpdate[]): Promise<RegistrationUpdateResult> => {
-        if (!items) {
-            throw new Error('any items to update')
-        }
-        try {
-            const nmItems = _filterNmProperties(items)
-            const result = await gateway.updateRegistration({
+            const itemsForCloud = _buildItemsForCloud(items)
+            // Register in cloud
+            const result = await gateway.postRegistrations({
                 agid: Config.GATEWAY.ID,
-                items: nmItems
+                items: itemsForCloud
             })
+            // Cloud returns global error
             if (result.error) {
-                throw new Error('Platform parsing failed, please revise error: ' + JSON.stringify(result.message[0].error))
+                await _revert_wot_registration(itemsForCloud)
+                throw new MyError('Communication with platform failed: ' + JSON.stringify(result.message[0].error), HttpStatusCode.SERVICE_UNAVAILABLE)
             }
-            result.message.forEach(async (it) => {
-                if (!it.error) {
-                    try {
-                        const itemUpdate = items.filter(x => x.oid === it.oid)[0]
-                        const redistItem = _filterRedisProperties(itemUpdate) 
-                        // Update redis DB
-                        await updateItem(redistItem)
-                        logger.info(it.oid + ' successfully updated!')
-                    } catch (err) {
-                        const error = errorHandler(err)
-                        logger.warn(it.oid + ' had a updating issue...')
-                        logger.error(error.message)
-                    }
-                } else {
-                    logger.warn(it.oid + ' could not be updated...')
+            // Register items locally
+            const registrations: RegistrationResultPost[] = []
+            const errors: RegistrationResultPost[] = []
+            for (let i = 0, l = result.message.length; i < l; i++) {
+                const it = result.message[i]
+                if (!it.error && it.password) {
+                try {
+                    const td = items.filter(x => x.oid === it.oid)
+                    await addItem('registrations', 
+                        { 
+                            ...td[0], 
+                            oid: it.oid,
+                            password: it.password,
+                            created: new Date().toISOString(),
+                            credentials: 'Basic ' + Buffer.from(it.oid + ':' + it.password, 'utf-8').toString('base64')
+                        })
+                    logger.info(it.name + ' with oid ' + it.oid + ' successfully registered!')
+                    registrations.push(it)
+                } catch (err) {
+                    const error = errorHandler(err)
+                    logger.warn(it.name + ' with oid ' + it.oid + ' had a registration issue...')
+                    logger.error(error.message)
+                    errors.push({ oid: it.oid, name: it.name, password: null, error: 'Error storing in REDIS' })
+                    // If REDIS registration fails remove it from cloud
+                    await _revertCloudRegistration(it.oid)
                 }
-            })
-            // Do login of infrastructure with small delay to avoid race conditions
-           setTimeout(
-               async () => {
-                   // Get objects OIDs stored locally
-                   const registrations = await getItem('registrations') as string[]
-                   gtwServices.doLogins(registrations)
-               }, 
-               5000)
-           // Return and end registration
-           return { error: false, message: result.message }
-        } catch (err) {
-            const error = errorHandler(err)
-            throw new Error(error.message)
+            } else {
+                logger.warn(it.name + ' with oid ' + it.oid + ' could not be registered...')
+                errors.push({ oid: it.oid, name: it.name, password: null, error: 'Error registering in CLOUD' })
+            }
         }
+        // Do login of infrastructure with small delay to avoid race conditions
+        setTimeout(
+            async () => {
+                // Get objects OIDs stored locally
+                const oids = await getItem('registrations') as string[]
+                gtwServices.doLogins(oids)
+            }, 
+            5000)
+        // Return and end registration
+        return { registrations, errors }
+     },
+     updateObject: async (items: RegistrationUpdate[]): Promise<UpdateRet> => {
+        // Prepare items for update
+        const nmItems = _filterNmProperties(items)
+        // Send update to cloud
+        const result = await gateway.updateRegistration({
+            agid: Config.GATEWAY.ID,
+            items: nmItems
+        })
+        // Cloud returns global error
+        if (result.error) {
+            throw new MyError('Communication with platform failed: ' + JSON.stringify(result.message[0].error), HttpStatusCode.SERVICE_UNAVAILABLE)
+        }
+        // Update items locally
+        const updates: UpdateResult[] = []
+        const errors: UpdateResult[] = []
+        for (let i = 0, l = result.message.length; i < l; i++) {
+            const it = result.message[i]
+            if (!it.error) {
+                try {
+                    const itemUpdate = items.filter(x => x.oid === it.oid)[0]
+                    const redistItem = _filterRedisProperties(itemUpdate) 
+                    // Update redis DB
+                    await updateItem(redistItem)
+                    logger.info(it.oid + ' successfully updated!')
+                    updates.push({ oid: it.oid, success: true })
+                } catch (err) {
+                    const error = errorHandler(err)
+                    logger.warn(it.oid + ' had a updating issue...')
+                    logger.error(error.message)
+                    errors.push({ oid: it.oid, error: 'Error updating in REDIS' })
+                }
+            } else {
+                logger.warn(it.oid + ' could not be updated...')
+                errors.push({ oid: it.oid, error: 'Error updating in CLOUD' })
+            }
+        }
+        // Do login of infrastructure with small delay to avoid race conditions
+        setTimeout(
+            async () => {
+                // Get objects OIDs stored locally
+                const registrations = await getItem('registrations') as string[]
+                gtwServices.doLogins(registrations)
+            }, 
+            5000)
+        // Return and end registration
+        return { updates, errors }
     },
      /**
       * Compare Local infrastracture with platform
@@ -241,5 +245,20 @@ type RegistrationRet = {
             const error = errorHandler(err)
             logger.error('Attempt to revert cloud registration failed ' + oid)
             logger.error(error.message)
+        }
+    }
+
+    const _revert_wot_registration = async (items: RegistrationBody[]) => {
+        // Unregister from WoT on CLOUD global error
+        for (let i = 0, l = items.length; i < l; i++) {
+        const it = items[i]
+            logger.info('Reverting registration in WoT of OID: ' + it.oid)
+            try {
+                await wot.deleteTD(it.oid)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error('Attempt to revert wot registration failed')
+                logger.error(error.message)
+            }
         }
     }

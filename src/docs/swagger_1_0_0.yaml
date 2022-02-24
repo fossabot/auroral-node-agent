@@ -104,6 +104,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegistrationSuccesArray"
+        "400":
+          description: WRONG BODY
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationSuccesArray"
         "401":
           $ref: "#/components/responses/Unauthorized"
         default:
@@ -144,6 +150,12 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateResponseArray"
+        "400":
+          description: WRONG BODY
           content:
             application/json:
               schema:
@@ -850,6 +862,8 @@ components:
           type: string
         password:
           type: string
+        error:
+          type: string
     UpdateResponseArray:
       type: array
       items:
@@ -860,7 +874,7 @@ components:
         oid:
           type: string
         error:
-          type: boolean
+          type: string
     PartnersResponseObject:
       type: array
       description: Array of partners.

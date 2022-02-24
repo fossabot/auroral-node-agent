@@ -8,12 +8,18 @@ import { wot } from '../microservices/wot'
 import { errorHandler } from '../utils/error-handler'
 import { logger } from '../utils'
 import { RegistrationResultPost } from '../types/gateway-types'
+import { UpdateResult } from '../types/misc-types'
 
 // Types
 
 type RegistrationRet = {
     registrations: RegistrationBody[],
     errors: RegistrationResultPost[]
+}
+
+type UpdateRet = {
+    updates: RegistrationUpdate[],
+    errors: UpdateResult[]
 }
 
 // PUBLIC
@@ -68,13 +74,13 @@ export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]):
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            errors.push({ oid: itemsArray[i].adapterId || 'anonymous', name: itemsArray[i].name, error: error.message, password: null })
+            errors.push({ oid: itemsArray[i].adapterId || 'anonymous', name: itemsArray[i].td?.title || 'anonymous', error: error.message, password: null })
         }
     }
     return { registrations, errors }
 }
 
-export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationUpdate[]> => {
+export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[]): Promise<UpdateRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     const registrations = await getItem('registrations') as string[]
     // test if registered 
@@ -86,24 +92,25 @@ export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[
             throw new Error('Some objects are not registered [' + item.oid! + ']')
         }
     })
-    const itemsUpdate = await Promise.all(itemsArray.map(
-        async (it) => {
-            try {
-                // Check that adapterId does not change
-                await sameAdapterId(it.oid!, it.adapterId!)
-                // Get proper thing description
-                return _buildTDUpdate(it.oid!, it)
-            } catch (err) {
-                const error = errorHandler(err)
-                logger.error(error.message)
-                return null
-            }
-        })
-    )
-    return itemsUpdate.filter(it => it) as RegistrationUpdate[]
+    const updates: RegistrationUpdate[] = []
+    const errors: UpdateResult[] = []
+    for (let i = 0, l = itemsArray.length; i < l; i++) {
+        const it = itemsArray[i]
+        try {
+            // Check that adapterId does not change
+            await sameAdapterId(it.oid!, it.adapterId!)
+            // Get proper thing description
+            updates.push(_buildTDUpdate(it.oid!, it))
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            errors.push({ oid: it.oid!, error: error.message })
+        }
+    }
+    return { updates, errors }
 }
 
-export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJSON []): Promise<RegistrationUpdate[]> => {
+export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJSON []): Promise<UpdateRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     const registrations = await getItem('registrations') as string[]
     // test if registered 
@@ -118,22 +125,23 @@ export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJS
             throw new Error('Some objects are not registered [' + item.oid + ']')
         }
     })
-    const itemsUpdate = await Promise.all(itemsArray.map(
-        async (it) => {
-            try {
-                // Check that adapterId does not change
-                await sameAdapterId(it.oid!, it.adapterId!)
-                // Get proper thing description
-                await wot.upsertTD(it.oid!, { 'id': it.oid!, ...it.td }) // WoT Validation
-                return _buildTDWoTUpdate(it.oid!, it!)
-            } catch (err) {
-                const error = errorHandler(err)
-                logger.error(error.message)
-                return null
-            }
-        })
-    )
-    return itemsUpdate.filter(it => it) as RegistrationUpdate[]
+    const updates: RegistrationUpdate[] = []
+    const errors: UpdateResult[] = []
+    for (let i = 0, l = itemsArray.length; i < l; i++) {
+        const it = itemsArray[i]
+        try {
+            // Check that adapterId does not change
+            await sameAdapterId(it.oid!, it.adapterId!)
+            // Get proper thing description
+            await wot.upsertTD(it.oid!, { 'id': it.oid!, ...it.td }) // WoT Validation
+            updates.push(_buildTDWoTUpdate(it.oid!, it))
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            errors.push({ oid: it.oid!, error: error.message })
+        }
+    }
+    return { updates, errors }
 }
 
 // PRIVATE

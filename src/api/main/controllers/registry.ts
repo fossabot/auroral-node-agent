@@ -9,11 +9,12 @@ import * as persistance from '../../../persistance/persistance'
 import { gateway } from '../../../microservices/gateway'
 import { gtwServices } from '../../../core/gateway'
 import { RegistrationResultPost } from '../../../types/gateway-types'
-import { Registration, RegistrationJSON, RegistrationUpdate } from '../../../persistance/models/registrations'
+import { Registration, RegistrationJSON } from '../../../persistance/models/registrations'
 import { removeItem, getOidByAdapterId } from '../../../persistance/persistance'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../../core/td-parser'
 import { Config } from '../../../config'
 import { wot } from '../../../microservices/wot'
+import { UpdateResult } from '../../../types/misc-types'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -98,7 +99,7 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, [ { oid: string, error?: boolean } ], {}>
+type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, UpdateResult[], {}>
 
 /**
  * Register things in the platform
@@ -106,7 +107,7 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | Reg
  export const modifyRegistration: modifyRegistrationCtrl = async (req, res) => {
   const body = req.body
       try {
-          let items: RegistrationUpdate[]
+          let items
           // Two ways available depending if WoT enabled
           if (Config.WOT.ENABLED) {
             logger.debug('Update thing in WoT')
@@ -116,10 +117,17 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | Reg
             items = await tdParserUpdate(body)
           }
 
-          // Update in NM and redis
-          const result = await gtwServices.updateObject(items)
+        // If all requests are parsed as wrong body
+        if (items.updates.length === 0) {
+          return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null, items.errors)
+        }
 
-          return responseBuilder(HttpStatusCode.OK, res, null, result.message)
+        // Update in NM and redis
+        const result = await gtwServices.updateObject(items.updates)
+
+        // Build final response
+        const response = [...items.errors, ...result.updates, ...result.errors]
+        return responseBuilder(HttpStatusCode.OK, res, null, response)
     } catch (err) {
           const error = errorHandler(err)
           logger.error(error.message)

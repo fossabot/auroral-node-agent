@@ -168,6 +168,16 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "WRONG BODY",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegistrationSuccesArray"
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
@@ -231,6 +241,16 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpdateResponseArray"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "WRONG BODY",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1354,6 +1374,9 @@
                     },
                     "password": {
                         "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
                     }
                 }
             },
@@ -1370,7 +1393,7 @@
                         "type": "string"
                     },
                     "error": {
-                        "type": "boolean"
+                        "type": "string"
                     }
                 }
             },
