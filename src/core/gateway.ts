@@ -3,6 +3,7 @@
  * Implements support functionality
  */
 
+import { timeout } from 'cron'
  import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
  import { gateway } from '../microservices/gateway'
  import { addItem,  getItem, updateItem } from '../persistance/persistance'
@@ -12,6 +13,10 @@
 import { UpdateResult } from '../types/misc-types'
 import { wot } from '../microservices/wot'
  
+// CONSTANTS
+
+const RETRY = 5 // Defines number of login attempts on error
+
 // Types
 
 type RegistrationRet = {
@@ -28,16 +33,8 @@ type UpdateRet = {
      doLogins: async (array: string[] | null): Promise<void> => {
          try {
             const items: string[] = array ? array : await getItem('registrations') as string[]
-             await gateway.login() // Start always the gateway first
-             items.forEach(async (it) => {
-                 try {
-                     await gateway.login(it)
-                 } catch (err) {
-                     const error = errorHandler(err)
-                     logger.error('Item ' + it + ' could not be logged in')
-                     logger.error(error.message)
-                 }
-             })
+            await _login_gateway(RETRY)
+            await _login_item(items, RETRY)
          } catch (err) {
              const error = errorHandler(err)
              logger.error(error.message)
@@ -109,8 +106,9 @@ type UpdateRet = {
         // Do login of infrastructure with small delay to avoid race conditions
         setTimeout(
             async () => {
-                // Get objects OIDs stored locally
-                const oids = await getItem('registrations') as string[]
+                // Get new objects OIDs
+                // const oids = await getItem('registrations') as string[]
+                const oids = registrations.map(it => it.oid)
                 gtwServices.doLogins(oids)
             }, 
             5000)
@@ -156,9 +154,10 @@ type UpdateRet = {
         // Do login of infrastructure with small delay to avoid race conditions
         setTimeout(
             async () => {
-                // Get objects OIDs stored locally
-                const registrations = await getItem('registrations') as string[]
-                gtwServices.doLogins(registrations)
+                // Get new objects OIDs stored locally
+                // const oids = await getItem('registrations') as string[]
+                const oids = updates.map(it => it.oid)
+                gtwServices.doLogins(oids)
             }, 
             5000)
         // Return and end registration
@@ -186,6 +185,47 @@ type UpdateRet = {
 }
     
 //  Private functions
+    const _login_gateway = async (retry: number) => {
+            try {
+                if (retry === 0) {
+                    logger.error('After ' + RETRY + ' attempts the gateway could not be logged in, please try manually or restart the Node')
+                    return
+                }
+                await gateway.login()
+                logger.info('Gateway successfully logged in!')
+                return
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                logger.error('Retrying gateway with attempt: ' + String(RETRY - retry + 1))
+                await _login_gateway(retry - 1)
+            }
+    }
+
+    const _login_item = async (array: string[], retry: number) => {
+        try {
+            if (array.length === 0) {
+                logger.debug('Logging items finished')
+                return
+            }
+            if (retry === 0) {
+                logger.error('After ' + RETRY + ' attempts item ' + array[0] + ' could not be logged in, please try manually or restart the Node')
+                array.shift()
+                await _login_item(array, 5)
+                return
+            }
+            await gateway.login(array[0])
+            logger.info('Item ' + array[0] + ' successfully logged in!')
+            array.shift()
+            await _login_item(array, 5)
+            return
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            logger.error('Retrying ' + array[0] + ' with attempt: ' + String(RETRY - retry + 1))
+            await _login_item(array, retry - 1)
+        }
+    }
 
     const _filterRedisProperties = (item: RegistrationUpdate): RegistrationnUpdateRedis => {
         if (!item.oid) {
