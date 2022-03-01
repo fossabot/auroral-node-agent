@@ -44,7 +44,7 @@
   "scripts": {
     "start": "node ./dist/src/server.js",
     "build": "tsc",
-    "test": "jest --coverage",
+    "test": "NODE_ENV=test jest --coverage",
     "test:watch": "jest --watch",
     "sonar": "node sonar-client.js",
     "build:watch": "tsc -w",

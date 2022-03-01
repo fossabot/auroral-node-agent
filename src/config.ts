@@ -12,7 +12,7 @@ if (
 	process.exit()
 }
 
-export const Config = {
+const normalConfig = {
 	HOME_PATH: process.cwd(),
 	NODE_ENV: process.env.NODE_ENV!,
 	IP: process.env.IP!,
@@ -46,3 +46,35 @@ export const Config = {
 		PORT: process.env.ADAPTER_PORT!
 	}
 }
+const testConfig = {
+	HOME_PATH: process.cwd(),
+	NODE_ENV: 'test',
+	IP: '0.0.0.0',
+	EXTERNAL_PORT: '81',
+	PORT: '4000',
+	GATEWAY: {
+		HOST: 'http://gateway',
+		PORT: '8181',
+		TIMEOUT: 10000,
+		ROUTE: 'api',
+		CALLBACK_ROUTE: 'agent',
+		ID: 'gtwId',
+		PASSWORD: 'gtwPassword'
+	},
+	DB: {
+		HOST: 'cache-db',
+		PORT: '6379',
+		PASSWORD: 'changeme',
+		CACHE: true,
+		CACHE_TTL: '60'
+	},
+	WOT: {
+		ENABLED: true,
+		HOST: 'http://wothive',
+		PORT: '9000',
+		BASE_URI: undefined
+	},
+	ADAPTER: { MODE: 'dummy', HOST: 'http://adapter', PORT: '3001' }
+}
+
+export const Config = process.env.NODE_ENV === 'test' ? testConfig : normalConfig 

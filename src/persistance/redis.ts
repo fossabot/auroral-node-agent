@@ -3,10 +3,10 @@
  * Interface to REDIS DB
  * @interface
  */
- import redis, { ClientOpts } from 'redis'
- import { Request, Response, NextFunction } from 'express'
- import { Config } from '../config'
- import { logger } from '../utils/logger'
+import redis, { ClientOpts } from 'redis'
+import { Request, Response, NextFunction } from 'express'
+import { Config } from '../config'
+import { logger } from '../utils/logger'
 import { JsonType } from '../types/misc-types'
 
 const redisOptions = {
