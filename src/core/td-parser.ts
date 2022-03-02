@@ -85,11 +85,11 @@ export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[
     const registrations = await getItem('registrations') as string[]
     // test if registered 
     itemsArray.forEach((item) => {
-        if (item.oid !== undefined) {
+        if (item.oid === undefined) {
             throw new Error('Missing OID for some objects')
         }
-        if (!registrations.includes(item.oid!)) {
-            throw new Error('Some objects are not registered [' + item.oid! + ']')
+        if (!registrations.includes(item.oid)) {
+            throw new Error('Some objects are not registered [' + item.oid + ']')
         }
     })
     const updates: RegistrationUpdate[] = []
@@ -118,27 +118,29 @@ export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJS
         if (!item.td) {
             throw new Error('Please provide td')
         }
-        if (item.oid === undefined) {
+        const oid = item.oid === undefined ? item.td.id : item.oid 
+        if (oid === undefined) {
             throw new Error('Some objects do not have OIDs')
         }
-        if (!registrations.includes(item.oid)) {
-            throw new Error('Some objects are not registered [' + item.oid + ']')
+        if (!registrations.includes(oid)) {
+            throw new Error('Some objects are not registered [' + oid + ']')
         }
     })
     const updates: RegistrationUpdate[] = []
     const errors: UpdateResult[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         const it = itemsArray[i]
+        const oid = it.oid === undefined ? it.td!.id : it.oid 
         try {
             // Check that adapterId does not change
-            await sameAdapterId(it.oid!, it.adapterId!)
+            await sameAdapterId(oid!, it.adapterId!)
             // Get proper thing description
-            await wot.upsertTD(it.oid!, { 'id': it.oid!, ...it.td }) // WoT Validation
-            updates.push(_buildTDWoTUpdate(it.oid!, it))
+            await wot.upsertTD(oid!, { 'id': oid!, ...it.td }) // WoT Validation
+            updates.push(_buildTDWoTUpdate(oid!, it))
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            errors.push({ oid: it.oid!, error: error.message })
+            errors.push({ oid: oid!, error: error.message })
         }
     }
     return { updates, errors }
