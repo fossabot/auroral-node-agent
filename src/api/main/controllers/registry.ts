@@ -9,7 +9,7 @@ import * as persistance from '../../../persistance/persistance'
 import { gateway } from '../../../microservices/gateway'
 import { gtwServices } from '../../../core/gateway'
 import { RegistrationResultPost } from '../../../types/gateway-types'
-import { Registration, RegistrationJSON } from '../../../persistance/models/registrations'
+import { Registration, RegistrationJSON, RegistrationJSONTD, UpdateJSON, UpdateJSONTD } from '../../../persistance/models/registrations'
 import { removeItem, getOidByAdapterId } from '../../../persistance/persistance'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../../core/td-parser'
 import { Config } from '../../../config'
@@ -54,7 +54,7 @@ export const getRegistrationsInfo: getRegistrationsInfoCtrl = async (req, res) =
 	}
 }
 
-type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, RegistrationResultPost[], {}>
+type postRegistrationsCtrl = expressTypes.Controller<{}, RegistrationJSONTD | RegistrationJSONTD[] | RegistrationJSON | RegistrationJSON[] , {}, RegistrationResultPost[], {}>
 
 /**
  * Register things in the platform
@@ -68,9 +68,9 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         if (Config.WOT.ENABLED) {
           // Validate and Store TD in WoT** (Build TD from user input based on ontology)
           logger.debug('Validate and register with WoT')
-          items = await tdParserWoT(body)
+          items = await tdParserWoT(body as RegistrationJSONTD)
         } else {
-          items = await tdParser(body)
+          items = await tdParser(body as RegistrationJSON)
         }
         
         // If all requests are parsed as wrong body
@@ -99,7 +99,7 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
 	}
 }
 
-type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | RegistrationJSON[], {}, UpdateResult[], {}>
+type modifyRegistrationCtrl = expressTypes.Controller<{}, UpdateJSON | UpdateJSON[] | UpdateJSONTD | UpdateJSONTD[], {}, UpdateResult[], {}>
 
 /**
  * Register things in the platform
@@ -111,10 +111,10 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, RegistrationJSON | Reg
           // Two ways available depending if WoT enabled
           if (Config.WOT.ENABLED) {
             logger.debug('Update thing in WoT')
-            items = await tdParserUpdateWot(body)
+            items = await tdParserUpdateWot(body as UpdateJSONTD)
           } else {
             logger.debug('Update thing without WoT')
-            items = await tdParserUpdate(body)
+            items = await tdParserUpdate(body as UpdateJSON)
           }
 
         // If all requests are parsed as wrong body

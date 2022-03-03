@@ -9,9 +9,9 @@ import { logger, errorHandler } from '../utils'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
 import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
-import { registrationFuncs, Registration, RegistrationUpdate, RegistrationnUpdateRedis, RegistrationJSON, RegistrationNonSemantic } from './models/registrations'
+import { registrationFuncs, Registration, RegistrationnUpdateRedis, RegistrationNonSemantic } from './models/registrations'
 import { Config } from '../config'
-import { Configuration, addConfigurationInfo, removeConfigurationInfo } from './models/configurations'
+import { addConfigurationInfo, removeConfigurationInfo } from './models/configurations'
 
 // Constants
 

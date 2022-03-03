@@ -15,6 +15,12 @@ import { Thing } from '../../types/wot-types'
 // Human readable privacy
 const PRIV_ARRAY = ['Private', 'For Friends', 'Public']
 
+export enum ItemPrivacy {
+    PUBLIC = 2,
+    FOR_FRIENDS = 1,
+    PRIVATE = 0
+}
+
 // Body when received or returned by application
 // export type RegistrationJSON = RegistrationJSONBasic 
 
@@ -32,21 +38,50 @@ export enum ItemDomainType {
 export type ItemLabelsObj = {
     domain: ItemDomainType,
 }
-export interface RegistrationJSON {
-    oid?: string,
-    type: string
-    name: string
-    adapterId?: string
-    properties?: string[]
+
+// Registration input types
+
+export interface Base {
     labels?: ItemLabelsObj
     avatar?: string
     groups?: string[]
+    privacy?: ItemPrivacy,
+}
+
+export interface RegistrationJSON extends Base {
+    oid?: string,
+    type?: string
+    name: string
+    adapterId?: string
+    properties?: string[]
     events?: string[]
     actions?: string[]
     version?: string
     description?: string
-    privacy?: string,
-    td?: Thing
+}
+
+export interface RegistrationJSONTD extends Base {
+    oid?: string,
+    td: Thing
+}
+
+// Update input types
+
+export interface UpdateJSON extends Base {
+    oid: string,
+    type: string
+    name: string
+    adapterId: string
+    properties?: string[]
+    events?: string[]
+    actions?: string[]
+    version?: string
+    description?: string
+}
+
+export interface UpdateJSONTD extends Base {
+    oid: string,
+    td: Thing
 }
 
 export interface RegistrationNonSemantic {
@@ -81,7 +116,7 @@ export interface RegistrationnUpdateRedis {
     adapterId?: string
     name?: string
     description?: string
-    properties?: string
+    properties?: string // Stringify to register in REDIS
     events?: string // Stringify to register in REDIS
     actions?: string // Stringify to register in REDIS
 }
@@ -97,40 +132,26 @@ export interface RegistrationnUpdateNm {
     description?: string
 }
 
-export interface RegistrationUpdate {
+export interface UpdateBody extends Base {
     oid: string
-    adapterId?: string
-    name?: string
-    properties?: string[]
-    labels?: ItemLabelsObj
-    avatar?: string
-    groups?: string[]
-    events?: string[]
-    actions?: string[]
-    version?: string
+    adapterId: string
+    name: string
+    properties?: string // Stringify to register in REDIS
+    events?: string // Stringify to register in REDIS
+    actions?: string // Stringify to register in REDIS
     description?: string
 }
 
 // Body ready to register
-export interface RegistrationBody {
+export interface RegistrationBody extends Base {
     type: string
     adapterId: string
     name: string
-    properties?: string
-    labels?: ItemLabelsObj
-    avatar?: string
-    groups?: string[]
+    properties?: string // Stringify to register in REDIS
     events?: string // Stringify to register in REDIS
     actions?: string // Stringify to register in REDIS
-    version?: string // Stringify to register in REDIS
     description?: string
     oid: string
-}
-
-export enum ItemPrivacy {
-    PUBLIC = 2,
-    FOR_FRIENDS = 1,
-    PRIVATE = 0
 }
 
 // Complete registration type after item is registered in AURORAL

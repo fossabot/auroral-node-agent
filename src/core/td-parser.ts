@@ -2,7 +2,7 @@
 Parsing middlewares
 */
 import { v4 as uuidv4 } from 'uuid'
-import { RegistrationBody,RegistrationUpdate, RegistrationJSON } from '../persistance/models/registrations'
+import { RegistrationBody, UpdateBody, RegistrationJSON, UpdateJSONTD, UpdateJSON, RegistrationJSONTD } from '../persistance/models/registrations'
 import { getCountOfItems, getItem, existsAdapterId, sameAdapterId } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
 import { errorHandler } from '../utils/error-handler'
@@ -18,7 +18,7 @@ type RegistrationRet = {
 }
 
 type UpdateRet = {
-    updates: RegistrationUpdate[],
+    updates: UpdateBody[],
     errors: UpdateResult[]
 }
 
@@ -52,7 +52,7 @@ export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Pr
     return { registrations, errors }
 }
 
-export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]): Promise<RegistrationRet> => {
+export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD[]): Promise<RegistrationRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     await _checkNumberOfRegistrations(itemsArray.length)
     itemsArray.forEach(it => {
@@ -61,26 +61,26 @@ export const tdParserWoT = async (body : RegistrationJSON | RegistrationJSON[]):
         }
     })
     // Collect all adapterIDs
-    const adapterIDs = itemsArray.map(it => it.adapterId).filter(it => it) as string[]
+    const adapterIDs = itemsArray.map(it => it.td.adapterId).filter(it => it) as string[]
     const registrations: RegistrationBody[] = []
     const errors: RegistrationResultPost[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         try {
             // Check conflicts with adapterIDs
-            await _lookForAdapterIdConflicts(itemsArray[i].adapterId, adapterIDs)
+            await _lookForAdapterIdConflicts(itemsArray[i].td.adapterId, adapterIDs)
             const oid = uuidv4()
             await wot.upsertTD(oid, { 'id': oid, ...itemsArray[i].td }) // WoT Validation
             registrations.push(_buildTDWoT(oid, itemsArray[i]))
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            errors.push({ oid: itemsArray[i].adapterId || 'anonymous', name: itemsArray[i].td?.title || 'anonymous', error: error.message, password: null })
+            errors.push({ oid: itemsArray[i].td.adapterId || 'anonymous', name: itemsArray[i].td?.title || 'anonymous', error: error.message, password: null })
         }
     }
     return { registrations, errors }
 }
 
-export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[]): Promise<UpdateRet> => {
+export const tdParserUpdate = async (body : UpdateJSON | UpdateJSON[]): Promise<UpdateRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     const registrations = await getItem('registrations') as string[]
     // test if registered 
@@ -92,7 +92,7 @@ export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[
             throw new Error('Some objects are not registered [' + item.oid + ']')
         }
     })
-    const updates: RegistrationUpdate[] = []
+    const updates: UpdateBody[] = []
     const errors: UpdateResult[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         const it = itemsArray[i]
@@ -110,7 +110,7 @@ export const tdParserUpdate = async (body : RegistrationJSON | RegistrationJSON[
     return { updates, errors }
 }
 
-export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJSON []): Promise<UpdateRet> => {
+export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): Promise<UpdateRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     const registrations = await getItem('registrations') as string[]
     // test if registered 
@@ -118,29 +118,27 @@ export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJS
         if (!item.td) {
             throw new Error('Please provide td')
         }
-        const oid = item.oid === undefined ? item.td.id : item.oid 
-        if (oid === undefined) {
+        if (!item.td.id) {
             throw new Error('Some objects do not have OIDs')
         }
-        if (!registrations.includes(oid)) {
-            throw new Error('Some objects are not registered [' + oid + ']')
+        if (!registrations.includes(item.td.id)) {
+            throw new Error('Some objects are not registered [' + item.td.id + ']')
         }
     })
-    const updates: RegistrationUpdate[] = []
+    const updates: UpdateBody[] = []
     const errors: UpdateResult[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         const it = itemsArray[i]
-        const oid = it.oid === undefined ? it.td!.id : it.oid 
         try {
             // Check that adapterId does not change
-            await sameAdapterId(oid!, it.adapterId!)
+            await sameAdapterId(it.td.id!, it.td.adapterId)
             // Get proper thing description
-            await wot.upsertTD(oid!, { 'id': oid!, ...it.td }) // WoT Validation
-            updates.push(_buildTDWoTUpdate(oid!, it))
+            await wot.upsertTD(it.td.id!, it.td) // WoT Validation
+            updates.push(_buildTDWoTUpdate(it.td.id!, it))
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            errors.push({ oid: oid!, error: error.message })
+            errors.push({ oid: it.td.id!, error: error.message })
         }
     }
     return { updates, errors }
@@ -151,7 +149,7 @@ export const tdParserUpdateWot = async (body : RegistrationJSON | RegistrationJS
 const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
     return { 
         name: data.name,
-        type: data.type,
+        type: data.type ? data.type : 'Device',
         adapterId: data.adapterId ? data.adapterId : oid, 
         oid, 
         labels: data.labels,
@@ -163,22 +161,22 @@ const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
     }
 }
 
-const _buildTDWoT = (oid: string, data: RegistrationJSON): RegistrationBody => {
+const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody => {
     return {
         oid,
-        properties: data.td!.properties ? Object.keys(data.td!.properties).toString() : undefined,
-        actions: data.td!.actions ? Object.keys(data.td!.actions).toString() : undefined,
-        events: data.td!.events ? Object.keys(data.td!.events).toString() : undefined,
-        name: data.td!.title,
+        properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
+        actions: data.td.actions ? Object.keys(data.td.actions).toString() : undefined,
+        events: data.td.events ? Object.keys(data.td.events).toString() : undefined,
+        name: data.td.title,
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
-        type: data.type ? data.type : 'Device', // TBD: Force to only accepted until ready // data['@type'],
-        adapterId: data.adapterId ? data.adapterId : oid // TBD: Update this and add groupId or other props when ready
+        type: 'Device', // TBD: Force to only accepted until ready // data['@type'],
+        adapterId: data.td.adapterId ? data.td.adapterId : oid // TBD: Update this and add groupId or other props when ready
     }
 }
 
-const _buildTDUpdate = (oid: string, data: RegistrationJSON): RegistrationUpdate => {
+const _buildTDUpdate = (oid: string, data: UpdateJSON): UpdateBody => {
     return { 
         oid, 
         name: data.name,
@@ -186,22 +184,22 @@ const _buildTDUpdate = (oid: string, data: RegistrationJSON): RegistrationUpdate
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
-        properties: data.properties ? data.properties : undefined,
-        actions: data.actions ? data.actions : undefined,
-        events: data.events ? data.events : undefined
+        properties: data.properties ? data.properties.toString() : undefined,
+        actions: data.actions ? data.actions.toString() : undefined,
+        events: data.events ? data.events.toString() : undefined
     }
 }
-const _buildTDWoTUpdate = (oid: string, data: RegistrationJSON): RegistrationUpdate => {
+const _buildTDWoTUpdate = (oid: string, data: UpdateJSONTD): UpdateBody => {
     return { 
         oid,
-        properties: data.td!.properties ? Object.keys(data.td!.properties) : undefined,
-        actions: data.td!.actions ? Object.keys(data.td!.actions) : undefined,
-        events: data.td!.events ? Object.keys(data.td!.events) : undefined,
-        name: data.td!.title,
+        properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
+        actions: data.td.actions ? Object.keys(data.td.actions).toString() : undefined,
+        events: data.td.events ? Object.keys(data.td.events).toString() : undefined,
+        name: data.td.title,
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
-        adapterId: data.adapterId ? data.adapterId : oid // TBD: Update this and add groupId or other
+        adapterId: data.td.adapterId ? data.td.adapterId : oid // TBD: Update this and add groupId or other
     }
 }
 

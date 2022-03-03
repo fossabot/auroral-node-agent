@@ -8,7 +8,7 @@ import { timeout } from 'cron'
  import { gateway } from '../microservices/gateway'
  import { addItem,  getItem, updateItem } from '../persistance/persistance'
  import { RegistrationResultPost } from '../types/gateway-types'
- import { RegistrationBody, RegistrationnUpdateNm, RegistrationnUpdateRedis, RegistrationUpdate } from '../persistance/models/registrations'
+ import { RegistrationBody, RegistrationnUpdateNm, RegistrationnUpdateRedis, UpdateBody } from '../persistance/models/registrations'
  import { Config } from '../config'
 import { UpdateResult } from '../types/misc-types'
 import { wot } from '../microservices/wot'
@@ -115,7 +115,7 @@ type UpdateRet = {
         // Return and end registration
         return { registrations, errors }
      },
-     updateObject: async (items: RegistrationUpdate[]): Promise<UpdateRet> => {
+     updateObject: async (items: UpdateBody[]): Promise<UpdateRet> => {
         // Prepare items for update
         const nmItems = _filterNmProperties(items)
         // Send update to cloud
@@ -227,7 +227,7 @@ type UpdateRet = {
         }
     }
 
-    const _filterRedisProperties = (item: RegistrationUpdate): RegistrationnUpdateRedis => {
+    const _filterRedisProperties = (item: UpdateBody): RegistrationnUpdateRedis => {
         if (!item.oid) {
             throw new Error('Item does not have oid')
         }
@@ -242,7 +242,7 @@ type UpdateRet = {
         return itemRedis
     }
 
-    const _filterNmProperties = (items: RegistrationUpdate[]): RegistrationnUpdateNm[] => {
+    const _filterNmProperties = (items: UpdateBody[]): RegistrationnUpdateNm[] => {
         const nmItems: RegistrationnUpdateNm[] = []
         items.forEach(item => {
             if (!item.oid) {
@@ -255,7 +255,6 @@ type UpdateRet = {
                 labels: item.labels,
                 avatar: item.avatar,
                 groups: item.groups !== undefined ? [...item.groups] : undefined,
-                version: item.version,
                 description: item.description,
             }
             nmItems.push(itemNm)

@@ -30,13 +30,14 @@ export declare type MultiLanguage = Record<string, unknown> // object?
 
 /** Implements the Thing Description as software object */
 export class Thing {
-    id?: string // Update to @id ?? Discuss with UPM
-    '@context': string
-    '@type': string
+    id?: string // AURORAL Extension --> Added by Agent on Registration == OID
+    '@context': string // AURORAL Extension
+    '@type': string // AURORAL Extension
     title: string
     titles?: MultiLanguage
     description?: string
     descriptions?: MultiLanguage
+    adapterId: string // AURORAL Extension
     support?: string
     modified?: string
     created?: string
@@ -60,10 +61,11 @@ export class Thing {
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     [key: string]: any
 
-    constructor(title: string) {
+    constructor(title: string, adapterId: string) {
         this['@context'] = DEFAULT_CONTEXT
         this['@type'] = DEFAULT_THING_TYPE
         this.title = title
+        this.adapterId = adapterId
         this.security = []
         this.properties = {}
         this.actions = {}
@@ -84,6 +86,7 @@ export class Thing {
 export interface ThingInteraction {
     title?: string
     titles?: MultiLanguage
+    '@type': string // AURORAL Extension
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -289,6 +292,7 @@ export abstract class ThingProperty extends BaseSchema implements ThingInteracti
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
+    '@type': string
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -311,6 +315,7 @@ export abstract class ThingAction implements ThingInteraction {
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
+    '@type': string
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -333,6 +338,7 @@ export abstract class ThingEvent implements ThingInteraction {
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
+    '@type': string
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
