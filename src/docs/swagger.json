@@ -26,8 +26,8 @@
         }
     ],
     "externalDocs": {
-        "description": "Find out more about AURORAL",
-        "url": "https://www.auroral.eu"
+        "description": "AURORAL platform",
+        "url": "https://auroral.dev.bavneir.eu"
     },
     "tags": [
         {
@@ -137,7 +137,7 @@
         "/api/registration": {
             "post": {
                 "summary": "Register an item",
-                "description": "Register an object in the AURORAL platform. If WoT is enabled you have to send the thing description instead of the separate interaction patterns (properties, events, actions).",
+                "description": "Register an object in the AURORAL platform.\n\nFor the registration AURORAL uses W3C Thing Descriptions, and optional parameters to send additional information to the platform. \n- td: [Mandatory] Thing Description Object.\n- avatar: [Optional] Base64 image representation for the object. It will be displayed in the Neighbourhood Manager.\n\nFor creating a Thing Description please refer [here](https://www.w3.org/TR/wot-thing-description/), note that besides the standard, other fields are accepted. Currently the **adapterId** and the **@type**.\n- adapterId: It supports adding an additional ID that would help the integrator map the object to the local infrastructure. If it is not included it will be equal to the AURORAL object ID (oid).\n- @type: Can be added at global level and also for each interaction. Describes the type of object or interaction respect to the AURORAL ontology. For list of available values refer to the ontology.\n\nOr use the online [editor](https://eclipse.github.io/editdor/).\n\nNote: An AURORAL object ID or OID will be automatically added during the registration under the field **id**. This id will be the same as the OID in the AURORAL platform.\n",
                 "security": [
                     {
                         "basicAuth": []
@@ -188,7 +188,7 @@
             },
             "get": {
                 "summary": "Get all item OIDs",
-                "description": "See what objects has your gateway registered in the platform. Response list of OIDs.",
+                "description": "See what objects has your gateway registered in the platform. \n\nThe response is a list of OIDs.\n",
                 "security": [
                     {
                         "basicAuth": []
@@ -218,7 +218,7 @@
             },
             "put": {
                 "summary": "Update an item",
-                "description": "Update registered items",
+                "description": "Update an object in the AURORAL platform.\n\nFields:\n- td: [Mandatory] Thing Description Object.\n- avatar: [Optional] Base64 image representation for the object. It will be displayed in the Neighbourhood Manager.\n\nImportant note, **update restrictions** inside the td:\n- adapterId: Cannot be changed after registration.\n- id: Cannot be changed after registration. It is assigned by the platform on registration.\n\nThe response will contain **error** reason on failure and **success** if the update was completed.\n",
                 "security": [
                     {
                         "basicAuth": []
@@ -350,7 +350,7 @@
         "/api/discovery/local/neighbours": {
             "get": {
                 "summary": "Gateway's reachable objects",
-                "description": "See what remote objects can you reach with your Gateway. You will see other gateways of your organisation or partnered organisations.",
+                "description": "See what remote objects can you reach with your Gateway. \n\nYou will see other gateways of your organisation or partnered organisations.\n",
                 "security": [
                     {
                         "basicAuth": []
@@ -382,7 +382,7 @@
         "/api/discovery/local/neighbours/{id}": {
             "get": {
                 "summary": "Item's reachable objects",
-                "description": "See what remote objects can you reach which each OID. To see objects of other organisations you need to agree on a contract for exchanging data. Get what your gateway can see by not providing oid parameter.",
+                "description": "See what remote objects can you reach which each OID. \n\nTo see objects of other organisations you need to agree on a contract for exchanging data.\n\nGet what your gateway can see by not providing OID parameter.\n",
                 "security": [
                     {
                         "basicAuth": []
@@ -426,7 +426,7 @@
         "/api/discovery/local/td/{id}": {
             "get": {
                 "summary": "Discover a local item's semantic description",
-                "description": "Obtain the TD of a concrete registered item by providing the ID as parameter",
+                "description": "Obtain the TD of a concrete registered item by providing the ID as parameter.",
                 "security": [
                     {
                         "basicAuth": []
@@ -510,7 +510,7 @@
         "/api/discovery/remote/td/{id}/{originId}": {
             "get": {
                 "summary": "Discover a remote item's semantic description",
-                "description": "Remote discovery. Get thing descriptions of remote objects that some of your objects can see. Set the OID of the object you want to reach OID parameter and set the OID of the object initiating the request with originID (originID must be a neighbour of the target OID).",
+                "description": "Remote discovery. Get thing descriptions of remote objects that some of your objects can see. \n\nSet the OID of the object you want to reach with **id** parameter and set the OID of the object initiating the request with **originID** (originID must be a neighbour of the target oid). \n",
                 "security": [
                     {
                         "basicAuth": []
@@ -1394,6 +1394,9 @@
                     },
                     "error": {
                         "type": "string"
+                    },
+                    "success": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -1419,101 +1422,25 @@
             },
             "bodyRegistry": {
                 "properties": {
-                    "name": {
-                        "description": "Human readable name for the object",
-                        "type": "string"
-                    },
-                    "type": {
-                        "description": "AURORAL type to assign for the object",
-                        "type": "string"
-                    },
-                    "adapterId": {
-                        "type": "string",
-                        "description": "Id of the object in your infrastructure",
-                        "default": "1234"
-                    },
                     "td": {
                         "type": "object",
                         "description": "Thing description object in JSON-LD"
                     },
-                    "properties": {
-                        "type": "array",
-                        "description": "Array of pid's. You can use only those you previously registered in the adapter",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "events": {
-                        "type": "array",
-                        "description": "Array of eid's. You can use only those you previously registered in the adapter",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "actions": {
-                        "type": "array",
-                        "description": "Array of aid's. You can use only those you previously registered in the adapter",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "version": {
+                    "avatar": {
                         "type": "string",
-                        "description": "Version of the registered device if applicable"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Additional info"
+                        "description": "OPTIONAL Base64 representation of an image"
                     }
                 }
             },
             "bodyItemUpdate": {
                 "properties": {
-                    "oid": {
-                        "description": "Object ID",
-                        "type": "string"
-                    },
-                    "name": {
-                        "description": "new item name",
-                        "type": "string",
-                        "default": ""
-                    },
-                    "adapterId": {
-                        "type": "string",
-                        "description": "Id of the object in your infrastructure"
-                    },
                     "td": {
                         "type": "object",
                         "description": "Thing description object in JSON-LD"
                     },
-                    "properties": {
-                        "type": "array",
-                        "description": "Array of pid's. You can use only those you previously registered in the adapter",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "events": {
-                        "type": "array",
-                        "description": "Array of eid's. You can use only those you previously registered in the adapter",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "actions": {
-                        "type": "array",
-                        "description": "Array of aid's. You can use only those you previously registered in the adapter",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "version": {
+                    "avatar": {
                         "type": "string",
-                        "description": "Version of the registered device if applicable"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Additional info"
+                        "description": "OPTIONAL Base64 representation of an image"
                     }
                 }
             },

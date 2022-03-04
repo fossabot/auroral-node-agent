@@ -98,13 +98,13 @@ export const tdParserUpdate = async (body : UpdateJSON | UpdateJSON[]): Promise<
         const it = itemsArray[i]
         try {
             // Check that adapterId does not change
-            await sameAdapterId(it.oid!, it.adapterId!)
+            await sameAdapterId(it.oid, it.adapterId)
             // Get proper thing description
-            updates.push(_buildTDUpdate(it.oid!, it))
+            updates.push(_buildTDUpdate(it.oid, it))
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            errors.push({ oid: it.oid!, error: error.message })
+            errors.push({ oid: it.oid, error: error.message })
         }
     }
     return { updates, errors }
@@ -155,6 +155,7 @@ const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
+        description: data.description,
         properties: data.properties ? data.properties.toString() : undefined,
         actions: data.actions ? data.actions.toString() : undefined,
         events: data.events ? data.events.toString() : undefined
@@ -171,6 +172,7 @@ const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody =>
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
+        description: data.td.description,
         type: 'Device', // TBD: Force to only accepted until ready // data['@type'],
         adapterId: data.td.adapterId ? data.td.adapterId : oid // TBD: Update this and add groupId or other props when ready
     }
@@ -184,11 +186,13 @@ const _buildTDUpdate = (oid: string, data: UpdateJSON): UpdateBody => {
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
+        description: data.description,
         properties: data.properties ? data.properties.toString() : undefined,
         actions: data.actions ? data.actions.toString() : undefined,
         events: data.events ? data.events.toString() : undefined
     }
 }
+
 const _buildTDWoTUpdate = (oid: string, data: UpdateJSONTD): UpdateBody => {
     return { 
         oid,
@@ -199,6 +203,7 @@ const _buildTDWoTUpdate = (oid: string, data: UpdateJSONTD): UpdateBody => {
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
+        description: data.td.description,
         adapterId: data.td.adapterId ? data.td.adapterId : oid // TBD: Update this and add groupId or other
     }
 }

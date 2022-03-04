@@ -13,6 +13,7 @@ import { Thing } from '../../types/wot-types'
 */
 
 // Human readable privacy
+
 const PRIV_ARRAY = ['Private', 'For Friends', 'Public']
 
 export enum ItemPrivacy {
@@ -21,8 +22,7 @@ export enum ItemPrivacy {
     PRIVATE = 0
 }
 
-// Body when received or returned by application
-// export type RegistrationJSON = RegistrationJSONBasic 
+// Labels 
 
 export enum ItemDomainType {
     ENERGY = 'Energy',
@@ -80,7 +80,7 @@ export interface UpdateJSON extends Base {
 }
 
 export interface UpdateJSONTD extends Base {
-    oid: string,
+    oid?: string,
     td: Thing
 }
 
