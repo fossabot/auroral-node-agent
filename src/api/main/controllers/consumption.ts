@@ -1,7 +1,7 @@
 // Controller common imports
 import { expressTypes } from '../../../types/index'
 import { HttpStatusCode } from '../../../utils/http-status-codes'
-import { logger, errorHandler } from '../../../utils'
+import { logger, errorHandler, MyError } from '../../../utils'
 import { responseBuilder } from '../../../utils/response-builder'
 
 // Other imports
@@ -28,7 +28,6 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
         } else {
           const response = data.message[0].wrapper
           logger.debug(`Property ${pid} of ${oid} received`)
-          console.log(response)
           return responseBuilder(HttpStatusCode.OK, res, null, response)
         }      
       } catch (err) {
@@ -50,7 +49,7 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
       if (!body) {
         logger.warn('Missing body')
         return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
-      } 
+      }
       const data = await gateway.putProperty(id, oid, pid, body)
       // Parse response to get only the final payload
       if (data.error) {
@@ -78,8 +77,9 @@ export const activateEventChannel: activateEventChannelCtrl = async (req, res) =
     const { id, eid } = req.params
     try {
       const data = await gateway.activateEventChannel(id, eid)
+      _parse_gtw_response(data)
       logger.info(`Channel ${eid} of ${id} activated`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data.message)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -97,12 +97,14 @@ type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, Jso
     const body = req.body
     try {
         if (!body) {
-            logger.warn('Missing body')
-            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
-          } 
+          logger.warn('Missing body')
+          return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
+        } 
         const data = await gateway.publishEvent(id, eid, body)
+        console.log(data)
+        _parse_gtw_response(data)
         logger.info(`Message sent to channel ${eid} of ${id}`)
-        return responseBuilder(HttpStatusCode.OK, res, null, data.message)
+        return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -119,8 +121,9 @@ export const deactivateEventChannel: deactivateEventChannelCtrl = async (req, re
     const { id, eid } = req.params
     try {
       const data = await gateway.deactivateEventChannel(id, eid)
+      _parse_gtw_response(data)
       logger.info(`Channel ${eid} of ${id} deactivated`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data.message)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -137,8 +140,9 @@ export const statusRemoteEventChannel: statusRemoteEventChannelCtrl = async (req
     const { id, oid, eid } = req.params
     try {
       const data = await gateway.statusRemoteEventChannel(id, oid, eid)
+      _parse_gtw_response(data)
       logger.info(`Get status of remote channel ${eid} of ${oid}`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data.message)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -155,8 +159,9 @@ export const subscribeRemoteEventChannel: subscribeRemoteEventChannelCtrl = asyn
     const { id, oid, eid } = req.params
     try {
       const data = await gateway.subscribeRemoteEventChannel(id, oid, eid)
+      _parse_gtw_response(data)
       logger.info(`Subscribed to remote channel ${eid} of ${oid}`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data.message)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -173,11 +178,28 @@ export const unsubscribeRemoteEventChannel: unsubscribeRemoteEventChannelCtrl = 
     const { id, oid, eid } = req.params
     try {
         const data = await gateway.unsubscribeRemoteEventChannel(id, oid, eid)
+        _parse_gtw_response(data)
         logger.info(`Unsubscribed to remote channel ${eid} of ${oid}`)
-        return responseBuilder(HttpStatusCode.OK, res, null, data.message)
+        return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
         return responseBuilder(error.status, res, error.message)
     }
+}
+
+// Private functions
+
+const _parse_gtw_response = (data: ConsumptionResponse): void => {
+  if (data.statusCode >= 500) {
+    throw new MyError(data.statusCodeReason, HttpStatusCode.INTERNAL_SERVER_ERROR)
+  } else if (data.statusCode === 400) {
+    throw new MyError(data.statusCodeReason, HttpStatusCode.BAD_REQUEST)
+  } else if (data.statusCode === 401) {
+    throw new MyError(data.statusCodeReason, HttpStatusCode.UNAUTHORIZED)
+  } else if (data.statusCode === 404) {
+    throw new MyError(data.statusCodeReason, HttpStatusCode.NOT_FOUND)
+  }  else if (data.statusCode > 400) {
+    throw new MyError(data.statusCodeReason, HttpStatusCode.INTERNAL_SERVER_ERROR)
+  } 
 }

@@ -39,6 +39,7 @@ services:
     # ports:
     # - 5222:5222
     image: registry.bavenir.eu/auroral_gateway:dev
+    # image: gateway-test
   cache-db:
     # restart: unless-stopped
     # ports:

@@ -274,10 +274,10 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    activateEventChannel: async function(oid: string, eid: string): Promise<BasicResponse> {
+    activateEventChannel: async function(oid: string, eid: string): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse)
+            return (await request(`events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -291,10 +291,10 @@ export const gateway = {
      * @param {oid: string, eid: string, body: object}
      * @returns {error: boolean, message: string} 
      */
-    publishEvent: async function(oid: string, eid: string, body: JsonType): Promise<BasicResponse> {
+    publishEvent: async function(oid: string, eid: string, body: JsonType): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`events/${eid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as BasicResponse)
+            return (await request(`events/${eid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -308,10 +308,10 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    deactivateEventChannel: async function(oid: string, eid: string): Promise<BasicResponse> {
+    deactivateEventChannel: async function(oid: string, eid: string): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse)
+            return (await request(`events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -325,10 +325,10 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    statusRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<BasicResponse> {
+    statusRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/events/${eid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse)
+            return (await request(`objects/${remote_oid}/events/${eid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -343,10 +343,10 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    subscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<BasicResponse> {
+    subscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse)
+            return (await request(`objects/${remote_oid}/events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
@@ -361,10 +361,10 @@ export const gateway = {
     * @param {oid: string, eid: string}
     * @returns {error: boolean, message: string} 
     */
-    unsubscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<BasicResponse> {
+    unsubscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<ConsumptionResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse)
+            return (await request(`objects/${remote_oid}/events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
         } catch (err) {
             const error = errorHandler(err)
             throw new Error(error.message)
