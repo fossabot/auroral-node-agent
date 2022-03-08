@@ -522,6 +522,45 @@ paths:
           $ref: "#/components/responses/NotFound"
         default:
           description: Error
+  "/api/events/remote/channels/{id}/{oid}":
+    get:
+      summary: Get event channels
+      description: Get event channels of a remote object
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          required: true
+          description: REMOTE Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                description: EIDs of active event channels
+                items:
+                  type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          description: Error
   "/api/events/remote/{id}/{oid}/{eid}":
     get:
       summary: Channel status
@@ -550,14 +589,14 @@ paths:
           required: true
           description: Event of the remote object - EID
           schema:
-            type: string
+            type: boolean
       responses:
         "200":
           description: OK
           content:
             "*/*":
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                type: string
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -598,7 +637,7 @@ paths:
           content:
             "*/*":
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                type: string
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -639,7 +678,7 @@ paths:
           content:
             "*/*":
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                type: string
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -674,7 +713,7 @@ paths:
           content:
             "*/*":
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                type: string
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -706,7 +745,7 @@ paths:
         content:
           application/json:
             schema:
-                $ref: "#/components/schemas/ApiJsonObject"
+                type: string
         description: Body of the message
         required: true
       responses:
@@ -751,7 +790,7 @@ paths:
           content:
             "*/*":
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                type: string
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":

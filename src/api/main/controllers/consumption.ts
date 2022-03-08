@@ -68,6 +68,25 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
     }
 }
 
+type getEventChannelsCtrl = expressTypes.Controller<{ id: string, oid: string }, {}, {}, JsonType[], {}>
+
+/**
+ * Create event channel
+ */
+export const getEventChannels: getEventChannelsCtrl = async (req, res) => {
+    const { id, oid } = req.params
+    try {
+      const data = await gateway.getObjectEventChannels(id, oid)
+      _parse_gtw_response(data)
+      logger.info(`Channels of ${oid} retrieved`)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.message[0].events)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
+}
+
 type activateEventChannelCtrl = expressTypes.Controller<{ id: string, eid: string }, {}, {}, string, {}>
 
 /**
@@ -131,7 +150,7 @@ export const deactivateEventChannel: deactivateEventChannelCtrl = async (req, re
     }
 }
 
-type statusRemoteEventChannelCtrl = expressTypes.Controller<{ id: string, oid: string, eid: string }, {}, {}, string, {}>
+type statusRemoteEventChannelCtrl = expressTypes.Controller<{ id: string, oid: string, eid: string }, {}, {}, boolean, {}>
 
 /**
  * Status of remote event channel
@@ -142,7 +161,7 @@ export const statusRemoteEventChannel: statusRemoteEventChannelCtrl = async (req
       const data = await gateway.statusRemoteEventChannel(id, oid, eid)
       _parse_gtw_response(data)
       logger.info(`Get status of remote channel ${eid} of ${oid}`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.message[0].active)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

@@ -268,6 +268,23 @@ export const gateway = {
     },
 
     /**
+     * Get event channels;
+     * (Using the credentials of a service or device);
+     * @async
+     * @param {oid: string, remoteOid: string}
+     * @returns {error: boolean, message: string} 
+     */
+     getObjectEventChannels: async function(oid: string, remoteOid: string): Promise<ConsumptionResponse> {
+        try {
+            const Authorization = await getAuthorization(oid)
+            return (await request(`objects/${remoteOid}/events`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new Error(error.message)
+        }
+    },
+
+    /**
      * Activate the event channel;
      * (Using the credentials of a service or device);
      * @async

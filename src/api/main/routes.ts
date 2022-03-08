@@ -65,6 +65,7 @@ MainRouter
    .post('/events/local/:id/:eid', json(), consume.activateEventChannel) // Create my event channel
    .put('/events/local/:id/:eid', json(), consume.publishEvent) // Put a message in my event channel
    .delete('/events/local/:id/:eid', json(), consume.deactivateEventChannel) // Delete my event channel
+   .get('/events/remote/channels/:id/:oid', json(), consume.getEventChannels) // Get event channels of remote Object
    .get('/events/remote/:id/:oid/:eid', json(), consume.statusRemoteEventChannel) // Get status of a remote event channel
    .post('/events/remote/:id/:oid/:eid', json(), consume.subscribeRemoteEventChannel) // Subscribe to remote event channel
    .delete('/events/remote/:id/:oid/:eid', json(), consume.unsubscribeRemoteEventChannel) // Unsubscribe to remote event channel
