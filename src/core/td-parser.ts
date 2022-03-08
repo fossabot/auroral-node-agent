@@ -261,9 +261,9 @@ const _lookForAdapterIdConflicts = async (adapterId: string | undefined, adapter
  * @param td 
  */
 const _unique_iids = (td: Thing): void => {
-    const properties = Object.keys(td.properties)
-    const events = Object.keys(td.events)
-    const actions = Object.keys(td.actions)
+    const properties = td.properties ? Object.keys(td.properties) : []
+    const events = td.events ? Object.keys(td.events) : []
+    const actions = td.actions ? Object.keys(td.actions) : []
     const interactions = [...properties, ...events, ...actions]
     const repeated = [...new Set(interactions.filter((value, index, self) => self.indexOf(value) !== index))]
     if (repeated.length > 0) {
