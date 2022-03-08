@@ -9,6 +9,7 @@ import { errorHandler } from '../utils/error-handler'
 import { logger } from '../utils'
 import { RegistrationResultPost } from '../types/gateway-types'
 import { UpdateResult } from '../types/misc-types'
+import { Thing } from '../types/wot-types'
 
 // Types
 
@@ -66,6 +67,8 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
     const errors: RegistrationResultPost[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         try {
+            // Verify iid are not duplicated (unique pids, aids and eids)
+            _unique_iids(itemsArray[i].td)
             // Check conflicts with adapterIDs
             await _lookForAdapterIdConflicts(itemsArray[i].td.adapterId, adapterIDs)
             const oid = uuidv4()
@@ -130,6 +133,8 @@ export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): P
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         const it = itemsArray[i]
         try {
+            // Verify iid are not duplicated (unique pids, aids and eids)
+            _unique_iids(itemsArray[i].td)
             // Check that adapterId does not change
             await sameAdapterId(it.td.id!, it.td.adapterId)
             // Get proper thing description
@@ -247,5 +252,21 @@ const _lookForAdapterIdConflicts = async (adapterId: string | undefined, adapter
         if (await existsAdapterId(adapterId)) {
             throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
         }
+    }
+}
+
+/**
+ * All interaction ids must be unique
+ * Also across different interaction types
+ * @param td 
+ */
+const _unique_iids = (td: Thing): void => {
+    const properties = Object.keys(td.properties)
+    const events = Object.keys(td.events)
+    const actions = Object.keys(td.actions)
+    const interactions = [...properties, ...events, ...actions]
+    const repeated = [...new Set(interactions.filter((value, index, self) => self.indexOf(value) !== index))]
+    if (repeated.length > 0) {
+        throw new Error('Thing Description has repeated interaction names: ' + repeated.join())
     }
 }
