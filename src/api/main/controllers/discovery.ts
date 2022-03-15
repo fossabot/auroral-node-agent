@@ -61,7 +61,6 @@ export const discoverLocalSemantic: discoveryLocalSemanticCtrl = async (req, res
         if (!sparql) {
             return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing sparql query')
         } else if (Config.WOT.ENABLED) {
-            console.log(sparql)
             result = (await wot.searchSPARQL(sparql)).message
         } else {
             result = 'You need to enable WoT to use this function'

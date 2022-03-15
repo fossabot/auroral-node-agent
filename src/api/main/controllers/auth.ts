@@ -9,7 +9,7 @@ import { gateway } from '../../../microservices/gateway'
 
 // Controllers
 
-type loginCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
+type loginCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string, {}>
 
 /**
  * Login endpoint
@@ -18,16 +18,17 @@ type loginCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
 export const login: loginCtrl = async (req, res) => {
   const { id } = req.params
 	try {
-    await gateway.login(id)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
+    const data = await gateway.login(id)
+    return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
-        return responseBuilder(error.status, res, error.message)
+        // Harcoded response message, TBD fix in gateway
+        return responseBuilder(error.status, res, 'Timeout while waiting for establishing TLS, please retry')
 	}
 }
  
-type logoutCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
+type logoutCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string, {}>
 
 /**
  * Logout endpoint
@@ -36,11 +37,12 @@ type logoutCtrl = expressTypes.Controller<{ id?: string }, {}, {}, null, {}>
 export const logout: logoutCtrl = async (req, res) => {
   const { id } = req.params
 	try {
-    await gateway.logout(id)
-    return responseBuilder(HttpStatusCode.OK, res, null, null)
+    const data = await gateway.logout(id)
+    return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
-        return responseBuilder(error.status, res, error.message)
+        // Harcoded response message, TBD fix in gateway
+        return responseBuilder(error.status, res, 'Timeout while waiting for establishing TLS, please retry')
 	}
 }

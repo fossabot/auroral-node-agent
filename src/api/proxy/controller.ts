@@ -63,7 +63,6 @@ type DiscoveryCtrl = expressTypes.Controller<{ oid: string }, { sparql: string }
 
 export const discovery: DiscoveryCtrl = async (req, res) => {
     const { oid } = req.params
-    console.log(req.body)
     const query = req.body ? req.body.sparql : undefined // Gateway sends the sparql wrapped as a JSON
     const { relationship, items } = res.locals
     const { originId } = res.locals

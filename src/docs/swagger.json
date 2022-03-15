@@ -86,13 +86,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -123,13 +123,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -159,14 +159,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RegistrationSuccesArray"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Registration"
                     },
                     "400": {
                         "description": "WRONG BODY",
@@ -182,7 +175,7 @@
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             },
@@ -199,20 +192,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ArrayOfStrings"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericStringArray"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             },
@@ -240,14 +226,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UpdateResponseArray"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Update"
                     },
                     "400": {
                         "description": "WRONG BODY",
@@ -263,7 +242,7 @@
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -293,20 +272,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponseObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/RedisObject"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -336,13 +308,13 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -361,20 +333,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ArrayOfStrings"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericStringArray"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -405,20 +370,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ArrayOfStrings"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericStringArray"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -448,20 +406,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponseObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/SemanticObject"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -479,30 +430,17 @@
                     "Local Discovery"
                 ],
                 "requestBody": {
-                    "content": {
-                        "text/plain": {
-                            "schema": {
-                                "type": "string"
-                            }
-                        }
-                    }
+                    "$ref": "#/components/requestBodies/SparqlRequest"
                 },
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponseObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/SemanticObject"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -543,20 +481,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiJsonObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/SemanticObject"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -586,24 +517,11 @@
                     }
                 ],
                 "requestBody": {
-                    "content": {
-                        "text/plain": {
-                            "schema": {
-                                "type": "string"
-                            }
-                        }
-                    }
+                    "$ref": "#/components/requestBodies/SparqlRequest"
                 },
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponseObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/SemanticObject"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest"
@@ -615,7 +533,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -665,14 +583,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK - formats: JSON, Turtle, plaintext ",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiJsonObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/ConsumptionObject"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -681,7 +592,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             },
@@ -731,7 +642,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ApiJsonObject"
+                                "type": "object"
                             }
                         }
                     },
@@ -740,14 +651,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiJsonObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/ConsumptionObject"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -756,7 +660,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -797,18 +701,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "array",
-                                    "description": "EIDs of active event channels",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericStringArray"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -817,7 +710,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -861,20 +754,13 @@
                         "required": true,
                         "description": "Event of the remote object - EID",
                         "schema": {
-                            "type": "string"
+                            "type": "boolean"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "boolean"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -883,7 +769,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             },
@@ -931,14 +817,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -947,7 +826,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             },
@@ -995,14 +874,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1011,7 +883,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -1051,14 +923,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1067,7 +932,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             },
@@ -1116,14 +981,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest"
@@ -1135,7 +993,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             },
@@ -1173,14 +1031,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericString"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1189,7 +1040,7 @@
                         "$ref": "#/components/responses/NotFound"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -1208,20 +1059,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ArrayOfStrings"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/GenericStringArray"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -1251,20 +1095,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PartnersResponseObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/PartnerInfo"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -1294,20 +1131,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiJsonObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/ContractInfo"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -1326,17 +1156,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponseObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/AgentInfo"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
@@ -1355,44 +1181,29 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponseObject"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/AgentHealth"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
                     "default": {
-                        "description": "Error"
+                        "$ref": "#/components/responses/DefaultError"
                     }
                 }
             }
         }
     },
     "components": {
-        "responses": {
-            "BadRequest": {
-                "description": "Bad request, please check the request body"
-            },
-            "Unauthorized": {
-                "description": "Unauthorized"
-            },
-            "NotFound": {
-                "description": "Not Found"
-            },
-            "Forbidden": {
-                "description": "Forbidden"
+        "securitySchemes": {
+            "basicAuth": {
+                "type": "http",
+                "scheme": "basic"
             }
         },
         "requestBodies": {
-            "SparqlRequestObject": {
+            "SparqlRequest": {
                 "content": {
-                    "application/json": {
+                    "plain/text": {
                         "schema": {
                             "$ref": "#/components/schemas/SparqlRequestObject"
                         }
@@ -1401,106 +1212,433 @@
                 "description": "SPARQL query: Filter out specific content that you wish to see. I.E: Get me only thermometers"
             }
         },
-        "securitySchemes": {
-            "basicAuth": {
-                "type": "http",
-                "scheme": "basic"
+        "responses": {
+            "BadRequest": {
+                "description": "Bad request",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "Unauthorized": {
+                "description": "Unauthorized",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "Not Found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "Forbidden": {
+                "description": "Forbidden",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "DefaultError": {
+                "description": "Server Error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "GenericString": {
+                "description": "OK",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericResponse"
+                        }
+                    }
+                }
+            },
+            "GenericStringArray": {
+                "description": "OK",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericResponseArray"
+                        }
+                    }
+                }
+            },
+            "Registration": {
+                "description": "Object Registered",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RegistrationSuccesArray"
+                        }
+                    }
+                }
+            },
+            "Update": {
+                "description": "Object Updated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/UpdateResponseArray"
+                        }
+                    }
+                }
+            },
+            "RedisObject": {
+                "description": "Item Info stored in Redis",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RedisRegistration"
+                        }
+                    }
+                }
+            },
+            "SemanticObject": {
+                "description": "Thing description or SPARQL response",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericResponseObject"
+                        }
+                    }
+                }
+            },
+            "ConsumptionObject": {
+                "description": "Measurement data formatted as JSON-LD",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericResponseObject"
+                        }
+                    }
+                }
+            },
+            "PartnerInfo": {
+                "description": "Measurement data formatted as JSON-LD",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/PartnerInfoResponse"
+                        }
+                    }
+                }
+            },
+            "ContractInfo": {
+                "description": "Measurement data formatted as JSON-LD",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ContractInfoResponse"
+                        }
+                    }
+                }
+            },
+            "AgentInfo": {
+                "description": "Information about your Node",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/AgentInfoResponse"
+                        }
+                    }
+                }
+            },
+            "AgentHealth": {
+                "description": "Information about status of Node services",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/AgentHealthResponse"
+                        }
+                    }
+                }
             }
         },
         "schemas": {
-            "ApiResponse": {
+            "GenericResponse": {
                 "type": "object",
                 "properties": {
-                    "error": {
-                        "type": "boolean",
-                        "default": false
-                    },
                     "message": {
                         "type": "string"
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header",
+                        "example": 200
                     }
                 }
             },
-            "ApiJsonObject": {
-                "type": "object"
+            "GenericResponseArray": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header",
+                        "example": 200
+                    }
+                }
             },
-            "ApiResponseObject": {
+            "GenericResponseObject": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "object",
+                        "description": "JSON document"
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header",
+                        "example": 200
+                    }
+                }
+            },
+            "ErrorResponse": {
                 "type": "object",
                 "properties": {
                     "error": {
-                        "type": "boolean",
-                        "default": false
+                        "type": "string",
+                        "description": "Human readable Error"
                     },
-                    "message": {
-                        "type": "object"
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
                     }
-                }
-            },
-            "ArrayOfStrings": {
-                "type": "array",
-                "items": {
-                    "type": "string"
                 }
             },
             "RegistrationSuccesArray": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/components/schemas/RegistrationSuccesObject"
-                }
-            },
-            "RegistrationSuccesObject": {
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string"
+                    "message": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "oid": {
+                                    "type": "string"
+                                },
+                                "password": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     },
-                    "oid": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "type": "string"
-                    },
-                    "error": {
-                        "type": "string"
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
                     }
                 }
             },
             "UpdateResponseArray": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/components/schemas/UpdateResponseObject"
-                }
-            },
-            "UpdateResponseObject": {
                 "type": "object",
                 "properties": {
-                    "oid": {
-                        "type": "string"
+                    "message": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "oid": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     },
-                    "error": {
-                        "type": "string"
-                    },
-                    "success": {
-                        "type": "boolean"
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
                     }
                 }
             },
-            "PartnersResponseObject": {
-                "type": "array",
-                "description": "Array of partners.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "Organisation name"
-                        },
-                        "nodes": {
-                            "type": "array",
-                            "description": "Array of nodes.",
+            "RedisRegistration": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "adapterId": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "privacy": {
+                                "type": "string"
+                            },
+                            "properties": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "actions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
+            },
+            "PartnerInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "nodes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
+            },
+            "ContractInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "object",
+                        "properties": {
+                            "ctid": {
+                                "type": "string",
+                                "description": "Contract ID"
+                            },
+                            "cid": {
+                                "type": "string",
+                                "description": "Organisation ID"
+                            },
                             "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
+            },
+            "AgentInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "object",
+                        "properties": {
+                            "registrations": {
+                                "type": "string"
+                            },
+                            "partners": {
+                                "type": "string"
+                            },
+                            "organisation": {
+                                "type": "string"
+                            },
+                            "last_privacy_update": {
+                                "type": "string"
+                            },
+                            "last_partners_update": {
+                                "type": "string"
+                            },
+                            "nodes": {
+                                "type": "string"
+                            },
+                            "cid": {
+                                "type": "string"
+                            },
+                            "last_configuration_update": {
                                 "type": "string"
                             }
                         }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
+            },
+            "AgentHealthResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "object",
+                        "properties": {
+                            "Redis": {
+                                "type": "string",
+                                "default": "OK"
+                            },
+                            "Gateway": {
+                                "type": "string",
+                                "default": "OK"
+                            },
+                            "NodeApp": {
+                                "type": "string",
+                                "default": "OK"
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
                     }
                 }
             },
@@ -1541,13 +1679,10 @@
                 }
             },
             "SparqlRequestObject": {
-                "properties": {
-                    "sparql": {
-                        "description": "Sparql query",
-                        "type": "string",
-                        "default": ""
-                    }
-                }
+                "description": "Sparql query",
+                "type": "string",
+                "example": "SELECT ?name WHERE { ?person foaf:name ?name . }\n",
+                "default": ""
             }
         }
     }

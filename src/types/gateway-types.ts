@@ -2,28 +2,10 @@
 
 import { JsonType } from './misc-types'
 
-export interface TdsResponse {
-    error: boolean
-    message: JsonType[]
-}
-
-export interface BasicArrayResponse {
-    error: boolean
-    message: string[]
-}
-
-export interface DeleteResponse {
-    error: boolean
-    message: {
-        message: string, 
-        value: string,
-        result: string,
-        error: string
-    }[]
-}
-
-// TBD: Replace JsonType with more accurate interface
-export interface ConsumptionResponse<T = JsonType> {
+/**
+ * Generic gateway response
+ */
+export interface GatewayResponse<T = JsonType> {
     error: boolean
     statusCode: number
     statusCodeReason: string
@@ -31,23 +13,30 @@ export interface ConsumptionResponse<T = JsonType> {
     message: T[]
 }
 
-export interface RegistrationResult {
-    error: boolean
-    message: [{
-        oid: string
-        password: string | null
-        name: string
-        error?: string
-    }] 
-}
+// Specific gateway responses
 
-export interface RegistrationUpdateResult {
-    error: boolean
-    message: [{
-        oid: string
-        error?: boolean
-    }]
-}
+export type GtwDeleteResponse = GatewayResponse<{
+    message: string, 
+    value: string,
+    result: string,
+    error: string
+}>
+
+export type GtwRegistrationResponse = GatewayResponse<{
+    oid: string
+    password: string | null
+    name: string
+    error?: string
+}>
+
+export type GtwUpdateResponse = GatewayResponse<{
+    oid: string
+    error?: boolean
+}>
+
+export type GtwGetRegistrationsResponse = GatewayResponse<string>
+
+// Other related types
 
 export interface RegistrationResultPost {
         oid: string
@@ -63,4 +52,9 @@ export interface RemovalBody {
 
 export interface IdDiscoveryType {
     objects: { oid: string }[]
+}
+
+export interface BasicResponse<T = JsonType> {
+    error: string | null
+    message: T
 }

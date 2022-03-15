@@ -12,8 +12,9 @@ export const security = {
         return registrationFuncs.getPrivacy(id)
     },
     cacheItemsPrivacy: async (): Promise<void> => {
-        const items = await gateway.getItemsPrivacy()
-        await registrationFuncs.setPrivacy(items.message)
+        const response = await gateway.getItemsPrivacy()
+        const items = response.message ? response.message : []
+        await registrationFuncs.setPrivacy(items)
     },
     contractExists: async (cid: string): Promise<boolean> => {
         const ct = await redisDb.get('contract:' + cid)
@@ -99,8 +100,8 @@ export const security = {
 
 const downloadContract = async (cid: string): Promise<boolean> => {
     // Download
-    const contract = await gateway.getContracts(cid)
-    if (contract.ctid) {
+    const contract = (await gateway.getContracts(cid)).message
+    if (contract && contract.ctid) {
     // If contract in cloud store it and add key with TTL 1 day --> return true
         // Reset contract info -> remove and then add new
         await removeContractInfo(contract.ctid)

@@ -7,7 +7,7 @@ import { responseBuilder } from '../../../utils/response-builder'
 // Other imports
 import { JsonType } from '../../../types/misc-types'
 import { gateway } from '../../../microservices/gateway'
-import { ConsumptionResponse } from '../../../types/gateway-types'
+import { GatewayResponse } from '../../../types/gateway-types'
 
 // ***** Consume remote resources *****
 
@@ -37,7 +37,7 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
       }
   }
 
-type setPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, JsonType, {}, ConsumptionResponse, {}>
+type setPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, JsonType, {}, GatewayResponse, {}>
 
 /**
  * Set remote property
@@ -120,7 +120,6 @@ type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, Jso
           return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
         } 
         const data = await gateway.publishEvent(id, eid, body)
-        console.log(data)
         _parse_gtw_response(data)
         logger.info(`Message sent to channel ${eid} of ${id}`)
         return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
@@ -209,7 +208,7 @@ export const unsubscribeRemoteEventChannel: unsubscribeRemoteEventChannelCtrl = 
 
 // Private functions
 
-const _parse_gtw_response = (data: ConsumptionResponse): void => {
+const _parse_gtw_response = (data: GatewayResponse): void => {
   if (data.statusCode >= 500) {
     throw new MyError(data.statusCodeReason, HttpStatusCode.INTERNAL_SERVER_ERROR)
   } else if (data.statusCode === 400) {

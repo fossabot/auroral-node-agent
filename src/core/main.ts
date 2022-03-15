@@ -34,7 +34,7 @@ export const initialize = async function() {
     await gtwServices.doLogins(registrations)
 
     // Get status of registrations in platform
-    const objectsInPlatform = await gateway.getRegistrations()
+    const objectsInPlatform = (await gateway.getRegistrations()).message
 
     // Compare local regitrations with platform registrations
     gtwServices.compareLocalAndRemote(registrations, objectsInPlatform)

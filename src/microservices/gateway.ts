@@ -6,13 +6,12 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, BasicResponse, IItemPrivacy, RelationshipType, WholeContractType } from '../types/misc-types'
+import { JsonType, IItemPrivacy, RelationshipType, WholeContractType } from '../types/misc-types'
 import { Config } from '../config'
-import { logger, errorHandler } from '../utils'
-import { DeleteResponse, ConsumptionResponse, RemovalBody, RegistrationResult, RegistrationUpdateResult, IdDiscoveryType } from '../types/gateway-types'
-import { Registration, RegistrationBody, RegistrationnUpdateNm } from '../persistance/models/registrations'
+import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
+import { GtwDeleteResponse, GatewayResponse, RemovalBody, GtwRegistrationResponse, GtwUpdateResponse, IdDiscoveryType, BasicResponse, GtwGetRegistrationsResponse } from '../types/gateway-types'
+import { RegistrationBody, RegistrationnUpdateNm } from '../persistance/models/registrations'
 import { getCredentials } from '../persistance/persistance'
-import { Thing } from '../types/wot-types'
 
 // CONSTANTS 
 
@@ -45,9 +44,9 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    login: async function(oid?: string): Promise<BasicResponse> {
+    login: async function(oid?: string): Promise<GatewayResponse> {
         const Authorization = await getAuthorization(oid)
-        return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
+        return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
     },
 
     /**
@@ -57,9 +56,9 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    logout: async function(oid?: string): Promise<BasicResponse> {
+    logout: async function(oid?: string): Promise<GatewayResponse> {
         const Authorization = await getAuthorization(oid)
-        return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse
+        return request('objects/logout', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
     },
 
     // ***** REGISTRATION *****
@@ -70,14 +69,14 @@ export const gateway = {
      * @async
      * @returns {error: boolean, message: array of TDs} 
      */
-    getRegistrations: async function(): Promise<string[]> {
+    getRegistrations: async function(): Promise<GtwGetRegistrationsResponse> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as string[]
+            return request(`agents/${Config.GATEWAY.ID}/objects`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as GtwGetRegistrationsResponse
         } catch (err) {
             const error = errorHandler(err)
             logger.warn(`Error getting ${Config.GATEWAY.ID} objects ...`)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -88,13 +87,13 @@ export const gateway = {
      * @param {body: Array of TDs}
      * @returns {error: boolean, message: array of TDs} 
      */
-    postRegistrations: async function(body: { items: RegistrationBody[], agid: string }): Promise<RegistrationResult> {
+    postRegistrations: async function(body: { items: RegistrationBody[], agid: string }): Promise<GtwRegistrationResponse> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization }) as unknown as RegistrationResult)
+            return request(`agents/${Config.GATEWAY.ID}/objects`, 'POST', body, { ...ApiHeader, Authorization }) as unknown as GtwRegistrationResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -105,13 +104,13 @@ export const gateway = {
      * @param {body: Array of TDs}
      * @returns {error: boolean, message: array of TDs} 
      */
-     updateRegistration: async function(body: { items: RegistrationnUpdateNm[], agid: string }): Promise<RegistrationUpdateResult> {
+     updateRegistration: async function(body: { items: RegistrationnUpdateNm[], agid: string }): Promise<GtwUpdateResponse> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/${Config.GATEWAY.ID}/objects`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as RegistrationUpdateResult)
+            return request(`agents/${Config.GATEWAY.ID}/objects`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as GtwUpdateResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -122,14 +121,14 @@ export const gateway = {
      * @param {body: Array of OIDs}
      * @returns {error: boolean, message: [{value: string, result: string, error: string}]} 
      */
-    removeRegistrations: async function(body: { oids: string[] }): Promise<DeleteResponse> {
+    removeRegistrations: async function(body: { oids: string[] }): Promise<GtwDeleteResponse> {
         try {
             const Authorization = await getAuthorization()
             const data: RemovalBody = { ...body, agid: Config.GATEWAY.ID }
-            return (await request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', data, { ...ApiHeader, Authorization }) as unknown as DeleteResponse)
+            return request(`agents/${Config.GATEWAY.ID}/objects/delete`, 'POST', data, { ...ApiHeader, Authorization }) as unknown as GtwDeleteResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)        
+            throw new MyError(error.message, error.status)        
         }
     },
 
@@ -151,10 +150,10 @@ export const gateway = {
     discovery: async function(oid?: string): Promise<IdDiscoveryType> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request('objects', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as IdDiscoveryType)
+            return request('objects', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as IdDiscoveryType
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -166,15 +165,15 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
      */
-    discoveryRemote: async function(oid: string, params: { sparql?: string, originId?: string }): Promise<ConsumptionResponse> {
+    discoveryRemote: async function(oid: string, params: { sparql?: string, originId?: string }): Promise<GatewayResponse> {
         try {
             const { originId, sparql } = params
             const query = typeof sparql === 'string' ? { sparql } : undefined
             const Authorization = await getAuthorization(originId)
-            return (await request(`objects/${oid}`, 'POST', query, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`objects/${oid}`, 'POST', query, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -186,13 +185,13 @@ export const gateway = {
      * @param {reqid: string}
      * @returns {error: boolean, message: cid: string} 
      */
-    getCid: async function(reqid: string): Promise<string> {
+    getCid: async function(reqid: string): Promise<BasicResponse<string>> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/cid/${reqid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as string
+            return request(`agents/cid/${reqid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string>
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -203,13 +202,13 @@ export const gateway = {
      * @async
      * @returns {error: boolean, message: cid: string} 
      */
-    getPartners: async function(): Promise<string[]> {
+    getPartners: async function(): Promise<BasicResponse<string[]>> {
         try {
             const Authorization = await getAuthorization()
-            return (await request('agents/partners', 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as string[] 
+            return request('agents/partners', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string[]>
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -220,13 +219,13 @@ export const gateway = {
      * @async
      * @returns {error: boolean, message: cid: string} 
      */
-    getPartnerInfo: async function(cid: string): Promise<{ name: string, nodes: string[]}> {
+    getPartnerInfo: async function(cid: string): Promise<BasicResponse<{ name: string, nodes: string[]}>> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`agents/partner/${cid}`, 'GET', undefined, { ...ApiHeader, Authorization })).message as unknown as { name: string, nodes: string[]}
+            return request(`agents/partner/${cid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<{ name: string, nodes: string[]}>
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -240,13 +239,13 @@ export const gateway = {
      * @param {oid: string, remote_oid: string, pid: string}
      * @returns {error: boolean, message: object} 
      */
-    getProperty: async function(oid: string, remote_oid: string, pid: string): Promise<ConsumptionResponse> {
+    getProperty: async function(oid: string, remote_oid: string, pid: string): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/properties/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`objects/${remote_oid}/properties/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -257,13 +256,13 @@ export const gateway = {
      * @param {oid: string, remote_oid: string, pid: string, body: json}
      * @returns {error: boolean, message: object} 
      */
-    putProperty: async function(oid: string, remote_oid: string, pid: string, body: JsonType): Promise<ConsumptionResponse> {
+    putProperty: async function(oid: string, remote_oid: string, pid: string, body: JsonType): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/properties/${pid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`objects/${remote_oid}/properties/${pid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -274,13 +273,13 @@ export const gateway = {
      * @param {oid: string, remoteOid: string}
      * @returns {error: boolean, message: string} 
      */
-     getObjectEventChannels: async function(oid: string, remoteOid: string): Promise<ConsumptionResponse> {
+     getObjectEventChannels: async function(oid: string, remoteOid: string): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remoteOid}/events`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`objects/${remoteOid}/events`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -291,13 +290,13 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    activateEventChannel: async function(oid: string, eid: string): Promise<ConsumptionResponse> {
+    activateEventChannel: async function(oid: string, eid: string): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -308,13 +307,13 @@ export const gateway = {
      * @param {oid: string, eid: string, body: object}
      * @returns {error: boolean, message: string} 
      */
-    publishEvent: async function(oid: string, eid: string, body: JsonType): Promise<ConsumptionResponse> {
+    publishEvent: async function(oid: string, eid: string, body: JsonType): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`events/${eid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`events/${eid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -325,13 +324,13 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    deactivateEventChannel: async function(oid: string, eid: string): Promise<ConsumptionResponse> {
+    deactivateEventChannel: async function(oid: string, eid: string): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -342,13 +341,13 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    statusRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<ConsumptionResponse> {
+    statusRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/events/${eid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`objects/${remote_oid}/events/${eid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -360,13 +359,13 @@ export const gateway = {
      * @param {oid: string, eid: string}
      * @returns {error: boolean, message: string} 
      */
-    subscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<ConsumptionResponse> {
+    subscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`objects/${remote_oid}/events/${eid}`, 'POST', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -378,13 +377,13 @@ export const gateway = {
     * @param {oid: string, eid: string}
     * @returns {error: boolean, message: string} 
     */
-    unsubscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<ConsumptionResponse> {
+    unsubscribeRemoteEventChannel: async function(oid: string, remote_oid: string, eid: string): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return (await request(`objects/${remote_oid}/events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse)
+            return request(`objects/${remote_oid}/events/${eid}`, 'DELETE', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
 
@@ -404,16 +403,14 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    health: async function(oid?: string): Promise<BasicResponse> {
+    health: async function(oid?: string): Promise<BasicResponse<string>> {
         try {
             const Authorization = await getAuthorization(oid)
-            const data = await request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization })
-            // Store redundant variable data to catch any errors from GOT here
-            return data as unknown as BasicResponse
+            return request('objects/login', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string>
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            return Promise.resolve({ error: error.message })
+            return Promise.resolve({ error: error.message, message: 'Error' })
         }
     },
 
@@ -426,10 +423,10 @@ export const gateway = {
     getRelationship: async function (rid: string): Promise<BasicResponse<RelationshipType>> {
         try {
             const Authorization = await getAuthorization()
-            return (await request(`security/relationship/${rid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<RelationshipType>)
+            return request(`security/relationship/${rid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<RelationshipType>
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
     /**
@@ -438,13 +435,13 @@ export const gateway = {
     * @param 
     * @returns {error: boolean, message: object} 
     */
-     getItemsPrivacy: async function (): Promise<ConsumptionResponse<IItemPrivacy>> {
+     getItemsPrivacy: async function (): Promise<BasicResponse<IItemPrivacy[]>> {
         try {
             const Authorization = await getAuthorization()
-            return (await request('security/privacy', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as ConsumptionResponse<IItemPrivacy>)
+            return request('security/privacy', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<IItemPrivacy[]>
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
     /**
@@ -453,13 +450,13 @@ export const gateway = {
     * @param 
     * @returns {error: boolean, message: object} 
     */
-     getContracts: async function (cid: string): Promise<WholeContractType> {
+     getContracts: async function (cid: string): Promise<BasicResponse<WholeContractType>> {
         try {
             const Authorization = await getAuthorization()
-            return (await request('security/contracts/' + cid, 'GET', undefined, { ...ApiHeader, Authorization })).message as WholeContractType
+            return request('security/contracts/' + cid, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<WholeContractType>
         } catch (err) {
             const error = errorHandler(err)
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     }
 }
@@ -470,7 +467,7 @@ const getAuthorization = async (oid?: string): Promise<string> => {
     if (oid) {
         const credentials = await getCredentials(oid)
         if (!credentials) {
-            throw new Error(`Missing authorization for object ${oid}`)
+            throw new MyError(`Missing authorization for object ${oid}`, HttpStatusCode.UNAUTHORIZED)
         }
         return credentials
     } else {

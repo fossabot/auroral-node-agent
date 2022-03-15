@@ -66,14 +66,14 @@ services:
     image: acimmino/auroral-fuseky:latest
     volumes:
       - triplestore:/fuseki
-    # ports:
-    #   - '3030:3030'
+    ports:
+      - '3030:3030'
   wothive:
     image: acimmino/wot-hive:latest
     # volumes:
     #   - ./wothive/configuration.json:/usr/src/wothive/configuration.json
-    # ports:
-    #   - '9000:9000'
+    ports:
+      - '9000:9000'
 volumes:
     triplestore:
         external: true

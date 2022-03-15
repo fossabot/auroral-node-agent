@@ -31,7 +31,7 @@ type getRegistrationsCtrl = expressTypes.Controller<{}, {}, {}, string[], {}>
  */
 export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
 	try {
-    const data = await gateway.getRegistrations()
+    const data = (await gateway.getRegistrations()).message
     return responseBuilder(HttpStatusCode.OK, res, null, data)
 	} catch (err) {
       const error = errorHandler(err)

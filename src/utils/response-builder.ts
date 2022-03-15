@@ -11,8 +11,12 @@ function errorBuilder(statusCode: HttpStatusCode, errorMessage?: string | null) 
             return 'Ooops something went wrong!'
         case HttpStatusCode.BAD_REQUEST:
             return 'Bad request'
+        case HttpStatusCode.TOO_MANY_REQUESTS:
+            return 'Request quota exceeded, please wait before sending next request'
         case HttpStatusCode.NOT_FOUND:
-            return 'Not found'
+            return 'Requested resource was not found'
+        case HttpStatusCode.FORBIDDEN:
+            return 'Missing authorization to access requested resource'
         default:
             return null
     }
@@ -23,15 +27,13 @@ export function responseBuilder<T>(statusCode: HttpStatusCode, res: ApiResponse<
     if (err) {
         return res.status(statusCode).json({
             error: err,
-            message
+            message,
+            statusCode
         })
     } else {
-        if (typeof message === 'object' && message !== null) {
-            return res.status(statusCode).json(
-                message
-            )
-        } else {
-            return res.status(statusCode).send(message)
-        }
+        return res.status(statusCode).json({
+            message,
+            statusCode
+        })
     }
 }

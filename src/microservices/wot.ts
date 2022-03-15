@@ -7,7 +7,7 @@
 import got, { Method, Headers, PlainResponse } from 'got'
 import { JsonType, BasicResponse } from '../types/misc-types'
 import { Config } from '../config'
-import { logger, errorHandler } from '../utils'
+import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
 import { Thing } from '../types/wot-types'
 
 // CONSTANTS 
@@ -44,23 +44,6 @@ const SparqlHeader = {
 // INTERFACE
 
 export const wot = {
-    test: async function(): Promise<BasicResponse<null>> {
-        try {
-            const response = await request('.well-known/wot-thing-description', 'GET', undefined, ApiHeader)
-            if (response.statusCode === 400) {
-                throw new Error('Invalid serialization or TD')
-            }
-            if (response.statusCode === 404) {
-                throw new Error('TD with the given id not found')
-            }
-            logger.debug(response)
-            return buildResponse()
-        } catch (err) {
-            const error = errorHandler(err)
-            logger.warn('Object  was not registered ...')
-            throw new Error(error.message)
-        }
-    },
     /**
      * Create/Update a Thing Description
      * Provide oid
@@ -71,17 +54,11 @@ export const wot = {
     upsertTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request(`api/things/${oid}`, 'PUT', body, ApiHeader)
-            if (response.statusCode === 400) {
-                throw new Error('Invalid serialization or TD')
-            }
-            if (response.statusCode === 404) {
-                throw new Error('TD with the given id not found')
-            }
             return buildResponse()
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not registered ...')
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
      /**
@@ -95,14 +72,11 @@ export const wot = {
     createTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request('api/things/', 'POST', undefined, ApiHeader)
-            if (response.statusCode === 400) {
-                throw new Error('Invalid serialization or TD')
-            }
-            return buildResponse()
+            return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not registered ...')
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
     /**
@@ -115,17 +89,11 @@ export const wot = {
      updatePartialTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request(`api/things/${oid}`, 'PATCH', undefined, ApiHeader)
-            if (response.statusCode === 400) {
-                throw new Error('Invalid serialization or TD')
-            }
-            if (response.statusCode === 404) {
-                throw new Error('TD with the given id not found')
-            }
-            return buildResponse()
+            return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not registered ...')
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
      /**
@@ -138,17 +106,11 @@ export const wot = {
     deleteTD: async function(oid: string): Promise<BasicResponse<null>> {
         try {
             const response = await request(`api/things/${oid}`, 'DELETE', undefined, ApiHeader)
-            if (response.statusCode === 400) {
-                throw new Error('Error happened manipulating Things')
-            }
-            if (response.statusCode === 404) {
-                throw new Error('TD with the given id not found')
-            }
-            return buildResponse()
+            return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not deleted ...')
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
     /**
@@ -161,17 +123,11 @@ export const wot = {
      retrieveTD: async function(oid: string): Promise<BasicResponse<Thing>> {
         try {
             const response = await request(`api/things/${oid}`, 'GET', undefined, ApiHeader)
-            if (response.statusCode === 400) {
-                throw new Error('Error happened manipulating Things')
-            }
-            if (response.statusCode === 404) {
-                throw new Error('TD with the given id not found')
-            }
-            return buildResponse(response.body as JsonType)
+            return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Problem retrieving TD of object with id ' + oid + '...')
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
     /**
@@ -183,11 +139,11 @@ export const wot = {
     retrieveTDs: async function(): Promise<BasicResponse<Thing[]>> {
         try {
             const response = await request('api/things/', 'GET', undefined, ApiHeader)
-            return buildResponse(response.body as JsonType)
+            return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Error retrieving TDs ...')
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     },
     /**
@@ -203,31 +159,43 @@ export const wot = {
             if (response.statusCode === 400) {
                 throw new Error('SPARQL expression not provided or contains syntax errors')
             }
-            return buildResponse(response.body as JsonType)
+            return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Error processing SPARQL query ...')
-            throw new Error(error.message)
+            throw new MyError(error.message, error.status)
         }
     }
 }
 
 // Private functions
 
-const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<PlainResponse> => {
+const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<JsonType> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as PlainResponse
     if (response.statusCode >= 500) {
-        throw new Error('Error reaching WoT server -- status code 500')
+        throw new MyError('Error reaching WoT server -- status code 500', HttpStatusCode.INTERNAL_SERVER_ERROR)
     }
-    return response
+    if (response.statusCode === 400) {
+        throw new MyError('Invalid serialization or TD', HttpStatusCode.BAD_REQUEST)
+    }
+    if (response.statusCode === 404) {
+        throw new MyError('TD with the given id not found', HttpStatusCode.NOT_FOUND)
+    }
+    return response.body as JsonType
 }
 
-const requestSPARQL = async (endpoint: string, method: Method, body?: string, headers?: Headers, searchParams?: string): Promise<PlainResponse> => {
+const requestSPARQL = async (endpoint: string, method: Method, body?: string, headers?: Headers, searchParams?: string): Promise<JsonType> => {
     const response = await callSPARQL(endpoint, { method, body, headers, searchParams }) as PlainResponse
     if (response.statusCode >= 500) {
-        throw new Error('Error reaching WoT server -- status code 500')
+        throw new MyError('Error reaching WoT server -- status code 500', HttpStatusCode.INTERNAL_SERVER_ERROR)
     }
-    return response
+    if (response.statusCode === 400) {
+        throw new MyError('Invalid serialization or TD', HttpStatusCode.BAD_REQUEST)
+    }
+    if (response.statusCode === 404) {
+        throw new MyError('TD with the given id not found', HttpStatusCode.NOT_FOUND)
+    }
+    return response.body as JsonType
 }
 
 const buildResponse = (message?: string | JsonType | JsonType[]): BasicResponse<any> => {
