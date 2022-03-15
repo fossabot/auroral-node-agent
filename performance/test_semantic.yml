@@ -1,0 +1,37 @@
+execution:
+- concurrency: 10 # Number of users
+  hold-for: 5m # Length of stable phase
+  ramp-up: 5m # length of ramp-up phase
+  # throughput: 5
+  scenario: SEMANTIC
+scenarios:
+  SEMANTIC:
+    requests:
+    # - label: REGISTER
+    #   method: POST
+    #   url: http://localhost:82/api/registration
+    #   headers:  # local headers that override global
+    #     Content-Type: application/json
+    #   body-file: td.json
+    - label: GET_TD
+      method: GET
+      url: http://localhost:82/api/discovery/local/td/0a38f84a-5393-43a5-bf92-07a9e834b36b
+      headers:  # local headers that override global
+        Content-Type: application/json
+reporting:
+- module: final-stats
+  summary: true  # overall samples count and percent of failures
+  percentiles: true  # display average times and percentiles
+  summary-labels: false # provides list of sample labels, status, percentage of completed, avg time and errors
+  failed-labels: false  # provides list of sample labels with failures
+  test-duration: true  # provides test duration
+  # dump-xml: stats.xml
+  # dump-csv: stats.csv
+- module: blazemeter
+  report-name: Node_report
+  test: Node_test_semantic
+  project: AURORAL_Node
+  upload-artifacts: true
+modules:
+  blazemeter:
+    token: 

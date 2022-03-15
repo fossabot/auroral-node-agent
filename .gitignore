@@ -15,8 +15,13 @@ gateway/data/
 redis/data
 .env
 .token
+
+# Tests
 coverage/
 .scannerwork/
+performance/*
+!performance/*.yml
+!performance/*.json
 
 # Node artifact files
 node_modules/
