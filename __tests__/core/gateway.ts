@@ -1,5 +1,6 @@
 
 jest.mock('../../src/microservices/gateway')
+jest.mock('../../src/utils/logger')
 jest.mock('redis')
 
 /* eslint-disable import/order */
@@ -7,6 +8,7 @@ jest.mock('redis')
 import { gtwServices } from '../../src/core/gateway'
 import * as  gateway  from '../../src/microservices/gateway'
 import * as persistance from '../../src/persistance/persistance'
+import { GatewayResponse } from '../../src/types/gateway-types'
 import redis from '../../__mocks__/redis'
 
 const myGateway = gateway.gateway as jest.Mocked<typeof gateway.gateway>
@@ -24,7 +26,7 @@ describe('GtwServices core', () => {
     it('Do doLogins', async () => {
         const spy = jest.spyOn(gtwServices, 'doLogins')
         await gtwServices.doLogins(['oid1', 'oid2'])
-        myGateway.login.mockResolvedValueOnce({})
+        myGateway.login.mockResolvedValueOnce({ error: false } as GatewayResponse)
         myGateway.login.mockRejectedValue('ERROR')
         await gtwServices.doLogins(null)
         await gtwServices.doLogins(null)
@@ -33,7 +35,7 @@ describe('GtwServices core', () => {
     it('Do doLogouts', async () => {
         const spy = jest.spyOn(gtwServices, 'doLogouts')
         await gtwServices.doLogouts(['oid1', 'oid2'])
-        myGateway.logout.mockResolvedValueOnce({})
+        myGateway.logout.mockResolvedValueOnce({ error: false } as GatewayResponse)
         myGateway.logout.mockRejectedValue('ERROR')
         try {
             await gtwServices.doLogouts(['oid1', 'oid2'])
@@ -114,8 +116,7 @@ describe('GtwServices core', () => {
         expect((result)).toBe(true)
         // 2
         const result2 = gtwServices.compareLocalAndRemote(['string1', 'string2'],  ['string1', 'string3'])
-
-        // expect(spy).toHaveBeenCalledTimes(1)
+        expect(spy).toHaveBeenCalledTimes(2)
     })
     // missing some unexported fuctions: _filterRedisProperties, _filterNmProperties, _buildItemsForCloud
     //                                  _revertCloudRegistration, _revert_wot_registration

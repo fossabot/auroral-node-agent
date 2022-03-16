@@ -1,6 +1,7 @@
 
 jest.mock('redis')
 jest.mock('../../src/config')
+jest.mock('../../src/utils/logger')
 jest.mock('cron')
 
 /* eslint-disable import/order */
@@ -44,7 +45,7 @@ describe('Secirity core', () => {
         const response2 = await security.contractExists('id')
         expect(response2).toBe(false)
         jest.spyOn(redisDb, 'get').mockResolvedValueOnce(null)
-        jest.spyOn(myGateway, 'getContracts').mockResolvedValue({ ctid: 'ctid', cid: 'cid', items: [{ oid: 'oid1', rw: true }] })
+        jest.spyOn(myGateway, 'getContracts').mockResolvedValue({ error: null, message: { ctid: 'ctid', cid: 'cid', items: [{ oid: 'oid1', rw: true }] } })
         jest.spyOn(redisDb, 'hgetall').mockResolvedValue({ test1: 'a' })
         jest.spyOn(redisDb, 'hdel').mockResolvedValue(1)
         jest.spyOn(redisDb, 'remove').mockResolvedValue(true)
@@ -94,7 +95,7 @@ describe('Secirity core', () => {
         jest.spyOn(redisDb, 'get').mockResolvedValue('NOT_EXISTS')
         jest.spyOn(redisDb, 'hdel').mockResolvedValue(1)
         jest.spyOn(redisDb, 'hset').mockResolvedValue(1)
-        jest.spyOn(myGateway, 'getContracts').mockResolvedValue({ ctid: 'ctid', cid: 'cid', items: [{ oid: 'oid1', rw: true }] })
+        jest.spyOn(myGateway, 'getContracts').mockResolvedValue({ error: null, message: { ctid: 'ctid', cid: 'cid', items: [{ oid: 'oid1', rw: true }] } })
         const response1 = await security.updItemInContract({ cid: 'cid', ctid: 'ctid', oid: 'oid' })
         expect(response1).toBeUndefined()
         jest.spyOn(redisDb, 'get').mockResolvedValue('ctid')

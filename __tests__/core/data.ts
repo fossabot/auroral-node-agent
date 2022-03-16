@@ -1,6 +1,8 @@
 
 jest.mock('../../src/config')
 jest.mock('../../src/microservices/proxy')
+jest.mock('../../src/utils/logger')
+jest.mock('got')
 
 /* eslint-disable import/order */
 /* eslint-disable import/first */

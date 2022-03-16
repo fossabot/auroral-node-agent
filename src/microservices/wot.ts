@@ -156,9 +156,6 @@ export const wot = {
      searchSPARQL: async function(query: string): Promise<BasicResponse<JsonType>> {
         try {
             const response = await requestSPARQL('api/search/sparql', 'POST', query, SparqlHeader)
-            if (response.statusCode === 400) {
-                throw new Error('SPARQL expression not provided or contains syntax errors')
-            }
             return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
