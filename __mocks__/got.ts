@@ -7,7 +7,7 @@ const got = jest.createMockFromModule('got') as any
 function extend() {
         return async (uri: string, body: { method: string }) => {
             if (!fail) {
-                return Promise.resolve({ body: responses[body.method + uri] })
+                return Promise.resolve({ body: responses[body.method + uri], statusCode: 200 })
             } else {
                 throw new Error('MOCKED ERROR')
             }

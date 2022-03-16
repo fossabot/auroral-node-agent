@@ -1,7 +1,7 @@
 
 jest.mock('redis')
 jest.mock('../../src/config')
-
+jest.mock('../../src/utils/logger')
 
 /* eslint-disable import/order */
 /* eslint-disable import/first */
@@ -42,7 +42,7 @@ describe('Main core', () => {
         jest.spyOn(discovery, 'reloadPartners').mockResolvedValue(['cid1', 'cid2'])
         jest.spyOn(persistance, 'reloadConfigInfo').mockResolvedValue()
         jest.spyOn(scheduledJobs, 'start').mockReturnValue()
-        jest.spyOn(myGateway, 'getRegistrations').mockResolvedValue(['item1'])
+        jest.spyOn(myGateway, 'getRegistrations').mockResolvedValue({ error: false, message: ['item1'], statusCode: 200, statusCodeReason: '', contentType: '' })
         // 1
         await main.initialize()
         // 2

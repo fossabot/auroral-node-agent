@@ -5,6 +5,7 @@ import { RegistrationBody } from '../../src/persistance/models/registrations'
 
 // got is mocked manually in ./__mocks__/
 jest.mock('got')
+jest.mock('../../src/utils/logger')
 jest.mock('redis')
 // needs to be imported after jest.mock()
 import got from '../../__mocks__/got'
@@ -56,7 +57,7 @@ describe('Gateway Microservice', () => {
     it('Do getRegistrations', async () => {
         const spy = jest.spyOn(gateway, 'getRegistrations')
         const response = await gateway.getRegistrations()
-        expect(response).toEqual(['oid1', 'oid2'])
+        expect(response).toMatchObject({ message: ['oid1', 'oid2'] })
         got.__toFail()
         try {
             await gateway.getRegistrations()
@@ -143,7 +144,7 @@ describe('Gateway Microservice', () => {
     it('Do getCid', async () => {
         const spy = jest.spyOn(gateway, 'getCid')
         const response = await gateway.getCid('oid1')
-        expect(response).toEqual('GetCid succesful')
+        expect(response).toEqual({ message: 'GetCid succesful' })
         got.__toFail()
         try {
             await gateway.getCid('oid1')
@@ -155,7 +156,7 @@ describe('Gateway Microservice', () => {
     it('Do getPartners', async () => {
         const spy = jest.spyOn(gateway, 'getPartners')
         const response = await gateway.getPartners()
-        expect(response).toEqual('GetPartners succesful')
+        expect(response).toEqual({ message: 'GetPartners succesful' })
         got.__toFail()
         try {
             await gateway.getPartners()
@@ -167,7 +168,7 @@ describe('Gateway Microservice', () => {
     it('Do getPartnerInfo', async () => {
         const spy = jest.spyOn(gateway, 'getPartnerInfo')
         const response = await gateway.getPartnerInfo('cid')
-        expect(response).toEqual('GetPartnerInfo succesful')
+        expect(response).toEqual({ message: 'GetPartnerInfo succesful' })
         got.__toFail()
         try {
             await gateway.getPartnerInfo('cid')
@@ -311,7 +312,7 @@ describe('Gateway Microservice', () => {
     it('Do getContracts', async () => {
         const spy = jest.spyOn(gateway, 'getContracts')
         const response = await gateway.getContracts('cid')
-        expect(response).toEqual('GetContracts succesful')
+        expect(response).toMatchObject({ message: 'GetContracts succesful' })
         got.__toFail()
         try {
             await gateway.getContracts('cid')

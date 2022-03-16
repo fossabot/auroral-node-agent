@@ -5,6 +5,7 @@ import * as persistance from '../../src/persistance/persistance'
 // redis is mocked manually in ./__mocks__/
 // got is mocked manually in ./__mocks__/
 jest.mock('got')
+jest.mock('../../src/utils/logger')
 jest.mock('redis')
 // needs to be imported after jest.mock()
 import redis from '../../__mocks__/redis'

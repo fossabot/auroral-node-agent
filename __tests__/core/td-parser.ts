@@ -9,7 +9,11 @@ jest.mock('cron')
 // import { CronJob } from 'cron'
 import * as con from '../../src/config'
 import * as td  from '../../src/core/td-parser'
+import { UpdateJSON } from '../../src/persistance/models/registrations'
 import * as myPersistance from '../../src/persistance/persistance'
+import { Thing } from '../../src/types/wot-types'
+
+jest.mock('../../src/utils/logger')
 
 // const myPersistance = myPersistance as jest.Mocked<typeof myPersistance>
 const myConfig = con.Config as jest.Mocked<typeof con.Config>
@@ -38,6 +42,7 @@ const item2 = {
 const td1 = '{ "@context": "https://www.w3.org/2019/wot/td/v1", \
     "title": "DASHBOARD", \
     "id": "123",\
+    "adapterId": "adp1", \
     "securityDefinitions": { \
         "basic_sc": {"scheme": "basic", "in":"header"} \
     }, \
@@ -126,7 +131,7 @@ describe('td-parser core', () => {
         expect(response3.errors).toMatchObject([])
         // 4
         jest.spyOn(myPersistance, 'existsAdapterId').mockResolvedValue(false)
-        await expect(td.tdParserWoT([{ ...itemTd, td: undefined }])).rejects.toThrow('Please include td')
+        await expect(td.tdParserWoT([{ ...itemTd, td: undefined as any as Thing }])).rejects.toThrow('Please include td')
         expect(spy).toHaveBeenCalledTimes(4)
     })
     it('Do tdParserUpdate', async () => {
@@ -153,7 +158,7 @@ describe('td-parser core', () => {
         jest.spyOn(myPersistance, 'sameAdapterId').mockImplementation(async() => {
             return true
         })
-        await expect(td.tdParserUpdate([{ ...item2, oid: undefined }])).rejects
+        await expect(td.tdParserUpdate([{ ...item2, oid: undefined } as any as UpdateJSON])).rejects
         .toThrow('Missing OID for some objects')
         // 4
         jest.spyOn(myPersistance, 'existsAdapterId').mockResolvedValue(true)
@@ -171,13 +176,13 @@ describe('td-parser core', () => {
         // 1
         jest.spyOn(myPersistance, 'existsAdapterId').mockResolvedValue(true)
         jest.spyOn(myPersistance, 'getItem').mockResolvedValue(['oid1'])
-        await expect(td.tdParserUpdateWot([item2])).rejects
+        await expect(td.tdParserUpdateWot([{ oid: 'oid', td: undefined as any as Thing }])).rejects
         .toThrow('Please provide td')
         // 2 
-        await expect(td.tdParserUpdateWot([{ ...itemTd, td: JSON.parse(td2) }])).rejects
+        await expect(td.tdParserUpdateWot([{ ...itemTd, td: JSON.parse(td2) as any as Thing }])).rejects
         .toThrow('Some objects do not have OIDs')
         // 3
-        await expect(td.tdParserUpdateWot([itemTd])).rejects
+        await expect(td.tdParserUpdateWot([{ ...itemTd, td: JSON.parse(td1) as any as Thing }])).rejects
         .toThrow('Some objects are not registered [123]')
         // 4
         jest.spyOn(myPersistance, 'getItem').mockResolvedValue(['123'])
