@@ -3,6 +3,8 @@ import { IItemPrivacy } from '../../types/misc-types'
 import { logger } from '../../utils/logger'
 import { redisDb } from '../redis'
 import { Thing } from '../../types/wot-types'
+import { MyError } from '../../utils/error-handler'
+import { HttpStatusCode } from '../../utils/http-status-codes'
 
 /**
  * registrations.js
@@ -182,7 +184,7 @@ export const registrationFuncs = {
     // update sotred item
     updateItem: async (item: RegistrationnUpdateRedis): Promise<void> => {
         if (!item.oid) {
-            throw new Error('Object with misses some oid, its update could not be stored...')
+            throw new MyError('Object with misses some oid, its update could not be stored...', HttpStatusCode.BAD_REQUEST)
         }
         const exists = await redisDb.sismember('registrations', item.oid)
         if (exists) {
@@ -202,7 +204,7 @@ export const registrationFuncs = {
                 redisDb.hset(item.oid, 'actions', item.actions)
             }
         } else {
-            throw new Error('Object does not exists - not updated')
+            throw new MyError('Object does not exists - not updated', HttpStatusCode.NOT_FOUND)
         }
     },
     // Remove item from db
@@ -226,6 +228,7 @@ export const registrationFuncs = {
             todo.push(redisDb.hdel(oid, 'properties'))
             todo.push(redisDb.hdel(oid, 'events'))
             todo.push(redisDb.hdel(oid, 'actions'))
+            todo.push(redisDb.hdel(oid, 'privacy'))
             await Promise.all(todo)
         }
         // Persist changes to dump.rdb
@@ -236,19 +239,23 @@ export const registrationFuncs = {
     // Returns array of ids if ID not provided;
     getItem: async (id?: string): Promise<RegistrationNonSemantic | string[]> => {
         if (id) {
-            const data = await redisDb.hgetall(id)
-            // Return to user
-            // Do not return credentials or password!!
-            return {
-                type: data.type,
-                adapterId: data.adapterId,
-                name: data.name,
-                version: data.version,
-                description: data.description,
-                privacy: PRIV_ARRAY[Number(data.privacy)],
-                properties: data.properties ? data.properties.split(',') : undefined,
-                actions: data.actions ? data.actions.split(',') : undefined,
-                events: data.events ? data.events.split(',') : undefined,
+            if (await redisDb.sismember('registrations', id)) {
+                const data = await redisDb.hgetall(id)
+                // Return to user
+                // Do not return credentials or password!!
+                return {
+                    type: data.type,
+                    adapterId: data.adapterId,
+                    name: data.name,
+                    version: data.version,
+                    description: data.description,
+                    privacy: PRIV_ARRAY[Number(data.privacy)],
+                    properties: data.properties ? data.properties.split(',') : undefined,
+                    actions: data.actions ? data.actions.split(',') : undefined,
+                    events: data.events ? data.events.split(',') : undefined,
+                }
+            } else {
+                throw new MyError('Item not found', HttpStatusCode.NOT_FOUND)
             }
         } else {
             return redisDb.smembers('registrations')
@@ -294,7 +301,7 @@ export const registrationFuncs = {
         if (oldAdapterId === adapterId) {
             return true
         } else {
-            throw new Error('REGISTRATION ERROR: On update is not allowed to change adapterId')
+            throw new MyError('REGISTRATION ERROR: On update is not allowed to change adapterId', HttpStatusCode.FORBIDDEN)
         }
     },
     getOidByAdapterId: async (adapterId: string): Promise<string> => {
@@ -308,7 +315,7 @@ const storeItems = async (array: Registration[]) => {
         const data = array[i]
         const todo = []
         if (!data.credentials || !data.password || !data.adapterId || !data.name || !data.type) {
-            throw new Error(`Object with oid ${data.oid} misses some fields, its credentials could not be stored...`)
+            throw new MyError(`Object with oid ${data.oid} misses some fields, its credentials could not be stored...`, HttpStatusCode.BAD_REQUEST)
         }
         const exists = await redisDb.sismember('registrations', data.oid)
         if (!exists) {

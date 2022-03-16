@@ -5,7 +5,7 @@
 */ 
 
 import { JsonType } from '../types/misc-types'
-import { logger, errorHandler } from '../utils'
+import { logger, errorHandler, MyError } from '../utils'
 import { redisDb } from './redis'
 import { fileSystem } from './fileMgmt'
 import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
@@ -52,7 +52,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
@@ -103,7 +103,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
@@ -120,7 +120,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
@@ -142,7 +142,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
@@ -166,8 +166,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
         return Promise.resolve(result)
     } catch (err) {
         const error = errorHandler(err)
-        logger.error(error.message)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
@@ -189,7 +188,7 @@ export const loadConfigurationFile = async (type: RegistrationOrInteractionEnum)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
@@ -240,7 +239,7 @@ export const getCredentials = async (oid: string) => {
         return Promise.resolve(credentials)
     } catch (err) {
         const error = errorHandler(err)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
@@ -270,7 +269,7 @@ export const combinationExists = async (oid: string, pid: string) => {
         return Promise.resolve(true)
     } catch (err) {
         const error = errorHandler(err)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }    
 }
 
@@ -326,7 +325,7 @@ export const reloadConfigInfo = async function(cid: string, name: string, nodes:
         return Promise.resolve(true)
     } catch (err) {
         const error = errorHandler(err)
-        throw new Error(error.message)
+        throw new MyError(error.message, error.status)
     }
 }
 
