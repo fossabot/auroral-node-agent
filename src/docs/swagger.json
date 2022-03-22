@@ -308,7 +308,10 @@
                 },
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/GenericString"
+                        "$ref": "#/components/responses/Remove"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/Remove"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1303,6 +1306,16 @@
                     }
                 }
             },
+            "Remove": {
+                "description": "Object Removed",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RemoveResponseArray"
+                        }
+                    }
+                }
+            },
             "RedisObject": {
                 "description": "Item Info stored in Redis",
                 "content": {
@@ -1470,6 +1483,33 @@
                             "properties": {
                                 "oid": {
                                     "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
+            },
+            "RemoveResponseArray": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "oid": {
+                                    "type": "string"
+                                },
+                                "statusCode": {
+                                    "type": "number",
+                                    "example": 200
                                 },
                                 "error": {
                                     "type": "string"

@@ -1,7 +1,7 @@
 // Controller common imports
 import { expressTypes } from '../../../types/index'
 import { HttpStatusCode } from '../../../utils/http-status-codes'
-import { logger, errorHandler } from '../../../utils'
+import { logger, errorHandler, MyError } from '../../../utils'
 import { responseBuilder } from '../../../utils/response-builder'
 
 // Other imports
@@ -14,7 +14,7 @@ import { removeItem, getOidByAdapterId } from '../../../persistance/persistance'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../../core/td-parser'
 import { Config } from '../../../config'
 import { wot } from '../../../microservices/wot'
-import { UpdateResult } from '../../../types/misc-types'
+import { RemoveResult, UpdateResult } from '../../../types/misc-types'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -135,31 +135,82 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, UpdateJSON | UpdateJSO
     }
 }
 
-type removeRegistrationsCtrl = expressTypes.Controller<{}, { oids: string[] }, {}, null, {}>
+type removeRegistrationsCtrl = expressTypes.Controller<{}, { oids: string[] }, {}, RemoveResult[], {}>
 
 /**
  * Remove registered object endpoint
  */
 export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => {
-    const body = req.body
-    try {
-      // Logout
-      await gtwServices.doLogouts(body.oids, false)
-      // Remove from AURORAL platform
-      await gateway.removeRegistrations(body)
-      // Remove from agent
-      await removeItem('registrations', req.body.oids)
-      // Remove from WoT
+    const oids = req.body.oids
+     try {
+      // Function variables
+      const failed : { oid: string, error?: string, statusCode: number }[] = []
+      const success : { oid: string, error?: string, statusCode: number }[] = []
+      let platformAns: { oid: string, error?: string, statusCode: number }[] = []
+      let unregisterLocaly: string[] = []
+
+      // Remove items from WoT
       if (Config.WOT.ENABLED) {
-        await Promise.all(
-          body.oids.map(async oid => {
+        for (let i = 0, l = oids.length; i < l; i++) {
+            const oid = oids[i]
+            // Remove from WoT
             logger.info('Removing ' + oid + ' from WoT')
-            await wot.deleteTD(oid)
-          })
-        )
+            try {
+              await wot.deleteTD(oid)
+              success.push({ oid: oid, statusCode: 200 })
+            } catch (err) {
+              const error = errorHandler(err)
+              if (error.status === 404) {
+                success.push({ oid: oid, statusCode: 404 })
+              } else {
+                failed.push({ oid: oid, statusCode: 500, error: error.message })
+              }
+            }
+          }
+      } else {
+        // WOT DISABLED
+        oids.forEach(oid => {
+          success.push({ oid, statusCode: 200 })
+        })
       }
-      logger.info('Items successfully removed!')
-      return responseBuilder(HttpStatusCode.OK, res, null, null)
+
+      // Extract oid from items successfully removed form WoT
+      const oidsToCloud = success.map(it => it.oid)
+
+      try {
+        // Remove from AURORAL platform
+        platformAns = (await gateway.removeRegistrations({ oids: oidsToCloud })).message
+        // failed = [...failed, ...platformAns.filter((item) => item.statusCode !== 200)]
+      } catch (error) {
+        throw new MyError('Error in platform while unregistering, please try again', HttpStatusCode.INTERNAL_SERVER_ERROR)
+      }
+
+      // Remove from AURORAL platform
+      unregisterLocaly = platformAns.filter((item) => item.statusCode === 200).map(it => it.oid)
+      
+      // Logout
+      try {
+        await gtwServices.doLogouts(unregisterLocaly, false)
+      } catch (err: unknown) {
+        const error = errorHandler(err)
+        logger.error('Some logouts failed')
+        logger.error(error.message)
+      }
+
+      // Remove from agent
+      // Objects successfully removed from platform can be safely removed from local node
+      try {
+        await removeItem('registrations', unregisterLocaly)
+      } catch (error) {
+        throw new MyError('Error removing items locally, please try again', HttpStatusCode.INTERNAL_SERVER_ERROR)
+      }
+      
+      const response = [...failed, ...platformAns]
+      if (platformAns.filter(it => it.statusCode === 200).length === 0) {
+        return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null, response)
+      } else {
+        return responseBuilder(HttpStatusCode.OK, res, null, response)
+      }
     } catch (err) {
       const error = errorHandler(err)
       logger.error(error.message)

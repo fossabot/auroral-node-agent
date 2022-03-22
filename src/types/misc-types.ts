@@ -78,3 +78,10 @@ export type UpdateResult = {
     error?: string
 }
 
+export type RemoveResult = {
+    oid: string
+    statusCode: number
+    success?: boolean
+    error?: string
+}
+

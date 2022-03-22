@@ -39,7 +39,7 @@ services:
     # ports:
     # - 5222:5222
     # image: registry.bavenir.eu/auroral_gateway:dev
-    image: gateway-test
+    image: ghcr.io/auroralh2020/auroral-gateway:latest
   cache-db:
     # restart: unless-stopped
     # ports:
@@ -76,4 +76,3 @@ services:
       - '9000:9000'
 volumes:
     triplestore:
-        external: true

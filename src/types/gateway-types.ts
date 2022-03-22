@@ -16,10 +16,9 @@ export interface GatewayResponse<T = JsonType> {
 // Specific gateway responses
 
 export type GtwDeleteResponse = GatewayResponse<{
-    message: string, 
-    value: string,
-    result: string,
-    error: string
+    oid: string, 
+    statusCode: number,
+    error?: string
 }>
 
 export type GtwRegistrationResponse = GatewayResponse<{
