@@ -57,7 +57,7 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
         logger.warn(`Property ${pid} of ${oid} could not be set`)
         return responseBuilder(data.statusCode, res, response)
       } else {
-        const response = data.message[0].wrapper
+        const response = data.message[0].message.wrapper
         logger.debug(`Property ${pid} of ${oid} set`)
         return responseBuilder(HttpStatusCode.OK, res, null, response)
       }      

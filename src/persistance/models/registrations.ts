@@ -194,13 +194,20 @@ export const registrationFuncs = {
             if (item.adapterId) {
                 await redisDb.hset(item.oid, 'adapterId', item.adapterId)
             }
-            if (item.properties !== undefined) {
+            
+            // Remove old interactions
+            redisDb.hdel(item.oid, 'properties')
+            redisDb.hdel(item.oid, 'events')
+            redisDb.hdel(item.oid, 'actions')
+
+            // Add new interactions
+            if (item.properties) {
                 redisDb.hset(item.oid, 'properties', item.properties)
             }
-            if (item.events !== undefined) {
+            if (item.events) {
                 redisDb.hset(item.oid, 'events', item.events)
             }
-            if (item.actions !== undefined) {
+            if (item.actions) {
                 redisDb.hset(item.oid, 'actions', item.actions)
             }
         } else {

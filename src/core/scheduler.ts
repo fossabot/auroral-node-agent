@@ -2,15 +2,19 @@ import { CronJob } from 'cron'
 import { logger, errorHandler } from '../utils'
 import { security } from './security'
 import { discovery } from './discovery'
+import { reloadConfigInfo } from '../persistance/persistance'
 import { Config } from '../config'
 
 // Private functions 
 const reloadCloudSettings = async (): Promise<void> => {
     try {
+        // Get my organisation info
         await security.cacheItemsPrivacy()
         const cid = await discovery.reloadCid(Config.GATEWAY.ID)
-        await discovery.reloadPartners()
-        await discovery.reloadPartnerInfo(cid)
+        const partners = await discovery.reloadPartners()
+        const info = await discovery.reloadPartnerInfo(cid)
+        // Store configuration info
+        await reloadConfigInfo(cid, info.name, info.nodes, partners)
     } catch (err) {
         const error = errorHandler(err)
         logger.error('Could refresh privacy and partners')
