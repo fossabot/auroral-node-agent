@@ -30,6 +30,7 @@ export declare type MultiLanguage = Record<string, unknown> // object?
 
 /** Implements the Thing Description as software object */
 export class Thing {
+    // '@id'?: string // AURORAL Extension --> Added by Agent on Registration == OID
     id?: string // AURORAL Extension --> Added by Agent on Registration == OID
     '@context': string // AURORAL Extension
     '@type': string // AURORAL Extension
@@ -86,7 +87,8 @@ export class Thing {
 export interface ThingInteraction {
     title?: string
     titles?: MultiLanguage
-    '@type': string // AURORAL Extension
+    '@id': string, // AURORAL Extension iid
+    '@type': Array<string> // AURORAL Extension property type
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -292,7 +294,8 @@ export abstract class ThingProperty extends BaseSchema implements ThingInteracti
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
-    '@type': string
+    '@type': Array<string>
+    '@id': string // AURORAL Extension iid
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -315,7 +318,8 @@ export abstract class ThingAction implements ThingInteraction {
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
-    '@type': string
+    '@type': Array<string>
+    '@id': string // AURORAL Extension iid
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -338,7 +342,8 @@ export abstract class ThingEvent implements ThingInteraction {
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
-    '@type': string
+    '@type': Array<string>
+    '@id': string // AURORAL Extension iid
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>

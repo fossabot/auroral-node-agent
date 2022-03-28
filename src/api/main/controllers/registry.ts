@@ -14,7 +14,8 @@ import { removeItem, getOidByAdapterId } from '../../../persistance/persistance'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../../core/td-parser'
 import { Config } from '../../../config'
 import { wot } from '../../../microservices/wot'
-import { RemoveResult, UpdateResult } from '../../../types/misc-types'
+import { JsonType, RemoveResult, UpdateResult } from '../../../types/misc-types'
+import { removeMapping, storeMapping, useMapping } from '../../../core/mapping'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -89,6 +90,14 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
           })
         )
 
+        // Create mappings 
+        if (Config.WOT.ENABLED) {
+          for (const reg of result.registrations) {
+            logger.debug('Storing mapping for ' + reg.oid)
+            await storeMapping(reg.oid)          
+          }
+        }
+
         // Build final response
         const response = [...items.errors, ...result.registrations, ...result.errors]
         return responseBuilder(HttpStatusCode.CREATED, res, null, response)
@@ -122,8 +131,22 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, UpdateJSON | UpdateJSO
           return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null, items.errors)
         }
 
+        if (Config.WOT.ENABLED) {
+          // remove mappings for succesfull updates registrations
+          for (const item of items.updates) {
+            await removeMapping(item.oid)          
+          }
+        }
+
         // Update in NM and redis
         const result = await gtwServices.updateObject(items.updates)
+
+        if (Config.WOT.ENABLED) {
+            // Create mappings 
+          for (const reg of result.updates) {
+            await storeMapping(reg.oid)          
+          }
+        }
 
         // Build final response
         const response = [...items.errors, ...result.updates, ...result.errors]
@@ -155,6 +178,10 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
             const oid = oids[i]
             // Remove from WoT
             logger.info('Removing ' + oid + ' from WoT')
+            
+            // remove mappings 
+            await removeMapping(oid)          
+
             try {
               await wot.deleteTD(oid)
               success.push({ oid: oid, statusCode: 200 })
@@ -234,3 +261,12 @@ export const getOidByAdapter: getOidByAdapterIdCtrl = async (req, res) => {
       return responseBuilder(error.status, res, error.message)
 	}
 }
+
+// type testMappingController = expressTypes.Controller<{ oid: string, iid: string }, {}, {}, JsonType, {}>
+
+// export const testMapping: testMappingController = async (req, res) => {
+//   const { oid, iid } = req.params
+
+//   const mapping = await useMapping(oid, iid, 'test')
+//   return responseBuilder(HttpStatusCode.OK, res, null, mapping)
+// }

@@ -42,6 +42,8 @@ MainRouter
    .post('/registration/remove', json(), registry.removeRegistrations)
    .get('/registration/oid/:adapterId', json(), registry.getOidByAdapter)
 
+  //  .get('/test/:oid/:iid', json(), registry.testMapping)
+
   // ***** DISCOVERY endpoints *****
   // LOCAL
    .get('/discovery/local/neighbours', json(), discovery.discoveryLocal)

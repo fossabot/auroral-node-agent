@@ -85,3 +85,14 @@ export type RemoveResult = {
     error?: string
 }
 
+export type ThingMapping = {
+    oid: string,
+    mapping: string,
+}
+
+export type InteractionMapping = {
+    oid: string,
+    iid: string,
+    mapping: string
+}
+

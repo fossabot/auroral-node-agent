@@ -5,11 +5,13 @@ import { v4 as uuidv4 } from 'uuid'
 import { RegistrationBody, UpdateBody, RegistrationJSON, UpdateJSONTD, UpdateJSON, RegistrationJSONTD } from '../persistance/models/registrations'
 import { getCountOfItems, getItem, existsAdapterId, sameAdapterId } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
-import { errorHandler } from '../utils/error-handler'
+import { errorHandler, MyError } from '../utils/error-handler'
 import { logger } from '../utils'
 import { RegistrationResultPost } from '../types/gateway-types'
-import { UpdateResult } from '../types/misc-types'
+import { AdapterMode, UpdateResult } from '../types/misc-types'
 import { Thing } from '../types/wot-types'
+import { tdProxyEnrichment } from './td-enrichment'
+import { Config } from '../config'
 
 // Types
 
@@ -67,11 +69,15 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
     const errors: RegistrationResultPost[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         try {
-            // Verify iid are not duplicated (unique pids, aids and eids)
-            _unique_iids(itemsArray[i].td)
+            // Verify iid are not duplicated (unique pids, aids and eids), assing @ids
+            itemsArray[i].td = _process_iids(itemsArray[i].td)
             // Check conflicts with adapterIDs
             await _lookForAdapterIdConflicts(itemsArray[i].td.adapterId, adapterIDs)
             const oid = uuidv4()
+            // enrich TD if PROXY mode
+            if (Config.ADAPTER.MODE === AdapterMode.PROXY) {
+                itemsArray[i].td = tdProxyEnrichment({ 'id': oid, ...itemsArray[i].td })
+            }
             await wot.upsertTD(oid, { 'id': oid, ...itemsArray[i].td }) // WoT Validation
             registrations.push(_buildTDWoT(oid, itemsArray[i]))
         } catch (err) {
@@ -133,10 +139,20 @@ export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): P
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         const it = itemsArray[i]
         try {
-            // Verify iid are not duplicated (unique pids, aids and eids)
-            _unique_iids(itemsArray[i].td)
+            const oldTD = await (await wot.retrieveTD(it.td.id!)).message
+            if (!oldTD) {
+                throw new MyError('Old TD not found')
+            }
+            // Verify iid are not duplicated (unique pids, aids and eids) + generate new (if necessary)
+            it.td = await _process_iids_update(oldTD, it.td)
+            // If adapterId = undefined, use old one
+            it.td.adapterId = it.td.adapterId ? it.td.adapterId : oldTD.adapterId 
             // Check that adapterId does not change
             await sameAdapterId(it.td.id!, it.td.adapterId)
+            // enrich TD if PROXY mode
+             if (Config.ADAPTER.MODE === AdapterMode.PROXY) {
+                it.td = tdProxyEnrichment(it.td)
+            }
             // Get proper thing description
             await wot.upsertTD(it.td.id!, it.td) // WoT Validation
             updates.push(_buildTDWoTUpdate(it.td.id!, it))
@@ -168,19 +184,23 @@ const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
 }
 
 const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody => {
+    // get iids  
+    const properties = data.td.properties ? Object.entries(data.td.properties).map(item => item[1]['@id']).toString() : ''
+    const actions = data.td.actions ? Object.entries(data.td.actions).map(item => item[1]['@id']).toString() : ''
+    const events = data.td.events ? Object.entries(data.td.events).map(item => item[1]['@id']).toString() : ''
     return {
         oid,
-        properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
-        actions: data.td.actions ? Object.keys(data.td.actions).toString() : undefined,
-        events: data.td.events ? Object.keys(data.td.events).toString() : undefined,
+        properties: properties.length > 0 ? properties : undefined,
+        events: events.length > 0 ? events : undefined,
+        actions: actions.length > 0 ? actions : undefined,
         name: data.td.title,
         labels: data.labels,
         avatar: data.avatar,
         groups: data.groups,
         description: data.td.description,
-        type: 'Device', // TBD: Force to only accepted until ready // data['@type'],
+        type: data.td['@type'] === 'Service' ? 'Service' : 'Device', // TBD: Everything Device for now (except service)
         adapterId: data.td.adapterId ? data.td.adapterId : oid // TBD: Update this and add groupId or other props when ready
-    }
+    } as RegistrationBody
 }
 
 const _buildTDUpdate = (oid: string, data: UpdateJSON): UpdateBody => {
@@ -199,11 +219,14 @@ const _buildTDUpdate = (oid: string, data: UpdateJSON): UpdateBody => {
 }
 
 const _buildTDWoTUpdate = (oid: string, data: UpdateJSONTD): UpdateBody => {
+    const properties = data.td.properties ? Object.entries(data.td.properties).map(item => item[1]['@id']).toString() : ''
+    const actions = data.td.actions ? Object.entries(data.td.actions).map(item => item[1]['@id']).toString() : ''
+    const events = data.td.events ? Object.entries(data.td.events).map(item => item[1]['@id']).toString() : ''
     return { 
         oid,
-        properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
-        actions: data.td.actions ? Object.keys(data.td.actions).toString() : undefined,
-        events: data.td.events ? Object.keys(data.td.events).toString() : undefined,
+        properties: properties.length > 0 ? properties : undefined,
+        events: events.length > 0 ? events : undefined,
+        actions: actions.length > 0 ? actions : undefined,
         name: data.td.title,
         labels: data.labels,
         avatar: data.avatar,
@@ -261,12 +284,86 @@ const _lookForAdapterIdConflicts = async (adapterId: string | undefined, adapter
  * @param td 
  */
 const _unique_iids = (td: Thing): void => {
-    const properties = td.properties ? Object.keys(td.properties) : []
-    const events = td.events ? Object.keys(td.events) : []
-    const actions = td.actions ? Object.keys(td.actions) : []
+    // IID
+    const properties = td.properties ? Object.entries(td.properties).map(item => item[1]['@id']) : []
+    const events = td.events ?  Object.entries(td.events).map(item => item[1]['@id']) : []
+    const actions = td.actions ?  Object.entries(td.actions).map(item => item[1]['@id']) : []
     const interactions = [...properties, ...events, ...actions]
     const repeated = [...new Set(interactions.filter((value, index, self) => self.indexOf(value) !== index))]
     if (repeated.length > 0) {
         throw new Error('Thing Description has repeated interaction names: ' + repeated.join())
     }
+    // NAMES
+    const propertiesNames = td.properties ? Object.keys(td.properties) : []
+    const eventsNames = td.events ? Object.keys(td.events) : []
+    const actionsNames = td.actions ? Object.keys(td.actions) : []
+    const interactionsNames = [...propertiesNames, ...eventsNames, ...actionsNames]
+    const repeatedNames = [...new Set(interactionsNames.filter((value, index, self) => self.indexOf(value) !== index))]
+    if (repeated.length > 0) {
+        throw new Error('Thing Description has repeated interaction names: ' + repeated.join())
+    }
+}
+
+/**
+ * All interaction ids must have id
+ * @param td 
+ * @returns td
+ */
+ const _process_iids = (td: Thing): Thing => {
+     // Add pids
+    for (let i = 0; i < Object.keys(td.properties).length; i++) {
+        td.properties[Object.keys(td.properties)[i]]['@id'] = uuidv4()
+    }
+     // Add eids
+    for (let i = 0; i < Object.keys(td.events).length; i++) {
+        td.events[Object.keys(td.events)[i]]['@id'] = uuidv4()
+    }
+     // Add aids
+    for (let i = 0; i < Object.keys(td.actions).length; i++) {
+        td.actions[Object.keys(td.actions)[i]]['@id'] = uuidv4()
+    }
+    _unique_iids(td)
+    return td
+}
+
+/**
+ * Compare IIDS and assing new to new interactions
+ * @param mewTd 
+ * @param oldTd
+ * @returns td
+ */
+ const _process_iids_update = async (oldTd: Thing, newTd: Thing): Promise<Thing> => {
+    // extract iids from old TD
+    if (newTd.properties && Object.keys(newTd.properties).length > 0) { 
+        const properties =  oldTd.properties ? Object.entries(oldTd.properties).map(item => item[1].id) : []
+        // check propertiest in new TD 
+        const newProperties = Object.keys(newTd.properties)
+        for (let i = 0; i < newProperties.length; i++) {
+            if (!newTd.properties[newProperties[i]]['@id'] || !properties.includes(newTd.properties[newProperties[i]]['@id'])) {
+                newTd.properties[newProperties[i]]['@id'] = uuidv4()
+            } 
+        }
+    }
+    if (newTd.events && Object.keys(newTd.events).length > 0) {
+        const events = oldTd.events ? Object.entries(oldTd.events).map(item => item[1].id) : []
+        // check events in new TD 
+        const newEvents = Object.keys(newTd.properties)
+        for (let i = 0; i < newEvents.length; i++) {
+            if (!newTd.events[newEvents[i]]['@id'] || !events.includes(newTd.events[newEvents[i]]['@id'])) {
+                newTd.events[newEvents[i]]['@id'] = uuidv4()
+            }
+        }
+    }
+    if (newTd.actions && Object.keys(newTd.actions).length > 0) {
+        const actions = oldTd.actions ? Object.entries(oldTd.actions).map(item => item[1].id) : []
+        // check actions in new TD 
+        const newActions = Object.keys(newTd.properties)
+        for (let i = 0; i < newActions.length; i++) {
+            if (!newTd.actions[newActions[i]]['@id'] ||  !actions.includes(newTd.actions[newActions[i]]['@id'])) {
+                newTd.actions[newActions[i]]['@id'] = uuidv4()
+            }
+        }
+    }
+    _unique_iids(newTd)
+    return newTd
 }
