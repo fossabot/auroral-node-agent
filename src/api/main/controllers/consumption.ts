@@ -26,7 +26,7 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
           logger.warn(`Property ${pid} of ${oid} could not be retrieved`)
           return responseBuilder(data.statusCode, res, response)
         } else {
-          const response = data.message[0].wrapper
+          const response = data.message[0].message.wrapper
           logger.debug(`Property ${pid} of ${oid} received`)
           return responseBuilder(HttpStatusCode.OK, res, null, response)
         }      
