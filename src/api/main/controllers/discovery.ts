@@ -92,7 +92,7 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
             logger.warn('Discovery failed')
             return responseBuilder(data.statusCode, res, response)
           } else {
-            const response = data.message[0].wrapper.message
+            const response = data.message[0].message.wrapper.message
             return responseBuilder(HttpStatusCode.OK, res, null, response)
           } 
       } catch (err) {
