@@ -228,6 +228,8 @@ export const removeRegistrations: removeRegistrationsCtrl = async (req, res) => 
       // Objects successfully removed from platform can be safely removed from local node
       try {
         await removeItem('registrations', unregisterLocaly)
+        // Refresh configuration object with right number of registered items
+        await persistance.updateConfigurationInfo()
       } catch (error) {
         throw new MyError('Error removing items locally, please try again', HttpStatusCode.INTERNAL_SERVER_ERROR)
       }

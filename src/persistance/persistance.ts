@@ -11,7 +11,7 @@ import { fileSystem } from './fileMgmt'
 import { Interaction, interactionFuncs, InteractionsType } from './models/interactions'
 import { registrationFuncs, Registration, RegistrationnUpdateRedis, RegistrationNonSemantic } from './models/registrations'
 import { Config } from '../config'
-import { addConfigurationInfo, removeConfigurationInfo } from './models/configurations'
+import { addConfigurationInfo, removeConfigurationInfo, updateRegistrationsInfo } from './models/configurations'
 
 // Constants
 
@@ -290,6 +290,23 @@ export const reloadConfigInfo = async function(cid: string, name: string, nodes:
     try { 
         await removeConfigurationInfo()
         await addConfigurationInfo(cid, name, nodes, partners)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        throw new Error('Problem storing configuration information...')
+    }
+}
+
+/**
+ * Update configuration of agent info, only registrations;
+ * From memory;
+ * on error rejects error string;
+ * @async
+ * @returns object
+ */
+ export const updateConfigurationInfo = async (): Promise<void>  => {
+    try { 
+        await updateRegistrationsInfo()
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

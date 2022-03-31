@@ -42,6 +42,17 @@ export const addConfigurationInfo = async (cid: string, name: string, nodes: str
     await redisDb.hset('configuration', 'partners', String(partners))
 }
 
+/**
+ * Update configuration of agent info
+ * Only registrations
+ */
+ export const updateRegistrationsInfo = async (): Promise<void> => {
+    const d = new Date()
+    const numregis = await redisDb.scard('registrations')
+    await redisDb.hset('configuration', 'last_configuration_update', d.toISOString())
+    await redisDb.hset('configuration', 'registrations', String(numregis))
+}
+
  /**
  * Removes configuration of agent info
  * From memory
