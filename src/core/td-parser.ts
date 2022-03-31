@@ -78,6 +78,10 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
             if (Config.ADAPTER.MODE === AdapterMode.PROXY) {
                 itemsArray[i].td = tdProxyEnrichment({ 'id': oid, ...itemsArray[i].td })
             }
+            // If adapterID is not provided - use OID
+            if (!itemsArray[i].td.adapterId) {
+                itemsArray[i].td.adapterId = oid
+            }
             await wot.upsertTD(oid, { 'id': oid, ...itemsArray[i].td }) // WoT Validation
             registrations.push(_buildTDWoT(oid, itemsArray[i]))
         } catch (err) {

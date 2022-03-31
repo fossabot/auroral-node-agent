@@ -8,6 +8,7 @@ import { Config } from '../config'
 import { proxy } from '../microservices/proxy'
 import { wot } from '../microservices/wot'
 import { logger, errorHandler } from '../utils'
+import { useMapping } from './mapping'
 
 // Constants 
     
@@ -76,9 +77,11 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
                 proxy.sendMessageViaWot(oid, iid, method, interaction, body) :
                 Promise.resolve({ success: false, message: 'Missing parameters' })
         } else {
-            return iid && method ?
-                proxy.sendMessageViaProxy(oid, iid, method, interaction, body) :
-                Promise.resolve({ success: false, message: 'Missing parameters' })
+            if (!(iid && method)) {
+                return Promise.resolve({ success: false, message: 'Missing parameters' })
+            }
+            
+            return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, body))
         }
 }
 
