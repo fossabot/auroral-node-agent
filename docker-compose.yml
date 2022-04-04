@@ -11,6 +11,8 @@ services:
     depends_on:
       cache-db:
         condition: service_healthy
+    extra_hosts:
+    - "myhost:host-gateway"
   proxy:
     restart: unless-stopped
     volumes:
