@@ -45,7 +45,6 @@ export const useMapping = async (oid: string, iid: string, value: any) : Promise
         // enrich using mustache
         const mappingValuesNum = (mapping.match(/{{{value/g) || []).length
         if (mappingValuesNum > 1) {
-            logger.debug('multi value')
             if (!Array.isArray(value) || mappingValuesNum !== value.length) {
                 throw new Error('Number of provided values is different than in TD')
             }
@@ -55,13 +54,11 @@ export const useMapping = async (oid: string, iid: string, value: any) : Promise
             // try to parse values
             value.forEach((val: any) => {
                 measurementsMapping['value' + valIndex++] = 
-                    typeof value === 'object' ?  JSON.stringify(value) : '"' + value + '"'
+                    typeof value === 'object' ?  JSON.stringify(val) : '"' + val + '"'
             })
             return JSON.parse(Mustache.render(mapping, { ...measurementsMapping, timestamp: new Date().toISOString() }))
         } else {
             // expected only one value
-            logger.debug('one value')
-            logger.debug(' object?' + typeof value === 'object')
             const testVal = typeof value === 'object' ?  JSON.stringify(value) : '"' + value + '"'
             return JSON.parse(Mustache.render(mapping, { value0: testVal, timestamp: new Date().toISOString() }))
         }
