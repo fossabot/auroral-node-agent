@@ -264,11 +264,3 @@ export const getOidByAdapter: getOidByAdapterIdCtrl = async (req, res) => {
 	}
 }
 
-// type testMappingController = expressTypes.Controller<{ oid: string, iid: string }, {}, {}, JsonType, {}>
-
-// export const testMapping: testMappingController = async (req, res) => {
-//   const { oid, iid } = req.params
-
-//   const mapping = await useMapping(oid, iid, 'test')
-//   return responseBuilder(HttpStatusCode.OK, res, null, mapping)
-// }

@@ -797,7 +797,7 @@ components:
   requestBodies:
     SparqlRequest:
       content:
-        plain/text:
+        text/plain:
           schema:
             "$ref": "#/components/schemas/SparqlRequestObject"
       description: 'SPARQL query: Filter out specific content that you wish to see.

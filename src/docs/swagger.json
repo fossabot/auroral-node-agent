@@ -1206,7 +1206,7 @@
         "requestBodies": {
             "SparqlRequest": {
                 "content": {
-                    "plain/text": {
+                    "text/plain": {
                         "schema": {
                             "$ref": "#/components/schemas/SparqlRequestObject"
                         }

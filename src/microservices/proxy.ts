@@ -16,7 +16,7 @@ import { Thing } from '../types/wot-types'
 
 const callApi = got.extend({
     prefixUrl: Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT,
-    responseType: 'json',
+    responseType: 'text',
     isStream: false,
     retry: 2, // Retries on failure N times
     throwHttpErrors: true, // If true 4XX and 5XX throw an error
@@ -85,7 +85,11 @@ export const proxy = {
 
 const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
-    return response.body
+    try {
+        return JSON.parse(response.body)
+    } catch (err: unknown) {
+        return response.body
+    }
 }
 
 const requestSemantic = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {

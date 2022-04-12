@@ -30,10 +30,9 @@ export declare type MultiLanguage = Record<string, unknown> // object?
 
 /** Implements the Thing Description as software object */
 export class Thing {
-    // '@id'?: string // AURORAL Extension --> Added by Agent on Registration == OID
     id?: string // AURORAL Extension --> Added by Agent on Registration == OID
     '@context': string // AURORAL Extension
-    '@type': string // AURORAL Extension
+    '@type': string | string[] // AURORAL Extension
     title: string
     titles?: MultiLanguage
     description?: string
@@ -49,6 +48,13 @@ export class Thing {
 
     security: Array<string>
     base?: string
+
+    // AURORAL extension for static location
+    located_in?: {
+        location_type: string, // Annotation with some building/location/place ontology
+        location_id?: string, // IRI that uniquely identifies the location, i.e. http://dbpedia.org/Greece
+        label?: string // Human readable description
+    }
 
     properties: JsonType<ThingProperty>
 
@@ -87,8 +93,7 @@ export class Thing {
 export interface ThingInteraction {
     title?: string
     titles?: MultiLanguage
-    '@id': string, // AURORAL Extension iid
-    '@type': Array<string> // AURORAL Extension property type
+    measures?: string | string[] // AURORAL Extension
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -294,8 +299,8 @@ export abstract class ThingProperty extends BaseSchema implements ThingInteracti
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
-    '@type': Array<string>
-    '@id': string // AURORAL Extension iid
+    monitors?: string | string[]  // AURORAL Extension
+    parameters?: string | string[] // AURORAL Extension - Query parameters names
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -318,8 +323,8 @@ export abstract class ThingAction implements ThingInteraction {
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
-    '@type': Array<string>
-    '@id': string // AURORAL Extension iid
+    
+    affects?: string | string[]  // AURORAL Extension
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>
@@ -342,8 +347,7 @@ export abstract class ThingEvent implements ThingInteraction {
     forms?: Array<Form>
     title?: string
     titles?: MultiLanguage
-    '@type': Array<string>
-    '@id': string // AURORAL Extension iid
+    monitors?: string | string[]  // AURORAL Extension
     description?: string
     descriptions?: MultiLanguage
     scopes?: Array<string>

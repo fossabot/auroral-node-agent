@@ -43,7 +43,8 @@ const normalConfig = {
 	ADAPTER: {
 		MODE: process.env.ADAPTER_MODE ? process.env.ADAPTER_MODE : AdapterMode.PROXY,
 		HOST: process.env.ADAPTER_HOST!,
-		PORT: process.env.ADAPTER_PORT!
+		PORT: process.env.ADAPTER_PORT!,
+		USE_MAPPING: process.env.USE_MAPPING === 'true',
 	}
 }
 const testConfig = {
@@ -74,7 +75,12 @@ const testConfig = {
 		PORT: '9000',
 		BASE_URI: undefined
 	},
-	ADAPTER: { MODE: 'dummy', HOST: 'http://adapter', PORT: '3001' }
+	ADAPTER: { 
+		MODE: 'dummy', 
+		HOST: 'http://adapter', 
+		PORT: '3001',
+		USE_MAPPING: true
+	}
 }
 
 export const Config = process.env.NODE_ENV === 'test' ? testConfig : normalConfig 

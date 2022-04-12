@@ -81,7 +81,13 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
                 return Promise.resolve({ success: false, message: 'Missing parameters' })
             }
             
-            return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, body))
+            if (Config.WOT.ENABLED && Config.ADAPTER.USE_MAPPING && interaction !== Interaction.EVENT) {
+                // property mappings
+                return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, body))
+            } else {
+                // event or Mapping off
+                return proxy.sendMessageViaProxy(oid, iid, method, interaction, body)
+            }
         }
 }
 

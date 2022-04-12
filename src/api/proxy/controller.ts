@@ -43,11 +43,11 @@ export const setProperty: PropertyCtrl = async (req, res) => {
 	}
 }
 
-type EventCtrl = expressTypes.Controller<{ oid: string, eid: string }, { body: JsonType }, {}, {}, {}>
+type EventCtrl = expressTypes.Controller<{ oid: string, eid: string }, { wrapper: JsonType }, {}, {}, {}>
 
 export const receiveEvent: EventCtrl = async (req, res) => {
     const { oid, eid } = req.params
-    const  body  = req.body
+    const  body  = req.body.wrapper
       try {
         logger.info('Event received to ' + oid + ' from channel ' + eid)
         await Data.receiveEvent(oid, eid, body)     

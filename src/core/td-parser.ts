@@ -69,8 +69,8 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
     const errors: RegistrationResultPost[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         try {
-            // Verify iid are not duplicated (unique pids, aids and eids), assing @ids
-            itemsArray[i].td = _process_iids(itemsArray[i].td)
+            // Verify interactions are not duplicated, URIencode and standardize some attributes as []
+            itemsArray[i].td = _standardize_td(itemsArray[i].td)
             // Check conflicts with adapterIDs
             await _lookForAdapterIdConflicts(itemsArray[i].td.adapterId, adapterIDs)
             const oid = uuidv4()
@@ -148,7 +148,7 @@ export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): P
                 throw new MyError('Old TD not found')
             }
             // Verify iid are not duplicated (unique pids, aids and eids) + generate new (if necessary)
-            it.td = await _process_iids_update(oldTD, it.td)
+            it.td = await _standardize_td(it.td)
             // If adapterId = undefined, use old one
             it.td.adapterId = it.td.adapterId ? it.td.adapterId : oldTD.adapterId 
             // Check that adapterId does not change
@@ -189,14 +189,12 @@ const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
 
 const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody => {
     // get iids  
-    const properties = data.td.properties ? Object.entries(data.td.properties).map(item => item[1]['@id']).toString() : ''
-    const actions = data.td.actions ? Object.entries(data.td.actions).map(item => item[1]['@id']).toString() : ''
-    const events = data.td.events ? Object.entries(data.td.events).map(item => item[1]['@id']).toString() : ''
+   
     return {
         oid,
-        properties: properties.length > 0 ? properties : undefined,
-        events: events.length > 0 ? events : undefined,
-        actions: actions.length > 0 ? actions : undefined,
+        properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
+        actions: data.td.actions ? Object.keys(data.td.actions).toString() : undefined,
+        events: data.td.events ? Object.keys(data.td.events).toString() : undefined,
         name: data.td.title,
         labels: data.labels,
         avatar: data.avatar,
@@ -223,14 +221,11 @@ const _buildTDUpdate = (oid: string, data: UpdateJSON): UpdateBody => {
 }
 
 const _buildTDWoTUpdate = (oid: string, data: UpdateJSONTD): UpdateBody => {
-    const properties = data.td.properties ? Object.entries(data.td.properties).map(item => item[1]['@id']).toString() : ''
-    const actions = data.td.actions ? Object.entries(data.td.actions).map(item => item[1]['@id']).toString() : ''
-    const events = data.td.events ? Object.entries(data.td.events).map(item => item[1]['@id']).toString() : ''
     return { 
         oid,
-        properties: properties.length > 0 ? properties : undefined,
-        events: events.length > 0 ? events : undefined,
-        actions: actions.length > 0 ? actions : undefined,
+        properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
+        actions: data.td.actions ? Object.keys(data.td.actions).toString() : undefined,
+        events: data.td.events ? Object.keys(data.td.events).toString() : undefined,
         name: data.td.title,
         labels: data.labels,
         avatar: data.avatar,
@@ -288,21 +283,12 @@ const _lookForAdapterIdConflicts = async (adapterId: string | undefined, adapter
  * @param td 
  */
 const _unique_iids = (td: Thing): void => {
-    // IID
-    const properties = td.properties ? Object.entries(td.properties).map(item => item[1]['@id']) : []
-    const events = td.events ?  Object.entries(td.events).map(item => item[1]['@id']) : []
-    const actions = td.actions ?  Object.entries(td.actions).map(item => item[1]['@id']) : []
+    // NAMES
+    const properties = td.properties ? Object.keys(td.properties) : []
+    const events = td.events ? Object.keys(td.events) : []
+    const actions = td.actions ? Object.keys(td.actions) : []
     const interactions = [...properties, ...events, ...actions]
     const repeated = [...new Set(interactions.filter((value, index, self) => self.indexOf(value) !== index))]
-    if (repeated.length > 0) {
-        throw new Error('Thing Description has repeated interaction names: ' + repeated.join())
-    }
-    // NAMES
-    const propertiesNames = td.properties ? Object.keys(td.properties) : []
-    const eventsNames = td.events ? Object.keys(td.events) : []
-    const actionsNames = td.actions ? Object.keys(td.actions) : []
-    const interactionsNames = [...propertiesNames, ...eventsNames, ...actionsNames]
-    const repeatedNames = [...new Set(interactionsNames.filter((value, index, self) => self.indexOf(value) !== index))]
     if (repeated.length > 0) {
         throw new Error('Thing Description has repeated interaction names: ' + repeated.join())
     }
@@ -313,61 +299,60 @@ const _unique_iids = (td: Thing): void => {
  * @param td 
  * @returns td
  */
- const _process_iids = (td: Thing): Thing => {
-     // Add pids
-    for (let i = 0; i < Object.keys(td.properties).length; i++) {
-        td.properties[Object.keys(td.properties)[i]]['@id'] = uuidv4()
+ const _standardize_td = (td: Thing): Thing => {
+    // EncodeURI interactions
+    const properties = td.properties
+    const events = td.events
+    const actions = td.actions
+    td.properties = {}
+    td.events = {}
+    td.actions = {}
+    if (properties) {
+        for (const [key, value] of Object.entries(properties)) {
+            // URI encode prop names
+            td.properties[encodeURI(key)] = value
+            // standardize parameters (as array)
+            if (td.properties[encodeURI(key)].monitors && !Array.isArray(td.properties[encodeURI(key)].monitors)) {
+                td.properties[encodeURI(key)].monitors = [td.properties[encodeURI(key)].monitors! as string]
+            }
+            if (td.properties[encodeURI(key)].parameters && !Array.isArray(td.properties[encodeURI(key)].parameters)) {
+                td.properties[encodeURI(key)].parameters = [td.properties[encodeURI(key)].parameters! as string]
+            }
+            if (td.properties[encodeURI(key)].measures && !Array.isArray(td.properties[encodeURI(key)].measures)) {
+                td.properties[encodeURI(key)].measures = [td.properties[encodeURI(key)].measures! as string]
+            }
+        }
     }
-     // Add eids
-    for (let i = 0; i < Object.keys(td.events).length; i++) {
-        td.events[Object.keys(td.events)[i]]['@id'] = uuidv4()
+    if (events) {
+        for (const [key, value] of Object.entries(events)) {
+            // URI encode event names
+            td.events[encodeURI(key)] = value
+            if (td.events[encodeURI(key)].monitors && !Array.isArray(td.events[encodeURI(key)].monitors)) {
+                td.events[encodeURI(key)].monitors = [td.events[encodeURI(key)].monitors! as string]
+            }
+            if (td.events[encodeURI(key)].measures && !Array.isArray(td.events[encodeURI(key)].measures)) {
+                td.events[encodeURI(key)].measures = [td.events[encodeURI(key)].measures! as string]
+            }
+        }
     }
-     // Add aids
-    for (let i = 0; i < Object.keys(td.actions).length; i++) {
-        td.actions[Object.keys(td.actions)[i]]['@id'] = uuidv4()
+    if (actions) {
+        for (const [key, value] of Object.entries(actions)) {
+            // URI encode action names
+            td.actions[encodeURI(key)] = value
+            if (td.actions[encodeURI(key)].monitors && !Array.isArray(td.actions[encodeURI(key)].monitors)) {
+                td.actions[encodeURI(key)].monitors = [td.actions[encodeURI(key)].monitors! as string]
+            }
+            if (td.actions[encodeURI(key)].measures && !Array.isArray(td.actions[encodeURI(key)].measures)) {
+                td.actions[encodeURI(key)].measures = [td.actions[encodeURI(key)].measures! as string]
+            }
+        }
     }
+
+    if (td['@type'] && !Array.isArray(td['@type'])) {
+        td['@type'] = [td['@type']]
+    }
+    // test for uniqness
     _unique_iids(td)
     return td
 }
 
-/**
- * Compare IIDS and assing new to new interactions
- * @param mewTd 
- * @param oldTd
- * @returns td
- */
- const _process_iids_update = async (oldTd: Thing, newTd: Thing): Promise<Thing> => {
-    // extract iids from old TD
-    if (newTd.properties && Object.keys(newTd.properties).length > 0) { 
-        const properties =  oldTd.properties ? Object.entries(oldTd.properties).map(item => item[1].id) : []
-        // check propertiest in new TD 
-        const newProperties = Object.keys(newTd.properties)
-        for (let i = 0; i < newProperties.length; i++) {
-            if (!newTd.properties[newProperties[i]]['@id'] || !properties.includes(newTd.properties[newProperties[i]]['@id'])) {
-                newTd.properties[newProperties[i]]['@id'] = uuidv4()
-            } 
-        }
-    }
-    if (newTd.events && Object.keys(newTd.events).length > 0) {
-        const events = oldTd.events ? Object.entries(oldTd.events).map(item => item[1].id) : []
-        // check events in new TD 
-        const newEvents = Object.keys(newTd.properties)
-        for (let i = 0; i < newEvents.length; i++) {
-            if (!newTd.events[newEvents[i]]['@id'] || !events.includes(newTd.events[newEvents[i]]['@id'])) {
-                newTd.events[newEvents[i]]['@id'] = uuidv4()
-            }
-        }
-    }
-    if (newTd.actions && Object.keys(newTd.actions).length > 0) {
-        const actions = oldTd.actions ? Object.entries(oldTd.actions).map(item => item[1].id) : []
-        // check actions in new TD 
-        const newActions = Object.keys(newTd.properties)
-        for (let i = 0; i < newActions.length; i++) {
-            if (!newTd.actions[newActions[i]]['@id'] ||  !actions.includes(newTd.actions[newActions[i]]['@id'])) {
-                newTd.actions[newActions[i]]['@id'] = uuidv4()
-            }
-        }
-    }
-    _unique_iids(newTd)
-    return newTd
-}

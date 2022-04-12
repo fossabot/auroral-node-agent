@@ -42,8 +42,6 @@ MainRouter
    .post('/registration/remove', json(), registry.removeRegistrations)
    .get('/registration/oid/:adapterId', json(), registry.getOidByAdapter)
 
-  //  .get('/test/:oid/:iid', json(), registry.testMapping)
-
   // ***** DISCOVERY endpoints *****
   // LOCAL
    .get('/discovery/local/neighbours', json(), discovery.discoveryLocal)
@@ -65,7 +63,7 @@ MainRouter
    // .put('/actions/:id/:oid/:aid') // Update status of task
    // .delete('/actions/:id/:oid/:aid/:tid') // Stop task
    .post('/events/local/:id/:eid', json(), consume.activateEventChannel) // Create my event channel
-   .put('/events/local/:id/:eid', json(), consume.publishEvent) // Put a message in my event channel
+   .put('/events/local/:id/:eid', text(), consume.publishEvent) // Put a message in my event channel
    .delete('/events/local/:id/:eid', json(), consume.deactivateEventChannel) // Delete my event channel
    .get('/events/remote/channels/:id/:oid', json(), consume.getEventChannels) // Get event channels of remote Object
    .get('/events/remote/:id/:oid/:eid', json(), consume.statusRemoteEventChannel) // Get status of a remote event channel

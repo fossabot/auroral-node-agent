@@ -8,6 +8,8 @@ import { responseBuilder } from '../../../utils/response-builder'
 import { JsonType } from '../../../types/misc-types'
 import { gateway } from '../../../microservices/gateway'
 import { GatewayResponse } from '../../../types/gateway-types'
+import { useMapping } from '../../../core/mapping'
+import { Config } from '../../../config'
 
 // ***** Consume remote resources *****
 
@@ -106,7 +108,7 @@ export const activateEventChannel: activateEventChannelCtrl = async (req, res) =
     }
 }
 
-type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, JsonType, {}, string, {}>
+type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, string, {}, string, {}>
 
 /**
  * Publish event to channel
@@ -119,7 +121,16 @@ type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, Jso
           logger.warn('Missing body')
           return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
         } 
-        const data = await gateway.publishEvent(id, eid, body)
+        // JSON parse 
+        let parsedBody 
+        try {
+          parsedBody = JSON.parse(body)
+        } catch (error) {
+          parsedBody = body
+        }
+        // do mappings if enabled
+        const toSend = Config.WOT.ENABLED && Config.ADAPTER.USE_MAPPING ? await useMapping(id, eid, parsedBody) : parsedBody
+        const data = await  gateway.publishEvent(id, eid, { wrapper: toSend })
         _parse_gtw_response(data)
         logger.info(`Message sent to channel ${eid} of ${id}`)
         return responseBuilder(HttpStatusCode.OK, res, null, data.statusCodeReason)
