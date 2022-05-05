@@ -49,6 +49,13 @@ export interface WholeContractType extends ContractType {
     items: { oid: string, rw: boolean }[]
 }
 
+// Interface for communities
+export interface CommunityType {
+    commId: string,
+    name: string,
+    description: string
+}
+
 // Header content types
 
 export enum CONTENT_TYPE_ENUM {

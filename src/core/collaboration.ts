@@ -18,6 +18,9 @@ export const discovery = {
     getPartnerInfo: async (id: string) => {
         return (await gateway.getPartnerInfo(id)).message
     },
+    getCommunities: async () => {
+        return (await gateway.getCommunities()).message
+    },
     reloadCid: async (id: string): Promise<string> => {
         const cid = (await gateway.getCid(id)).message
         if (id === Config.GATEWAY.ID) {

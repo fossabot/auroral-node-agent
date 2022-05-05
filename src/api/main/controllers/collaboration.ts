@@ -5,9 +5,9 @@ import { logger, errorHandler } from '../../../utils'
 import { responseBuilder } from '../../../utils/response-builder'
 
 // Other imports
-import { discovery } from '../../../core/discovery'
+import { discovery } from '../../../core/collaboration'
 import { security } from '../../../core/security'
-import { WholeContractType } from '../../../types/misc-types'
+import { WholeContractType, CommunityType } from '../../../types/misc-types'
 
 type getPartnersCtrl = expressTypes.Controller<{}, {}, {},  string[] , {}>
  
@@ -42,6 +42,19 @@ export const getContract: getContractCtrl = async (req, res) => {
     const { cid } = req.params
     try {
         const result = await security.getContract(cid)
+        return responseBuilder(HttpStatusCode.OK, res, null, result)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
+}
+
+type getCommunitiesCtrl = expressTypes.Controller<{}, {}, {}, CommunityType[], {}>
+ 
+export const getCommunities: getCommunitiesCtrl = async (req, res) => {
+    try {
+        const result = await discovery.getCommunities()
         return responseBuilder(HttpStatusCode.OK, res, null, result)
     } catch (err) {
         const error = errorHandler(err)

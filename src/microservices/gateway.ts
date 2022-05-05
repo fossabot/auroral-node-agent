@@ -6,10 +6,10 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, IItemPrivacy, RelationshipType, WholeContractType } from '../types/misc-types'
+import { JsonType, IItemPrivacy, RelationshipType, WholeContractType, CommunityType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
-import { GtwDeleteResponse, GatewayResponse, RemovalBody, GtwRegistrationResponse, GtwUpdateResponse, IdDiscoveryType, BasicResponse, GtwGetRegistrationsResponse } from '../types/gateway-types'
+import { GtwDeleteResponse, GatewayResponse, RemovalBody, GtwRegistrationResponse, GtwUpdateResponse, IdDiscoveryType, BasicResponse, GtwGetRegistrationsResponse, NodeType } from '../types/gateway-types'
 import { RegistrationBody, RegistrationnUpdateNm } from '../persistance/models/registrations'
 import { getCredentials } from '../persistance/persistance'
 
@@ -158,6 +158,78 @@ export const gateway = {
     },
 
     /**
+     * Retrieve all nodes that you can see from an organisation;
+     * (Understand object as gateway, service or device instance);
+     * (Using the credentials of the gateway);
+     * @async
+     * @param {cid: string}
+     * @returns {error: boolean, message: NodeType[]} 
+    */
+    organisationNodes: async function(cid?: string): Promise<BasicResponse<NodeType[]>> {
+        try {
+            const Authorization = await getAuthorization()
+            const url = cid ? 'discovery/nodes/organisation/' + cid : 'discovery/nodes/organisation'
+            return request(url, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<NodeType[]>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+
+    /**
+     * Retrieve all nodes that you can see from an organisation;
+     * (Understand object as gateway, service or device instance);
+     * (Using the credentials of the gateway);
+     * @async
+     * @param {commid: string}
+     * @returns {error: boolean, message: NodeType[]} 
+    */
+     communityNodes: async function(commid: string): Promise<BasicResponse<NodeType[]>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('discovery/nodes/community/' + commid, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<NodeType[]>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+
+    /**
+     * Retrieve all items that you can see from your organisation;
+     * (Understand object as gateway, service or device instance);
+     * (Using the credentials of the gateway);
+     * @async
+     * @returns {error: boolean, message: string[]} 
+    */
+    organisationItems: async function(): Promise<BasicResponse<string[]>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('discovery/items/organisation', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string[]>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+
+    /**
+     * Retrieve all items that you can see from your organisation;
+     * (Understand object as gateway, service or device instance);
+     * (Using the credentials of the gateway);
+     * @async
+     * @param {ctid: string}
+     * @returns {error: boolean, message: string[]} 
+    */
+    contractItems: async function(ctid: string): Promise<BasicResponse<string[]>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('discovery/items/contract/' + ctid, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string[]>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+    
+    /**
      * Retrieve TD from remote gateway or object;
      * (Understand object as gateway, service or device instance);
      * (Using the credentials of the gateway or an item if originId is provided);
@@ -212,6 +284,23 @@ export const gateway = {
         }
     },
 
+    /**
+     * Get communities;
+     * Get the communities where your node participates;
+     * (Using the credentials of the gateway);
+     * @async
+     * @returns {error: boolean, message: cid: string} 
+     */
+     getCommunities: async function(): Promise<BasicResponse<CommunityType[]>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('agents/communities', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<CommunityType[]>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+    
     /**
      * Get partner info;
      * Get info about one of your partners;

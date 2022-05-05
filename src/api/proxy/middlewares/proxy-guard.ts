@@ -1,6 +1,6 @@
 import { expressTypes } from '../../../types/index'
 import { security } from '../../../core/security'
-import { discovery } from '../../../core/discovery'
+import { discovery } from '../../../core/collaboration'
 
 // Other imports
 import { IItemPrivacy, RelationshipType } from '../../../types/misc-types'

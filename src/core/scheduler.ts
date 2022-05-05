@@ -1,7 +1,7 @@
 import { CronJob } from 'cron'
 import { logger, errorHandler } from '../utils'
 import { security } from './security'
-import { discovery } from './discovery'
+import { discovery } from './collaboration'
 import { reloadConfigInfo } from '../persistance/persistance'
 import { Config } from '../config'
 

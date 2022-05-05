@@ -53,6 +53,12 @@ export interface IdDiscoveryType {
     objects: { oid: string }[]
 }
 
+export interface NodeType {
+    agid: string,
+    cid: string,
+    company: string
+}
+
 export interface BasicResponse<T = JsonType> {
     error: string | null
     message: T

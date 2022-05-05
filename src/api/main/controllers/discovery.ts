@@ -11,6 +11,7 @@ import { gateway } from '../../../microservices/gateway'
 import { wot } from '../../../microservices/wot'
 import { Config } from '../../../config'
 import { Thing } from '../../../types/wot-types'
+import { NodeType } from '../../../types/gateway-types'
 
 type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string[], {}>
 
@@ -32,6 +33,77 @@ type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string[], 
         return responseBuilder(error.status, res, error.message)
       }
   }
+
+type orgNodesCtrl = expressTypes.Controller<{ cid?: string }, {}, {}, NodeType[], {}>
+
+/**
+ * Discovery endpoint LOCAL
+ * Check what nodes can you see in a certain organisation
+ */
+export const getOrganisationNodes: orgNodesCtrl = async (req, res) => {
+    const { cid } = req.params
+    try {
+        const data = (await gateway.organisationNodes(cid)).message
+        return responseBuilder(HttpStatusCode.OK, res, null, data)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
+}
+
+type communityNodesCtrl = expressTypes.Controller<{ commid: string }, {}, {}, NodeType[], {}>
+
+/**
+ * Discovery endpoint LOCAL
+ * Check what nodes can you see in a community
+ */
+    export const getCommunityNodes: communityNodesCtrl = async (req, res) => {
+    const { commid } = req.params
+        try {
+            const data = (await gateway.communityNodes(commid)).message
+            return responseBuilder(HttpStatusCode.OK, res, null, data)
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            return responseBuilder(error.status, res, error.message)
+        }
+    }
+
+type organisationItemsCtrl = expressTypes.Controller<{}, {}, {}, string[], {}>
+
+/**
+ * Discovery endpoint LOCAL
+ * Check what remote items can you see in an organisation
+ */
+    export const getOrganisationItems: organisationItemsCtrl = async (req, res) => {
+        try {
+            const data = (await gateway.organisationItems()).message
+            return responseBuilder(HttpStatusCode.OK, res, null, data)
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            return responseBuilder(error.status, res, error.message)
+        }
+    }
+
+type getContractItemsCtrl = expressTypes.Controller<{ ctid: string }, {}, {}, string[], {}>
+
+/**
+ * Discovery endpoint LOCAL
+ * Check what items can you see in a contract
+ */
+    export const getContractItems: getContractItemsCtrl = async (req, res) => {
+    const { ctid } = req.params
+        try {
+            const data = (await gateway.contractItems(ctid)).message
+            return responseBuilder(HttpStatusCode.OK, res, null, data)
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            return responseBuilder(error.status, res, error.message)
+        }
+    }
 
 type discoveryLocalTdCtrl = expressTypes.Controller<{ id: string }, {}, {}, Thing | string, {}>
  

@@ -1,5 +1,5 @@
 import { expressTypes } from '../../../types/index'
-import { discovery } from '../../../core/discovery'
+import { discovery } from '../../../core/collaboration'
 import { security } from '../../../core/security'
 import { ContractItemType, ContractType , JsonType } from '../../../types/misc-types'
 

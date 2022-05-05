@@ -41,7 +41,7 @@ services:
     # ports:
     # - 5222:5222
     # image: registry.bavenir.eu/auroral_gateway:dev
-    image: ghcr.io/auroralh2020/auroral-gateway:latest
+    image: ghcr.io/auroralh2020/auroral-gateway:beta
   cache-db:
     # restart: unless-stopped
     # ports:

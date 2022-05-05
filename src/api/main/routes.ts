@@ -43,12 +43,18 @@ MainRouter
    .get('/registration/oid/:adapterId', json(), registry.getOidByAdapter)
 
   // ***** DISCOVERY endpoints *****
-  // LOCAL
-   .get('/discovery/local/neighbours', json(), discovery.discoveryLocal)
-   .get('/discovery/local/neighbours/:id', json(), discovery.discoveryLocal)
+  // Neighbourhood
+  .get('/discovery/nodes/organisation', json(), discovery.getOrganisationNodes)
+  .get('/discovery/nodes/organisation/:cid', json(), discovery.getOrganisationNodes)
+  .get('/discovery/nodes/community/:commid', json(), discovery.getCommunityNodes)
+  .get('/discovery/items/organisation', json(), discovery.getOrganisationItems)
+  .get('/discovery/items/contract/:ctid', json(), discovery.getContractItems)
+  //  .get('/discovery/local/neighbours', json(), discovery.discoveryLocal) // All items my gateway can see
+  //  .get('/discovery/local/neighbours/:id', json(), discovery.discoveryLocal) // All items my device can see
+   // LOCAL Semantic
    .get('/discovery/local/td/:id', json(), discovery.discoverLocalTd)
    .post('/discovery/local/semantic', text(), discovery.discoverLocalSemantic) // Expects plain text
-  // REMOTE
+  // REMOTE Semantic
    .get('/discovery/remote/td/:id/:originId', json(), isLocal(SemanticType.TD), discovery.discoveryRemote)
    .post('/discovery/remote/semantic/:id', text(), isLocal(SemanticType.SPARQL), discovery.discoveryRemote)
   // TBD .post('/discovery/semantic/:agid', ctrl.discoveryRemote)
@@ -76,6 +82,7 @@ MainRouter
   .get('/collaboration/partners/', json(), collaborate.getPartners)
   .get('/collaboration/partners/:cid', json(), collaborate.getPartnerInfo)
   .get('/collaboration/contracts/:cid', json(), collaborate.getContract)
+  .get('/collaboration/communities', json(), collaborate.getCommunities)
   // .delete('/collaboration/contracts/:cid', json(), collaborate.delContract)
 
   // ***** ADMIN endpoints *****

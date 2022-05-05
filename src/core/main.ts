@@ -10,7 +10,7 @@ import { gtwServices } from './gateway'
 import { logger } from '../utils'
 import  { getItem, reloadConfigInfo } from '../persistance/persistance'
 import { security } from './security'
-import { discovery } from './discovery'
+import { discovery } from './collaboration'
 import { scheduledJobs } from './scheduler'
  
  /**
