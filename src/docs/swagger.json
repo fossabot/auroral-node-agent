@@ -39,12 +39,16 @@
             "description": "Registration of new devices or services into AURORAL"
         },
         {
-            "name": "Local Discovery",
-            "description": "Retrieve metadata about your local infrastructure"
+            "name": "Neighbourhood Discovery",
+            "description": "Retrieve visible objects in the AURORAL platform"
         },
         {
-            "name": "Remote Discovery",
-            "description": "Discover remote resources and retrieve their metadata"
+            "name": "Local Semantic Discovery",
+            "description": "Retrieve semantic metadata about your local infrastructure"
+        },
+        {
+            "name": "Remote Semantic Discovery",
+            "description": "Retrieve semantic metadata about remote infrastructures"
         },
         {
             "name": "Consumption",
@@ -322,21 +326,21 @@
                 }
             }
         },
-        "/api/discovery/local/neighbours": {
+        "/api/discovery/nodes/organisation": {
             "get": {
-                "summary": "Gateway's reachable objects",
-                "description": "See what remote objects can you reach with your Gateway. \n\nYou will see other gateways of your organisation or partnered organisations.\n",
+                "summary": "Retrieve all nodes in my organisation",
+                "description": "See all the agid of the nodes in your organisation so you can send discovery queries to them",
                 "security": [
                     {
                         "basicAuth": []
                     }
                 ],
                 "tags": [
-                    "Local Discovery"
+                    "Neighbourhood Discovery"
                 ],
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/GenericStringArray"
+                        "$ref": "#/components/responses/NodeArrayResponse"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -347,23 +351,23 @@
                 }
             }
         },
-        "/api/discovery/local/neighbours/{id}": {
+        "/api/discovery/nodes/organisation/{cid}": {
             "get": {
-                "summary": "Item's reachable objects",
-                "description": "See what remote objects can you reach which each OID. \n\nTo see objects of other organisations you need to agree on a contract for exchanging data.\n\nGet what your gateway can see by not providing OID parameter.\n",
+                "summary": "Retrieve nodes from other organisation",
+                "description": "See all the nodes that you can reach from a different organisation. \n\nYour node has to be part of that partnership.\n",
                 "security": [
                     {
                         "basicAuth": []
                     }
                 ],
                 "tags": [
-                    "Local Discovery"
+                    "Neighbourhood Discovery"
                 ],
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "id",
-                        "description": "Object id - OID",
+                        "name": "cid",
+                        "description": "Organisation id - CID",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -373,7 +377,106 @@
                 ],
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/GenericStringArray"
+                        "$ref": "#/components/responses/NodeArrayResponse"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                }
+            }
+        },
+        "/api/discovery/nodes/community/{commid}": {
+            "get": {
+                "summary": "Retrieve nodes from a community",
+                "description": "See all the nodes that you can reach in a community. \n\nYour node has to be part of that community to see something.\n",
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ],
+                "tags": [
+                    "Neighbourhood Discovery"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "commid",
+                        "description": "Community id - COMMID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "0000-0000-0000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/NodeArrayResponse"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                }
+            }
+        },
+        "/api/discovery/items/organisation": {
+            "get": {
+                "summary": "Retrieve all my organisation items",
+                "description": "See all items in your organisation. \n\nSee only items that are enabled.\n",
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ],
+                "tags": [
+                    "Neighbourhood Discovery"
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ItemArrayResponse"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                }
+            }
+        },
+        "/api/discovery/items/contract/{ctid}": {
+            "get": {
+                "summary": "Retrieve items existing in a contract",
+                "description": "See all the items you are sharing data with. \n\nYou need to provide the id of the contract as a parameter.\n",
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ],
+                "tags": [
+                    "Neighbourhood Discovery"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ctid",
+                        "description": "Contract id - CTID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "0000-0000-0000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ItemArrayResponse"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -394,7 +497,7 @@
                     }
                 ],
                 "tags": [
-                    "Local Discovery"
+                    "Local Semantic Discovery"
                 ],
                 "parameters": [
                     {
@@ -430,7 +533,7 @@
                     }
                 ],
                 "tags": [
-                    "Local Discovery"
+                    "Local Semantic Discovery"
                 ],
                 "requestBody": {
                     "$ref": "#/components/requestBodies/SparqlRequest"
@@ -458,7 +561,7 @@
                     }
                 ],
                 "tags": [
-                    "Remote Discovery"
+                    "Remote Semantic Discovery"
                 ],
                 "parameters": [
                     {
@@ -505,7 +608,7 @@
                     }
                 ],
                 "tags": [
-                    "Remote Discovery"
+                    "Remote Semantic Discovery"
                 ],
                 "parameters": [
                     {
@@ -1145,6 +1248,31 @@
                 }
             }
         },
+        "/api/collaboration/communities": {
+            "get": {
+                "summary": "Get the communities where your node participates",
+                "description": "Displays the communities ids, name and a brief description",
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ],
+                "tags": [
+                    "Collaboration"
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/CommunityArrayResponse"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                }
+            }
+        },
         "/api/agent/info": {
             "get": {
                 "summary": "Node information",
@@ -1382,6 +1510,36 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/AgentHealthResponse"
+                        }
+                    }
+                }
+            },
+            "NodeArrayResponse": {
+                "description": "List of reachable nodes and its company info",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/NodeArray"
+                        }
+                    }
+                }
+            },
+            "CommunityArrayResponse": {
+                "description": "List of communities",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/CommunityArray"
+                        }
+                    }
+                }
+            },
+            "ItemArrayResponse": {
+                "description": "List of reachable items",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ItemArray"
                         }
                     }
                 }
@@ -1721,8 +1879,90 @@
             "SparqlRequestObject": {
                 "description": "Sparql query",
                 "type": "string",
-                "example": "SELECT ?name WHERE { ?person foaf:name ?name . }\n",
+                "example": "SELECT ?name WHERE { ?person foaf:name ?name . }",
                 "default": ""
+            },
+            "NodeArray": {
+                "description": "Array of nodes with organisation info",
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "agid": {
+                                    "type": "string"
+                                },
+                                "cid": {
+                                    "type": "string"
+                                },
+                                "company": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
+            },
+            "CommunityArray": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "commId": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
+            },
+            "ItemArray": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "oid": {
+                                    "type": "string"
+                                },
+                                "cid": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "company": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "statusCode": {
+                        "type": "number",
+                        "description": "HTTP StatusCode from header"
+                    }
+                }
             }
         }
     }

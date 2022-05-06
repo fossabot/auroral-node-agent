@@ -18,7 +18,6 @@ function bootstrap() {
   try {
     // Run other services here
     initialize()
-    logger.info('All services initialized')
   } catch (err) {
     logger.error(' ##### There were errors initializing the server...')
   }

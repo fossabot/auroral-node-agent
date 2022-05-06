@@ -30,6 +30,8 @@ export const initialize = async function() {
     // Get objects OIDs stored locally
     const registrations = await getItem('registrations') as string[]
 
+    logger.info('--- There are ' + registrations.length + ' item(s) in your infrastructure')
+
     // Login objects
     await gtwServices.doLogins(registrations)
 
@@ -41,31 +43,31 @@ export const initialize = async function() {
 
     // Initialize WoT
     if (Config.WOT.ENABLED) {
-        logger.info('WoT directory successfully started')
+        logger.info('--- WoT directory successfully started')
         // await wot.test()
     } else {
-        logger.warn('WoT directory is not active')
+        logger.warn('--- WoT directory is not active')
     }
 
     // Check if chache is active
     if (Config.DB.CACHE) {
-        logger.info('Adapter values are being cached with expiration ' + Config.DB.CACHE_TTL + 's')
+        logger.info('--- Adapter values are being cached with expiration ' + Config.DB.CACHE_TTL + 's')
     } else {
-        logger.warn('Adapter values are not being cached by redis')
+        logger.warn('--- Adapter values are not being cached by redis')
     }
 
     // Update Items privacy in node
     await security.cacheItemsPrivacy()
-    logger.info('Local items privacy updated!!')
+    logger.info('--- Local items privacy updated!!')
 
     // Check Adapter mode
-    logger.info('Agent is responding to incoming requests in ' + Config.ADAPTER.MODE + ' mode')
+    logger.info('--- Agent is responding to incoming requests in ' + Config.ADAPTER.MODE + ' mode')
 
     // Get my organisation info
     const cid = await discovery.reloadCid(Config.GATEWAY.ID)
     const info = await discovery.reloadPartnerInfo(cid)
     const partners = await discovery.reloadPartners()
-    logger.info('Node belongs to organisation: ' + info.name)
+    logger.info('--- Node belongs to organisation: ' + info.name)
 
     // Store configuration info
     await reloadConfigInfo(cid, info.name, info.nodes, partners)

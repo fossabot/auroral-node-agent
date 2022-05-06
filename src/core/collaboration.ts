@@ -24,7 +24,7 @@ export const discovery = {
     reloadCid: async (id: string): Promise<string> => {
         const cid = (await gateway.getCid(id)).message
         if (id === Config.GATEWAY.ID) {
-            logger.info('Caching your node CID')
+            logger.info('Caching your node CID: ' + cid)
             redisDb.caching('cid:' + id, cid)
             await redisDb.hset('configuration', 'cid', cid)
         }
@@ -34,6 +34,7 @@ export const discovery = {
         logger.info('Reloading organisation partners... ')
         const d = new Date()
         const partners = (await gateway.getPartners()).message
+        await redisDb.hdel('configuration', 'partners')
         await redisDb.hset('configuration', 'partners', String(partners))
         await redisDb.hset('configuration', 'last_partners_update', d.toISOString())
         return partners
@@ -41,6 +42,8 @@ export const discovery = {
     reloadPartnerInfo: async (id: string) => {
         logger.info('Reloading your organisation info... ')
         const info = (await gateway.getPartnerInfo(id)).message
+        await redisDb.hdel('configuration', 'organisation')
+        await redisDb.hdel('configuration', 'nodes')
         await redisDb.hset('configuration', 'organisation', info.name)
         await redisDb.hset('configuration', 'nodes', String(info.nodes))
         return info
@@ -72,3 +75,4 @@ const getCid = async (id: string): Promise<string> => {
     }
     return cid
 }
+

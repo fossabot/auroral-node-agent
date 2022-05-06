@@ -37,7 +37,10 @@ export const security = {
     },
     getContract: async (cid: string): Promise<WholeContractType> => {
         const ctid = await redisDb.get('contract:' + cid)
-        if (!ctid || ctid === 'NOT_EXISTS') {
+        if (!ctid) {
+            await downloadContract(cid)
+        }
+        if (!ctid || ctid === 'NOT_EXISTS') {  
             return {
                 ctid: 'NOT_EXISTS', cid, items: []
             }
@@ -108,12 +111,12 @@ const downloadContract = async (cid: string): Promise<boolean> => {
         await redisDb.remove('contract:' + cid)
         await addContract(contract)
         // Keep local copy of contract for an hour
-        await redisDb.set('contract:' + cid, contract.ctid, 60 * 60)
+        await redisDb.set('contract:' + cid, contract.ctid, 30 * 60) // persists contract 30min
         return true
     } else {
     // If contract NOT in cloud add key with TTL 5 min that returns 'null' --> return false
         await redisDb.remove('contract:' + cid)
-        await redisDb.set('contract:' + cid, 'NOT_EXISTS', 300)
+        await redisDb.set('contract:' + cid, 'NOT_EXISTS', 300) // persists a Not_Exists flag 5 min
         return false
     }
 }
@@ -123,10 +126,11 @@ const downloadContract = async (cid: string): Promise<boolean> => {
  * @param data
  */
 const addContract = async (data: WholeContractType) => {
-    data.items.forEach(async it => {
+    for (let i = 0, l = data.items.length; i < l; i++) {
+        const it = data.items[i]
         const rw = it.rw ? 'true' : 'false'
         await redisDb.hset(data.ctid, it.oid, rw)
-    })
+    }
     logger.info('Contract ' + data.ctid + ' info was added!')
 }
 
