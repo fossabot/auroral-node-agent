@@ -164,8 +164,14 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
             logger.warn('Discovery failed')
             return responseBuilder(data.statusCode, res, response)
           } else {
-            const response = data.message[0].message.wrapper.message
-            return responseBuilder(HttpStatusCode.OK, res, null, response)
+            try {
+                const response = data.message[0].message.wrapper.message
+                return responseBuilder(HttpStatusCode.OK, res, null, response)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Destination Node could not parse the Sparql query, please revise syntax')
+            }
           } 
       } catch (err) {
         const error = errorHandler(err)

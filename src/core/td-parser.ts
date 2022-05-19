@@ -82,6 +82,8 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
             if (!itemsArray[i].td.adapterId) {
                 itemsArray[i].td.adapterId = oid
             }
+            // If type is missing, assign Device
+            itemsArray[i].td['@type'] = itemsArray[i].td['@type'] ? itemsArray[i].td['@type'] : 'Device'
             await wot.upsertTD(oid, { 'id': oid, ...itemsArray[i].td }) // WoT Validation
             registrations.push(_buildTDWoT(oid, itemsArray[i]))
         } catch (err) {
@@ -260,41 +262,6 @@ const _checkNumberOfRegistrations = async (newRegistrationsCount: number) => {
 }
 
 /**
- * Check for AdapterId conflicts during REGISTRATION
- */
-const _lookForAdapterIdConflicts = async (adapterId: string | undefined, adapterIds: string[]) => {
-    // If adapterID is undefined it will be the same as the OID so no conflicts can occur
-    if (adapterId) {
-        // Test if same AdapterId appear more than once in the same array of registrations
-        const occurrences = adapterIds.reduce((a, v) => (v === adapterId ? a + 1 : a), 0)
-        if (occurrences > 1) {
-            throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
-        }
-        // Test is same AdapterId already exists in the agent
-        if (await existsAdapterId(adapterId)) {
-            throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
-        }
-    }
-}
-
-/**
- * All interaction ids must be unique
- * Also across different interaction types
- * @param td 
- */
-const _unique_iids = (td: Thing): void => {
-    // NAMES
-    const properties = td.properties ? Object.keys(td.properties) : []
-    const events = td.events ? Object.keys(td.events) : []
-    const actions = td.actions ? Object.keys(td.actions) : []
-    const interactions = [...properties, ...events, ...actions]
-    const repeated = [...new Set(interactions.filter((value, index, self) => self.indexOf(value) !== index))]
-    if (repeated.length > 0) {
-        throw new Error('Thing Description has repeated interaction names: ' + repeated.join())
-    }
-}
-
-/**
  * All interaction ids must have id
  * @param td 
  * @returns td
@@ -356,3 +323,37 @@ const _unique_iids = (td: Thing): void => {
     return td
 }
 
+/**
+ * All interaction ids must be unique
+ * Also across different interaction types
+ * @param td 
+ */
+ const _unique_iids = (td: Thing): void => {
+    // NAMES
+    const properties = td.properties ? Object.keys(td.properties) : []
+    const events = td.events ? Object.keys(td.events) : []
+    const actions = td.actions ? Object.keys(td.actions) : []
+    const interactions = [...properties, ...events, ...actions]
+    const repeated = [...new Set(interactions.filter((value, index, self) => self.indexOf(value) !== index))]
+    if (repeated.length > 0) {
+        throw new Error('Thing Description has repeated interaction names: ' + repeated.join())
+    }
+}
+
+/**
+ * Check for AdapterId conflicts during REGISTRATION
+ */
+ const _lookForAdapterIdConflicts = async (adapterId: string | undefined, adapterIds: string[]) => {
+    // If adapterID is undefined it will be the same as the OID so no conflicts can occur
+    if (adapterId) {
+        // Test if same AdapterId appear more than once in the same array of registrations
+        const occurrences = adapterIds.reduce((a, v) => (v === adapterId ? a + 1 : a), 0)
+        if (occurrences > 1) {
+            throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
+        }
+        // Test is same AdapterId already exists in the agent
+        if (await existsAdapterId(adapterId)) {
+            throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
+        }
+    }
+}

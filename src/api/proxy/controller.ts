@@ -79,12 +79,12 @@ export const discovery: DiscoveryCtrl = async (req, res) => {
           return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Sparql query has to be a string')
         }
         logger.info('Received Sparql discovery to ' + oid)
-        logger.debug(query)
         data = await Data.sparqlDiscovery(oid, originId, relationship, query, items)
       }
       return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
     } catch (err) {
       const error = errorHandler(err)
+      console.log('Error while returning discovery')
       logger.error(error.message)
       return responseBuilder(error.status, res, error.message)
     }

@@ -10,6 +10,7 @@
  import { isRegistered } from '../../../persistance/persistance'
  import { wot } from '../../../microservices/wot'
  import { JsonType } from '../../../types/misc-types'
+import { Config } from '../../../config'
  
  // Types
  
@@ -26,11 +27,11 @@
          const body = req.body
          isRegistered(id)
          .then((local) => { 
-             if (local) {
+             if (local || Config.GATEWAY.ID === id) {
                  logger.debug('Local discovery request')
                  localDiscovery(id, type, body)
                  .then((response) => {
-                     return responseBuilder(HttpStatusCode.OK, res, null, response)
+                     return responseBuilder(HttpStatusCode.OK, res, null, response.message)
                  })
                  .catch((err: unknown) => {
                      const error = errorCallback(err)

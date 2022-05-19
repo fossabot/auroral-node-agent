@@ -83,19 +83,13 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         const result = await gtwServices.registerObject(items.registrations)
         
         // Unregister from WoT on CLOUD or REDIS Error
-        await Promise.all(
-          result.errors.map(async it => {
-            logger.info('Reverting registration in WoT of OID: ' + it.oid)
-            await wot.deleteTD(it.oid)
-          })
-        )
-
-        // Create mappings 
-        if (Config.WOT.ENABLED) {
-          for (const reg of result.registrations) {
-            logger.debug('Storing mapping for ' + reg.oid)
-            await storeMapping(reg.oid)          
-          }
+        if (result.errors.length > 0) {
+          await Promise.all(
+            result.errors.map(async it => {
+              logger.info('Reverting registration in WoT of OID: ' + it.oid)
+              await wot.deleteTD(it.oid)
+            })
+          )
         }
 
         // Build final response
@@ -105,7 +99,16 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         const error = errorHandler(err)
         logger.error(error.message)
         return responseBuilder(error.status, res, error.message)
-	}
+	} finally {
+        // Create mappings
+        if (Config.WOT.ENABLED) {
+          const data = req.body as unknown as RegistrationJSONTD | RegistrationJSONTD[]
+          const itemsArray = Array.isArray(data) ? data : [data]
+          for (const reg of itemsArray) {
+              await storeMapping(reg.td.oid)          
+          }
+      }
+  }
 }
 
 type modifyRegistrationCtrl = expressTypes.Controller<{}, UpdateJSON | UpdateJSON[] | UpdateJSONTD | UpdateJSONTD[], {}, UpdateResult[], {}>
@@ -114,47 +117,49 @@ type modifyRegistrationCtrl = expressTypes.Controller<{}, UpdateJSON | UpdateJSO
  * Register things in the platform
  */
  export const modifyRegistration: modifyRegistrationCtrl = async (req, res) => {
-  const body = req.body
-      try {
-          let items
-          // Two ways available depending if WoT enabled
+    const body = req.body
+        try {
+            let items
+            // Two ways available depending if WoT enabled
+            if (Config.WOT.ENABLED) {
+              logger.debug('Update thing in WoT')
+              items = await tdParserUpdateWot(body as UpdateJSONTD)
+            } else {
+              logger.debug('Update thing without WoT')
+              items = await tdParserUpdate(body as UpdateJSON)
+            }
+
+          // If all requests are parsed as wrong body
+          if (items.updates.length === 0) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null, items.errors)
+          }
+
           if (Config.WOT.ENABLED) {
-            logger.debug('Update thing in WoT')
-            items = await tdParserUpdateWot(body as UpdateJSONTD)
-          } else {
-            logger.debug('Update thing without WoT')
-            items = await tdParserUpdate(body as UpdateJSON)
+            // remove mappings for succesfull updates registrations
+            for (const item of items.updates) {
+              await removeMapping(item.oid)          
+            }
           }
 
-        // If all requests are parsed as wrong body
-        if (items.updates.length === 0) {
-          return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null, items.errors)
-        }
+          // Update in NM and redis
+          const result = await gtwServices.updateObject(items.updates)
 
+          // Build final response
+          const response = [...items.errors, ...result.updates, ...result.errors]
+          return responseBuilder(HttpStatusCode.OK, res, null, response)
+      } catch (err) {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            return responseBuilder(error.status, res, error.message)
+      } finally {
+        // Create mappings
         if (Config.WOT.ENABLED) {
-          // remove mappings for succesfull updates registrations
-          for (const item of items.updates) {
-            await removeMapping(item.oid)          
+          const data = req.body as unknown as UpdateJSONTD | UpdateJSONTD[]
+          const itemsArray = Array.isArray(data) ? data : [data]
+          for (const reg of itemsArray) {
+              await storeMapping(reg.td.oid)          
           }
-        }
-
-        // Update in NM and redis
-        const result = await gtwServices.updateObject(items.updates)
-
-        if (Config.WOT.ENABLED) {
-            // Create mappings 
-          for (const reg of result.updates) {
-            await storeMapping(reg.oid)          
-          }
-        }
-
-        // Build final response
-        const response = [...items.errors, ...result.updates, ...result.errors]
-        return responseBuilder(HttpStatusCode.OK, res, null, response)
-    } catch (err) {
-          const error = errorHandler(err)
-          logger.error(error.message)
-          return responseBuilder(error.status, res, error.message)
+      }
     }
 }
 

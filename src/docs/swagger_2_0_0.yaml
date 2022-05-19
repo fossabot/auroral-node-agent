@@ -1227,7 +1227,7 @@ components:
     SparqlRequestObject:
       description: Sparql query
       type: string
-      example: 'SELECT ?name WHERE { ?person foaf:name ?name . }'
+      example: 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \nSELECT * WHERE { ?sub ?pred ?obj . } \nLIMIT 10'
       default: ''
     NodeArray:
       description: Array of nodes with organisation info

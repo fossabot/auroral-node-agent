@@ -39,7 +39,6 @@ export const tdProxyEnrichment =  (td: Thing): Thing => {
             }]
         }
     }
-    console.log(JSON.stringify(td))
     // TBD: Actions? Not yet implemented
     return td
 }

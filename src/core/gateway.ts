@@ -15,7 +15,7 @@ import { wot } from '../microservices/wot'
  
 // CONSTANTS
 
-const RETRY = 5 // Defines number of login attempts on error
+const RETRY = 10 // Defines number of login attempts on error
 
 // Types
 
@@ -34,7 +34,12 @@ type UpdateRet = {
          try {
             const items: string[] = array ? array : await getItem('registrations') as string[]
             await _login_gateway(RETRY)
-            await _login_item(items, RETRY)
+            const errors = await _login_all(items)
+            // Retry items that failed to login
+            if (errors.length > 0) {
+                logger.warn('Some items failed to log in, retrying...')
+                setTimeout(_login_item, 1000, errors)
+            }
          } catch (err) {
              const error = errorHandler(err)
              logger.error(error.message)
@@ -185,7 +190,7 @@ type UpdateRet = {
 }
     
 //  Private functions
-    const _login_gateway = async (retry: number) => {
+    const _login_gateway = async (retry: number = RETRY) => {
             try {
                 if (retry === 0) {
                     logger.error('After ' + RETRY + ' attempts the gateway could not be logged in, please try manually or restart the Node')
@@ -197,12 +202,25 @@ type UpdateRet = {
             } catch (err) {
                 const error = errorHandler(err)
                 logger.error(error.message)
-                logger.error('Retrying gateway with attempt: ' + String(RETRY - retry + 1))
+                logger.warn('Retrying gateway with attempt: ' + String(RETRY - retry + 1))
                 await _login_gateway(retry - 1)
             }
     }
 
-    const _login_item = async (array: string[], retry: number) => {
+    const _login_all = async (array: string[]) => {
+        const errors: string[] = []
+        for (let i = 0, l = array.length; i < l; i++) {
+            try {
+                await gateway.login(array[i]) 
+                logger.info('Item ' + array[i] + ' was successfully logged in')
+            } catch (err) {
+                errors.push(array[i])
+            }
+        }
+        return errors
+    }
+
+    const _login_item = async (array: string[], retry: number = RETRY) => {
         try {
             if (array.length === 0) {
                 logger.debug('Logging items finished')
@@ -214,6 +232,7 @@ type UpdateRet = {
                 await _login_item(array, 5)
                 return
             }
+            logger.warn('Retrying ' + array[0] + ' with attempt: ' + String(RETRY - retry + 1))
             await gateway.login(array[0])
             logger.info('Item ' + array[0] + ' successfully logged in!')
             array.shift()
@@ -222,7 +241,7 @@ type UpdateRet = {
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            logger.error('Retrying ' + array[0] + ' with attempt: ' + String(RETRY - retry + 1))
+            logger.warn('Retrying ' + array[0] + ' with attempt: ' + String(RETRY - retry))
             await _login_item(array, retry - 1)
         }
     }
