@@ -12,6 +12,7 @@ import  { getItem, reloadConfigInfo } from '../persistance/persistance'
 import { security } from './security'
 import { discovery } from './collaboration'
 import { scheduledJobs } from './scheduler'
+import { storeMapping } from './mapping'
  
  /**
   * Initialization process of the agent module;
@@ -72,6 +73,9 @@ export const initialize = async function() {
     // Store configuration info
     await reloadConfigInfo(cid, info.name, info.nodes, partners)
 
+    // Schedule mappings reload
+    setTimeout(_reload_mappings, 5000, registrations)
+
     // Scheduled tasks
     scheduledJobs.start()
 
@@ -92,4 +96,12 @@ export const initialize = async function() {
     await gtwServices.doLogouts(registrations)
     logger.info('Gateway connections closed', 'AGENT')
     return Promise.resolve(true)
+ }
+
+ // Private
+
+ const _reload_mappings = async function(oids: string[]) {
+    for (let i = 0, l = oids.length; i < l; i++) {
+        await storeMapping(oids[i])
+    }
  }

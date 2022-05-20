@@ -38,7 +38,7 @@ type UpdateRet = {
             // Retry items that failed to login
             if (errors.length > 0) {
                 logger.warn('Some items failed to log in, retrying...')
-                setTimeout(_login_item, 1000, errors)
+                setTimeout(_login_item, 2000, errors)
             }
          } catch (err) {
              const error = errorHandler(err)
@@ -208,15 +208,18 @@ type UpdateRet = {
     }
 
     const _login_all = async (array: string[]) => {
-        const errors: string[] = []
-        for (let i = 0, l = array.length; i < l; i++) {
-            try {
-                await gateway.login(array[i]) 
-                logger.info('Item ' + array[i] + ' was successfully logged in')
-            } catch (err) {
-                errors.push(array[i])
-            }
-        }
+        const todos: Array<Promise<any>> = []
+        array.forEach(element => {
+            todos.push(gateway.login(element)
+            .then(() => {
+                return true
+            })
+            .catch(() => {
+                return false 
+            }))
+        })
+        const results = await Promise.all(todos)
+        const errors: string[] = array.filter(item => !results[array.indexOf(item)])
         return errors
     }
 
@@ -229,19 +232,18 @@ type UpdateRet = {
             if (retry === 0) {
                 logger.error('After ' + RETRY + ' attempts item ' + array[0] + ' could not be logged in, please try manually or restart the Node')
                 array.shift()
-                await _login_item(array, 5)
+                await _login_item(array, RETRY)
                 return
             }
-            logger.warn('Retrying ' + array[0] + ' with attempt: ' + String(RETRY - retry + 1))
             await gateway.login(array[0])
             logger.info('Item ' + array[0] + ' successfully logged in!')
             array.shift()
-            await _login_item(array, 5)
+            await _login_item(array, RETRY)
             return
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
-            logger.warn('Retrying ' + array[0] + ' with attempt: ' + String(RETRY - retry))
+            logger.warn('Retrying ' + array[0] + ' with attempt: ' + String(RETRY - retry + 1))
             await _login_item(array, retry - 1)
         }
     }

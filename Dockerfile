@@ -12,14 +12,14 @@ COPY --chown=node:node package*.json tsconfig.json ./
 # INSTALL DEPENDENCIES
 # RUN npm ci --only=production && npm cache clean --force
 RUN npm ci && npm cache clean --force
-# COPY SOURCES
-COPY --chown=node:node dist ./dist
 
 # RUN PHASE
 FROM node:12-slim
 # FROM gcr.io/distroless/nodejs:12-debug
 COPY --from=build-env /app /app
 WORKDIR /app
+# COPY SOURCES
+COPY --chown=node:node dist ./dist
 EXPOSE 3000
 # LABEL
 LABEL maintaner="jorge.almela@bavenir.eu"
