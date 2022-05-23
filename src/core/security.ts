@@ -14,7 +14,7 @@ export const security = {
     cacheItemsPrivacy: async (): Promise<void> => {
         const response = await gateway.getItemsPrivacy()
         const items = response.message ? response.message : []
-        await registrationFuncs.setPrivacy(items)
+        await registrationFuncs.setPrivacyAndStatus(items)
     },
     contractExists: async (cid: string): Promise<boolean> => {
         const ct = await redisDb.get('contract:' + cid)
