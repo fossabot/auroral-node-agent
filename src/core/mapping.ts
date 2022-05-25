@@ -38,7 +38,7 @@ export const storeMapping = async (oid: string) => {
         const mappings = generateMapping(td)
         await Promise.all(mappings.map(async map => {
             logger.info('Storing mapping to redis: ' + map.oid + ' - ' + map.iid)
-            await redisDb.hset(map.oid, map.iid, map.mapping)
+            await redisDb.hset(map.oid, 'mapping:' + map.iid, map.mapping)
         }))
     } catch (err) {
         const error = errorHandler(err)
@@ -50,7 +50,7 @@ export const useMapping = async (oid: string, iid: string, value: any) : Promise
     // retrieve mapping 
     try {
         logger.debug('Getting mapping for: ' + oid + ' ' + iid)
-        const mapping = await redisDb.hget(oid, iid) 
+        const mapping = await redisDb.hget(oid, 'mapping:' + iid) 
         if (!mapping) {
             logger.warning('Mapping not found')
             const defaultObj =  {
@@ -95,7 +95,7 @@ export const removeMapping = async (oid: string) => {
             item.properties.map(async prop => {
                 logger.info('Removing mapping for ' + oid + ' ' + prop)
                 // remove from redis
-                await redisDb.hdel(oid, prop)
+                await redisDb.hdel(oid, 'mapping:' + prop)
             })
         )
    }

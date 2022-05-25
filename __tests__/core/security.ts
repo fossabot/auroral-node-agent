@@ -30,7 +30,7 @@ describe('Secirity core', () => {
     })
     it('Do cacheItemsPrivacy', async () => {
         const spy = jest.spyOn(security, 'cacheItemsPrivacy')
-        jest.spyOn(registrationFuncs, 'setPrivacy').mockResolvedValue()
+        jest.spyOn(registrationFuncs, 'setPrivacyAndStatus').mockResolvedValue()
         await security.cacheItemsPrivacy()
         // expect(response1).toMatchObject([{ oid: 'oid', privacy: 2 }])
         expect(spy).toHaveBeenCalledTimes(1)

@@ -1,4 +1,4 @@
-import { ItemPrivacy } from '../persistance/models/registrations'
+import { ItemPrivacy, ItemStatus } from '../persistance/models/registrations'
 
 export type JsonType<T=any> = {
     [x: string]: T
@@ -29,7 +29,8 @@ export enum RelationshipType{
 // Interface used to get item  privacy value from NM
 export interface IItemPrivacy {
     oid: string, // Auroral Id
-    privacy: ItemPrivacy, // Privacy level of the item
+    privacy: ItemPrivacy, // Privacy level of the item,
+    status?: ItemStatus
 }
 
 // Interfaces for Contracts

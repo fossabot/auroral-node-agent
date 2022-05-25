@@ -24,6 +24,11 @@ export enum ItemPrivacy {
     PRIVATE = 0
 }
 
+export enum ItemStatus {
+    ENABLED = 'Enabled',
+    DISABLED = 'Disabled',
+}
+
 // Labels 
 
 export enum ItemDomainType {
@@ -99,6 +104,7 @@ export interface RegistrationNonSemantic {
     version?: string
     description?: string
     privacy?: string,
+    status?: string
 }
 
 export interface RegistrationSemantic {
@@ -257,6 +263,7 @@ export const registrationFuncs = {
                     version: data.version,
                     description: data.description,
                     privacy: PRIV_ARRAY[Number(data.privacy)],
+                    status: data.status ? data.status : 'Disabled',
                     properties: data.properties ? data.properties.split(',') : undefined,
                     actions: data.actions ? data.actions.split(',') : undefined,
                     events: data.events ? data.events.split(',') : undefined,
@@ -268,10 +275,14 @@ export const registrationFuncs = {
             return redisDb.smembers('registrations')
         }
     },
+  
     // Set item privacy in registration set
-    setPrivacy: async (items: IItemPrivacy[]): Promise<void> => {
+    setPrivacyAndStatus: async (items: IItemPrivacy[]): Promise<void> => {
         await Promise.all(items.map(async it => {
                 await redisDb.hset(it.oid, 'privacy', String(it.privacy))
+                if (it.status) {
+                    await redisDb.hset(it.oid, 'status', String(it.status))
+                } 
             })
         )
         await redisDb.hset('configuration', 'last_privacy_update', new Date().toISOString())

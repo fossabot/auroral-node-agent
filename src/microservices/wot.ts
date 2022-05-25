@@ -192,7 +192,8 @@ const requestSPARQL = async (endpoint: string, method: Method, body?: string, he
     if (response.statusCode === 404) {
         throw new MyError('TD with the given id not found', HttpStatusCode.NOT_FOUND)
     }
-    return response.body as JsonType
+    // return response.body as JsonType
+    return typeof response.body === 'object' ? response.body as JsonType : JSON.parse(response.body as string) as JsonType 
 }
 
 const buildResponse = (message?: string | JsonType | JsonType[]): BasicResponse<any> => {
