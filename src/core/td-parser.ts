@@ -83,6 +83,7 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
                 itemsArray[i].td.adapterId = oid
             }
             // If type is missing, assign Device
+            itemsArray[i].td['@type'] = Array.isArray(itemsArray[i].td['@type']) ? itemsArray[i].td['@type'][0] : itemsArray[i].td['@type']
             itemsArray[i].td['@type'] = itemsArray[i].td['@type'] ? itemsArray[i].td['@type'] : 'Device'
             await wot.upsertTD(oid, { 'id': oid, ...itemsArray[i].td }) // WoT Validation
             registrations.push(_buildTDWoT(oid, itemsArray[i]))
@@ -191,7 +192,7 @@ const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
 
 const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody => {
     // get iids  
-   
+    const type: string = Array.isArray(data.td['@type']) ? data.td['@type'][0] : data.td['@type']
     return {
         oid,
         properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
@@ -202,7 +203,7 @@ const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody =>
         avatar: data.avatar,
         groups: data.groups,
         description: data.td.description,
-        type: data.td['@type'] === 'Service' ? 'Service' : 'Device', // TBD: Everything Device for now (except service)
+        type: type.toLowerCase() === 'service' ? 'Service' : 'Device', // TBD: Everything Device for now (except service)
         adapterId: data.td.adapterId ? data.td.adapterId : oid // TBD: Update this and add groupId or other props when ready
     } as RegistrationBody
 }
