@@ -17,6 +17,7 @@ RUN npm ci && npm cache clean --force
 FROM node:12-slim
 # FROM gcr.io/distroless/nodejs:12-debug
 COPY --from=build-env /app /app
+COPY healthcheck.js /app/healthcheck.js
 WORKDIR /app
 # COPY SOURCES
 COPY --chown=node:node dist ./dist

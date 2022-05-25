@@ -1,16 +1,15 @@
 /* eslint-disable no-multi-str */
 import Mustache from 'mustache'
 import { logger, errorHandler, HttpStatusCode, MyError } from '../utils'
-
 import { wot } from '../microservices/wot'
-import { InteractionMapping, JsonType, ThingMapping } from '../types/misc-types'
+import { InteractionMapping, JsonType } from '../types/misc-types'
 import { Thing } from '../types/wot-types'
 import { redisDb } from '../persistance/redis'
 import { getItem } from '../persistance/persistance'
 import { RegistrationNonSemantic } from '../persistance/models/registrations'
 
 const thingMappingBase = 
-'{"@context": "{ \
+'{"@context": { \
     "@vocab" : "https://saref.etsi.org/core/", \
     "core" : "https://auroral.iot.linkeddata.es/def/core#", \
     "oid" : "@id", \
@@ -18,7 +17,7 @@ const thingMappingBase =
     "@id" : "https://saref.etsi.org/core/aboutProperty", \
     "@type" : "@id" \
     } \
-    }",\
+    },\
 "@type": "{{{@type}}}",\
 "oid": "{{{id}}}",\
 "iid": "{{{iid}}}",\
@@ -46,19 +45,20 @@ export const storeMapping = async (oid: string) => {
     }
 }
 
-export const useMapping = async (oid: string, iid: string, value: any) : Promise<JsonType> => {
+export const useMapping = async (oid: string, iid: string, value: any, timestamp?: string) : Promise<JsonType> => {
     // retrieve mapping 
     try {
         logger.debug('Getting mapping for: ' + oid + ' ' + iid)
         const mapping = await redisDb.hget(oid, 'mapping:' + iid) 
         if (!mapping) {
-            logger.warning('Mapping not found')
+            logger.warn('Mapping not found')
             const defaultObj =  {
                 type: 'unknown',
                 value: value,
-                timestamp: new Date().toISOString()
+                // Use timestamp if provided - else us now
+                timestamp: timestamp ? timestamp : new Date().toISOString()
             }
-            return JSON.parse(Mustache.render(thingMappingBase, { oid, type: 'unknown', iid, makesMeasurement: '[' + Mustache.render(propertyMappingBase, defaultObj) + ']' }))
+            return JSON.parse(Mustache.render(thingMappingBase, { id: oid, '@type': 'unknown', iid, measurements: '[' + Mustache.render(propertyMappingBase, defaultObj) + ']' }))
         }
         // enrich using mustache
         // const mappingValuesNum = (mapping.match(/{{{value/g) || []).length
@@ -78,8 +78,38 @@ export const useMapping = async (oid: string, iid: string, value: any) : Promise
         // } else {
         // expected only one value
         const parsedVal = typeof value === 'object' ?  JSON.stringify(value) : '"' + value + '"'
-        return JSON.parse(Mustache.render(mapping, { value: parsedVal, timestamp: new Date().toISOString() }))
+        return JSON.parse(Mustache.render(mapping, { value: parsedVal, timestamp: timestamp ? timestamp : new Date().toISOString() }))
         // }
+    } catch (err) {
+        const error = errorHandler(err)
+        throw new MyError('Mapping and value incompatibility: ' + error.message, HttpStatusCode.BAD_REQUEST)
+    }
+}
+
+export const useMappingArray = async (oid: string, iid: string, values: JsonType) : Promise<JsonType> => {
+    try {
+        const mappingsArray : JsonType[] = [] 
+        for (const value of Array.isArray(values) ? values : [values]) {
+            const keys = Object.keys(value)
+            const timestamp = value.timestamp ? value.timestamp : new Date().toISOString()
+            // CHECK: timestamp is required 
+            if (!value.timestamp && iid === 'getHistorical') {
+                throw new MyError('Please provide timestamps for each measurement')
+            }
+            for (const key of keys) {
+               const obj = value[key]
+               if (key !== 'timestamp') {
+                    mappingsArray.push(await useMapping(oid, key, obj, timestamp))
+                }
+            }
+        }
+        let finalMapping = {} as JsonType
+        if (mappingsArray.length !== 0) { 
+            finalMapping = mappingsArray[0]
+            finalMapping.makesMeasurement = mappingsArray.map((m =>  m.makesMeasurement[0]))
+            finalMapping.iid = iid
+        }
+        return finalMapping
     } catch (err) {
         const error = errorHandler(err)
         throw new MyError('Mapping and value incompatibility: ' + error.message, HttpStatusCode.BAD_REQUEST)
