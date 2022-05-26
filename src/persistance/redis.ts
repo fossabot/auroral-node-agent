@@ -94,7 +94,7 @@ export const redisDb = {
            logger.error(err.message)
            reject(err)
          } else {
-           logger.debug('Redis is ready: ' + reply)
+          //  logger.debug('Redis is ready: ' + reply)
            resolve(true)
          }
        })
