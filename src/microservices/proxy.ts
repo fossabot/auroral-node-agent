@@ -88,6 +88,7 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
     try {
         return JSON.parse(response.body)
     } catch (err: unknown) {
+        logger.warn('Body is not in JSON format')
         return response.body
     }
 }

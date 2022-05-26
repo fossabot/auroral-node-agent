@@ -77,7 +77,7 @@ export const useMapping = async (oid: string, iid: string, value: any, timestamp
         //     return JSON.parse(Mustache.render(mapping, { ...measurementsMapping, timestamp: new Date().toISOString() }))
         // } else {
         // expected only one value
-        const parsedVal = typeof value === 'object' ?  JSON.stringify(value) : '"' + value + '"'
+        const parsedVal = JSON.stringify(value)
         return JSON.parse(Mustache.render(mapping, { value: parsedVal, timestamp: timestamp ? timestamp : new Date().toISOString() }))
         // }
     } catch (err) {
