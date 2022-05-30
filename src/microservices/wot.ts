@@ -54,7 +54,7 @@ export const wot = {
     upsertTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request(`api/things/${oid}`, 'PUT', body, ApiHeader)
-            return buildResponse()
+            return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Object ' + oid + ' was not registered ...')

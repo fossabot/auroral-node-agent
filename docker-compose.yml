@@ -71,7 +71,7 @@ services:
     ports:
       - '3030:3030'
   wothive:
-    image: acimmino/wot-hive:latest
+    image: acimmino/wot-hive:0.2.3
     # volumes:
     #   - ./wothive/configuration.json:/usr/src/wothive/configuration.json
     ports:
