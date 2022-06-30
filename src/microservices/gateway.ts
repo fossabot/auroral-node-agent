@@ -504,21 +504,6 @@ export const gateway = {
     },
 
     /**
-    * Get a relationship with CID or OID
-    * @async
-    * @param {rid: string}
-    * @returns {error: boolean, message: object} 
-    */
-    getRelationship: async function (rid: string): Promise<BasicResponse<RelationshipType>> {
-        try {
-            const Authorization = await getAuthorization()
-            return request(`security/relationship/${rid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<RelationshipType>
-        } catch (err) {
-            const error = errorHandler(err)
-            throw new MyError(error.message, error.status)
-        }
-    },
-    /**
     * Get a privacy status of all node items
     * @async
     * @param 
