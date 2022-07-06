@@ -17,7 +17,6 @@ redis/data
 .token
 
 # Tests
-coverage/
 .scannerwork/
 performance/*
 !performance/*.yml
