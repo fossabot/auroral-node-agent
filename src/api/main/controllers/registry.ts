@@ -91,6 +91,11 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
             })
           )
         }
+        
+        // Generate mappings (without await to speedup)
+        result.registrations.forEach(r => {
+          storeMapping(r.oid)
+        })
 
         // Build final response
         const response = [...items.errors, ...result.registrations, ...result.errors]
@@ -99,16 +104,7 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
         const error = errorHandler(err)
         logger.error(error.message)
         return responseBuilder(error.status, res, error.message)
-	} finally {
-        // Create mappings
-        if (Config.WOT.ENABLED) {
-          const data = req.body as unknown as RegistrationJSONTD | RegistrationJSONTD[]
-          const itemsArray = Array.isArray(data) ? data : [data]
-          for (const reg of itemsArray) {
-              await storeMapping(reg.oid!)          
-          }
-      }
-  }
+	} 
 }
 
 type modifyRegistrationCtrl = expressTypes.Controller<{}, UpdateJSON | UpdateJSON[] | UpdateJSONTD | UpdateJSONTD[], {}, UpdateResult[], {}>

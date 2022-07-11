@@ -126,7 +126,7 @@ export const wot = {
             return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
-            logger.warn('Problem retrieving TD of object with id ' + oid + '...')
+            logger.warn('Problem retrieving TD of object with id ' + oid + ':' + error.message)
             throw new MyError(error.message, error.status)
         }
     },
