@@ -105,7 +105,7 @@ export const postRegistrations: postRegistrationsCtrl = async (req, res) => {
           const data = req.body as unknown as RegistrationJSONTD | RegistrationJSONTD[]
           const itemsArray = Array.isArray(data) ? data : [data]
           for (const reg of itemsArray) {
-              await storeMapping(reg.td.id!)          
+              await storeMapping(reg.oid!)          
           }
       }
   }
