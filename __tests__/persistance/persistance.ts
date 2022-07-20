@@ -90,6 +90,7 @@ describe('Persistance Methods', () => {
                                 'events': undefined, 
                                 'name': undefined,
                                 'privacy': undefined,
+                                'status': 'Disabled',
                                 'properties': undefined,
                                 'type': undefined,
                                 'version': undefined })

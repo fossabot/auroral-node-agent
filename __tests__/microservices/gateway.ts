@@ -285,18 +285,6 @@ describe('Gateway Microservice', () => {
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
-    it('Do getRelationship', async () => {
-        const spy = jest.spyOn(gateway, 'getRelationship')
-        const response = await gateway.getRelationship('rid')
-        expect(response).toEqual('GetRelationship succesful')
-        got.__toFail()
-        try {
-            await gateway.getRelationship('rid')
-        } catch (error) {
-            expect((error as Error).message).toMatch('MOCKED ERROR')
-        }
-        expect(spy).toHaveBeenCalledTimes(2)
-    })
     it('Do getItemsPrivacy', async () => {
         const spy = jest.spyOn(gateway, 'getItemsPrivacy')
         const response = await gateway.getItemsPrivacy()

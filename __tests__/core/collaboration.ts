@@ -5,7 +5,7 @@ jest.mock('redis')
 
 /* eslint-disable import/order */
 /* eslint-disable import/first */
-import { discovery } from '../../src/core/discovery'
+import { discovery } from '../../src/core/collaboration'
 import * as  gateway  from '../../src/microservices/gateway'
 import redis from '../../__mocks__/redis'
 

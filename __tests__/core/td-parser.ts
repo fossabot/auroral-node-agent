@@ -187,13 +187,13 @@ describe('td-parser core', () => {
         // 4
         jest.spyOn(myPersistance, 'getItem').mockResolvedValue(['123'])
         const result4 = await td.tdParserUpdateWot([itemTd])
-        expect(JSON.stringify(result4.updates)).toMatch('DASHBOARD')
+        expect(JSON.stringify(result4.updates)).toMatch('[]')
         // 5
         jest.spyOn(myPersistance, 'sameAdapterId').mockImplementation(async() => {
             throw new Error('TEST')
         })
         const result5 = await td.tdParserUpdateWot([itemTd])
-        expect(JSON.stringify(result5)).toMatch('TEST')
+        expect(JSON.stringify(result5)).toContain('Old TD not found')
         expect(spy).toHaveBeenCalledTimes(5)
     })
 })

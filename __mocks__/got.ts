@@ -7,6 +7,7 @@ const got = jest.createMockFromModule('got') as any
 function extend() {
         return async (uri: string, body: { method: string }) => {
             if (!fail) {
+                console.log(body.method + uri)
                 return Promise.resolve({ body: responses[body.method + uri], statusCode: 200 })
             } else {
                 throw new Error('MOCKED ERROR')
@@ -45,6 +46,8 @@ const responses: JsonType = {
     'GETsecurity/relationship/rid': 'GetRelationship succesful',
     'GETsecurity/privacy': 'GetItemsPrivacy succesful',
     'GETsecurity/contracts/cid': { message: 'GetContracts succesful' },
+    'POSTapi/search/sparql': { test: 'testString' },
+    'GETapi/things/oid1': { test: 'testString' },
     // objects/login
 }
 
