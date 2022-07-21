@@ -21,7 +21,7 @@ enum registrationAndInteractions {
 
 type configurationCtrl = expressTypes.Controller<{}, {}, {}, Configuration, {}>
  
-export const getConfiguration: configurationCtrl = async (req, res) => {
+export const getConfiguration: configurationCtrl = async (_req, res) => {
     try {
         const config = await persistance.getConfigInfo()
         logger.info('Requested configuration file')
@@ -35,7 +35,7 @@ export const getConfiguration: configurationCtrl = async (req, res) => {
 
 type importsCtrl = expressTypes.Controller<{}, {}, {}, null, {}>
  
-export const importFiles: importsCtrl = async (req, res) => {
+export const importFiles: importsCtrl = async (_req, res) => {
     try {
                 // await persistance.loadConfigurationFile(registrationAndInteractions.PROPERTIES)
                 // await persistance.loadConfigurationFile(registrationAndInteractions.EVENTS)
@@ -67,7 +67,7 @@ export const exportFiles: exportsCtrl = async (req, res) => {
 
 type healthCheckCtrl = expressTypes.Controller<{}, {}, {}, { Redis: string, Gateway: string, NodeApp: string }, {}>
  
-export const healthCheck: healthCheckCtrl = async (req, res) => {
+export const healthCheck: healthCheckCtrl = async (_req, res) => {
     try {
         const redisHealth = await persistance.redisHealth()
         const gtwHealth = !(await gateway.health()).error ? 'OK' : 'DOWN'

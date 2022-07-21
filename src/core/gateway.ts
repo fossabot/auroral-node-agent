@@ -2,8 +2,6 @@
  * Gateway services
  * Implements support functionality
  */
-
-import { timeout } from 'cron'
  import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
  import { gateway } from '../microservices/gateway'
  import { addItem,  getItem, updateItem } from '../persistance/persistance'

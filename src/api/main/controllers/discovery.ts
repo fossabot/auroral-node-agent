@@ -76,7 +76,7 @@ type organisationItemsCtrl = expressTypes.Controller<{}, {}, {}, string[], {}>
  * Discovery endpoint LOCAL
  * Check what remote items can you see in an organisation
  */
-    export const getOrganisationItems: organisationItemsCtrl = async (req, res) => {
+    export const getOrganisationItems: organisationItemsCtrl = async (_req, res) => {
         try {
             const data = (await gateway.organisationItems()).message
             return responseBuilder(HttpStatusCode.OK, res, null, data)

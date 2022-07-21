@@ -6,7 +6,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, IItemPrivacy, RelationshipType, WholeContractType, CommunityType } from '../types/misc-types'
+import { JsonType, IItemPrivacy, WholeContractType, CommunityType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
 import { GtwDeleteResponse, GatewayResponse, RemovalBody, GtwRegistrationResponse, GtwUpdateResponse, IdDiscoveryType, BasicResponse, GtwGetRegistrationsResponse, NodeType } from '../types/gateway-types'

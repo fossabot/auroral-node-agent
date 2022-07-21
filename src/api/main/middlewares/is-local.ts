@@ -23,7 +23,7 @@ import { Config } from '../../../config'
  
  export const isLocal = (type: SemanticType) => {
      return function (req, res, next) {
-         const { id, originId } = req.params
+         const { id } = req.params
          const body = req.body
          isRegistered(id)
          .then((local) => { 

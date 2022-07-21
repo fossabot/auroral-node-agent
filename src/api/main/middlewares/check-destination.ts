@@ -23,7 +23,7 @@ type checkDestinationController = expressTypes.Controller<{ id: string, oid: str
 
 export const checkDestination = (method: Method) => {
     return function (req, res, next) {
-        const { id, oid, pid } = req.params
+        const { oid, pid } = req.params
         const body = req.body
         isRegistered(oid)
         .then((local) => { 

@@ -64,7 +64,7 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
         }
     })
     // Collect all adapterIDs
-    const adapterIDs = itemsArray.map(it => it.td.adapterId).filter(it => it) as string[]
+    const adapterIDs = itemsArray.map(it => it.td.adapterId).filter(it => it) 
     const registrations: RegistrationBody[] = []
     const errors: RegistrationResultPost[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
@@ -151,7 +151,7 @@ export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): P
                 throw new MyError('Old TD not found')
             }
             // Verify iid are not duplicated (unique pids, aids and eids) + generate new (if necessary)
-            it.td = await _standardize_td(it.td)
+            it.td = _standardize_td(it.td)
             // If adapterId = undefined, use old one
             it.td.adapterId = it.td.adapterId ? it.td.adapterId : oldTD.adapterId 
             // Check that adapterId does not change

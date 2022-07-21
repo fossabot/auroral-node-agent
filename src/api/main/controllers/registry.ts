@@ -14,8 +14,8 @@ import { removeItem, getOidByAdapterId } from '../../../persistance/persistance'
 import { tdParser, tdParserUpdate, tdParserUpdateWot, tdParserWoT } from '../../../core/td-parser'
 import { Config } from '../../../config'
 import { wot } from '../../../microservices/wot'
-import { JsonType, RemoveResult, UpdateResult } from '../../../types/misc-types'
-import { removeMapping, storeMapping, useMapping } from '../../../core/mapping'
+import { RemoveResult, UpdateResult } from '../../../types/misc-types'
+import { removeMapping, storeMapping } from '../../../core/mapping'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -30,7 +30,7 @@ type getRegistrationsCtrl = expressTypes.Controller<{}, {}, {}, string[], {}>
 /**
  * Retrieve things registered in the platform
  */
-export const getRegistrations: getRegistrationsCtrl = async (req, res) => {
+export const getRegistrations: getRegistrationsCtrl = async (_req, res) => {
 	try {
     const data = (await gateway.getRegistrations()).message
     return responseBuilder(HttpStatusCode.OK, res, null, data)

@@ -63,27 +63,27 @@ export const security = {
         }
     },
     updItemInContract: async (data: ContractItemType): Promise<void> => {
-        if (data.ctid && data.oid && data.cid) {
-            // Check if contract is stored in node
-            const ctid = await redisDb.get('contract:' + data.cid)
-            if (ctid && ctid !== 'NOT_EXISTS') {
-                // If rw property is false or missing --> set to 'false'
-                const rw = data.rw ? 'true' : 'false'
-                await redisDb.hdel(data.ctid, data.oid)
-                if (await redisDb.hset(data.ctid, data.oid, rw)) {
-                    logger.info('Contract ' + data.ctid + ' was updated')
-                } else {
-                    logger.warn('Contract ' + data.ctid + ' could not be updated...')
-                }
+        if (!(data.ctid && data.oid && data.cid)) {
+            logger.warn('Missing oid or ctid or cid, could not update item in contract...')
+            return
+        }
+        // Check if contract is stored in node
+        const ctid = await redisDb.get('contract:' + data.cid)
+        if (ctid && ctid !== 'NOT_EXISTS') {
+            // If rw property is false or missing --> set to 'false'
+            const rw = data.rw ? 'true' : 'false'
+            await redisDb.hdel(data.ctid, data.oid)
+            if (await redisDb.hset(data.ctid, data.oid, rw)) {
+                logger.info('Contract ' + data.ctid + ' was updated')
             } else {
-                if (await downloadContract(data.cid)) {
-                    logger.info('Contract downloaded and stored: ' + data.ctid)
-                } else {
-                    logger.warn('Contract could not be downloaded: ' + data.ctid)
-                }
+                logger.warn('Contract ' + data.ctid + ' could not be updated...')
             }
         } else {
-            logger.warn('Missing oid or ctid or cid, could not update item in contract...')
+            if (await downloadContract(data.cid)) {
+                logger.info('Contract downloaded and stored: ' + data.ctid)
+            } else {
+                logger.warn('Contract could not be downloaded: ' + data.ctid)
+            }
         }
     },
     delItemInContract: async (data: ContractItemType): Promise<void> => {

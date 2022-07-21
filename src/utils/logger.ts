@@ -64,6 +64,5 @@ export const logger = createLogger({
 })
 
 function parseMsg(x: any) {
-  const y = typeof x === 'object' ? JSON.stringify(x) : x
-  return y
+  return typeof x === 'object' ? JSON.stringify(x) : x
 }

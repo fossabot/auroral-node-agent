@@ -127,7 +127,7 @@ const thingDiscovery = async(oid: string, origindId: string, relationship: Relat
  * @param items 
  * @returns 
  */
-const semanticDiscovery = async (oid: string, originId: string, relationship: string, sparql: string, items?: string[]) => {
+const semanticDiscovery = async (oid: string, _originId: string, relationship: string, sparql: string, items?: string[]) => {
     try {
         if (Config.GATEWAY.ID !== oid) {
             throw new Error('Sparql query has to be address to a AGID')

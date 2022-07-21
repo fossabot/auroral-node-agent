@@ -22,8 +22,8 @@ enum XmppNotificationTypes {
 const XMPP_USER = 'auroral-dev-user'
 
 export const listenForNotifications = () => {
-    return function (req, res, next) {
-        const { agid, nid } = req.params
+    return function (req, res, _next) {
+        const { nid } = req.params
         const data = req.body
         const sourceoid = req.headers.sourceoid as string
         if (sourceoid === XMPP_USER) {

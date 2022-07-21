@@ -9,24 +9,26 @@ import { getItem } from '../persistance/persistance'
 import { RegistrationNonSemantic } from '../persistance/models/registrations'
 
 const thingMappingBase = 
-'{"@context": { \
-    "@vocab" : "https://saref.etsi.org/core/", \
-    "core" : "https://auroral.iot.linkeddata.es/def/core#", \
-    "oid" : "@id", \
-    "aboutProperty" : { \
-    "@id" : "https://saref.etsi.org/core/aboutProperty", \
-    "@type" : "@id" \
-    } \
-    },\
-"@type": "{{{@type}}}",\
-"oid": "{{{id}}}",\
-"iid": "{{{iid}}}",\
-"makesMeasurement": {{{measurements}}} }' 
+'{' + 
+'"@context": { ' + 
+'"@vocab" : "https://saref.etsi.org/core/", ' + 
+'"core" : "https://auroral.iot.linkeddata.es/def/core#", ' + 
+'"oid" : "@id", ' + 
+'"aboutProperty" : { ' + 
+'"@id" : "https://saref.etsi.org/core/aboutProperty", ' + 
+'"@type" : "@id" ' + 
+'} ' + 
+'},' + 
+'"@type": "{{{@type}}}",' + 
+'"oid": "{{{id}}}",' + 
+'"iid": "{{{iid}}}",' + 
+'"makesMeasurement": {{{measurements}}}' 
++ '}' 
 
 const propertyMappingBase = 
-'{"aboutProperty": "{{{type}}}",\
-"hasValue": {{{value}}},\
-"hasTimestamp": "{{{timestamp}}}"}' 
+'{"aboutProperty": "{{{type}}}",' +
+'"hasValue": {{{value}}},' +
+'"hasTimestamp": "{{{timestamp}}}"}' 
 
 export const storeMapping = async (oid: string) => {
     try {

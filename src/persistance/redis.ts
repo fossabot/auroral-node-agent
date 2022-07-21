@@ -89,7 +89,7 @@ export const redisDb = {
     */
    health: (): Promise<boolean> => {
      return new Promise((resolve, reject) => {
-       client.ping((err, reply) => {
+       client.ping((err, _reply) => {
          if (err) {
            logger.error(err.message)
            reject(err)
@@ -109,7 +109,7 @@ export const redisDb = {
     * @returns {string}
     */
    save: (): Promise<string | boolean> => {
-     return new Promise((resolve, reject) => {
+     return new Promise((resolve, _reject) => {
        client.save((err, reply) => {
          if (err) {
            logger.warn(err)
@@ -134,7 +134,7 @@ export const redisDb = {
     */
    set: (key: string, item: string, ttl: number): Promise<boolean> => {
      return new Promise((resolve, reject) => {
-       client.set(key, item, 'EX', ttl, (err, reply) => {
+       client.set(key, item, 'EX', ttl, (err, _reply) => {
          if (err) {
            logger.error(err.message)
            reject(err)
@@ -153,7 +153,7 @@ export const redisDb = {
     */
    remove: (key: string): Promise<boolean> => {
      return new Promise((resolve, reject) => {
-       client.del(key, (err, reply) => {
+       client.del(key, (err, _reply) => {
          if (err) {
            logger.error(err.message)
            reject(err)

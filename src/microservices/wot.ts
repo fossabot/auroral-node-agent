@@ -69,7 +69,7 @@ export const wot = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-    createTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
+    createTD: async function(oid: string, _body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request('api/things/', 'POST', undefined, ApiHeader)
             return buildResponse(response)
@@ -86,7 +86,7 @@ export const wot = {
      * @param {oid: string}
      * @returns {error: boolean, message: string} 
      */
-     updatePartialTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
+     updatePartialTD: async function(oid: string, _body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request(`api/things/${oid}`, 'PATCH', undefined, ApiHeader)
             return buildResponse(response)

@@ -11,7 +11,7 @@ import { WholeContractType, CommunityType } from '../../../types/misc-types'
 
 type getPartnersCtrl = expressTypes.Controller<{}, {}, {},  string[] , {}>
  
-export const getPartners: getPartnersCtrl = async (req, res) => {
+export const getPartners: getPartnersCtrl = async (_req, res) => {
         try {
                 const partners = await discovery.getPartners()
                 return responseBuilder(HttpStatusCode.OK, res, null, partners)
@@ -52,7 +52,7 @@ export const getContract: getContractCtrl = async (req, res) => {
 
 type getCommunitiesCtrl = expressTypes.Controller<{}, {}, {}, CommunityType[], {}>
  
-export const getCommunities: getCommunitiesCtrl = async (req, res) => {
+export const getCommunities: getCommunitiesCtrl = async (_req, res) => {
     try {
         const result = await discovery.getCommunities()
         return responseBuilder(HttpStatusCode.OK, res, null, result)

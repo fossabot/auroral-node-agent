@@ -16,7 +16,6 @@ type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, {
  
 export const getProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
-  const { originId } = res.locals
 	try {
     logger.info('Requested READ property ' + pid + ' from ' + oid)
     const data = await Data.readProperty(oid, pid)
@@ -31,7 +30,6 @@ export const getProperty: PropertyCtrl = async (req, res) => {
 export const setProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
   const body = req.body
-  const { originId } = res.locals
 	try {
     logger.info('Requested UPDATE property ' + pid + ' from ' + oid)
     const data = await Data.updateProperty(oid, pid, body)

@@ -31,7 +31,6 @@ export const tdProxyEnrichment =  (td: Thing): Thing => {
     // Events
     if (td.events) {
         for (let i = 0; i < Object.keys(td.events).length; i++) {
-            const object = td.events[Object.keys(td.events)[i]]
             td.events[Object.keys(td.events)[i]].forms = 
             [{ 
                 op: ['subscribeevent'], 
