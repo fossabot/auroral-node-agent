@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">93.13% </span>
+                <span class="strong">92.23% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>95/102</span>
+                <span class='fraction'>95/103</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.56% </span>
+                <span class="strong">90.47% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>76/83</span>
+                <span class='fraction'>76/84</span>
             </div>
         
             
@@ -282,6 +282,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">3x</span>
@@ -299,9 +302,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
@@ -434,27 +434,27 @@ export const security = {
         }
     },
     updItemInContract: async (data: ContractItemType): Promise&lt;void&gt; =&gt; {
-        if (<span class="missing-if-branch" title="if path not taken" >I</span>data.ctid &amp;&amp; data.oid &amp;&amp; data.cid) {
-            // Check if contract is stored in node
-            const ctid = await redisDb.get('contract:' + data.cid)
-            if (ctid &amp;&amp; ctid !== 'NOT_EXISTS') {
-                // If rw property is false or missing --&gt; set to 'false'
-                const rw = data.rw ? <span class="branch-0 cbranch-no" title="branch not covered" >'true' </span>: 'false'
-                await redisDb.hdel(data.ctid, data.oid)
-                if (await redisDb.hset(data.ctid, data.oid, rw)) {
-                    logger.info('Contract ' + data.ctid + ' was updated')
-                } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >                    logger.warn('Contract ' + data.ctid + ' could not be updated...')</span>
-                }
-            } else {
-                if (await downloadContract(data.cid)) {
-                    logger.info('Contract downloaded and stored: ' + data.ctid)
-                } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >                    logger.warn('Contract could not be downloaded: ' + data.ctid)</span>
-                }
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (!(data.ctid &amp;&amp; data.oid &amp;&amp; data.cid)) {
+<span class="cstat-no" title="statement not covered" >            logger.warn('Missing oid or ctid or cid, could not update item in contract...')</span>
+<span class="cstat-no" title="statement not covered" >            return</span>
+        }
+        // Check if contract is stored in node
+        const ctid = await redisDb.get('contract:' + data.cid)
+        if (ctid &amp;&amp; ctid !== 'NOT_EXISTS') {
+            // If rw property is false or missing --&gt; set to 'false'
+            const rw = data.rw ? <span class="branch-0 cbranch-no" title="branch not covered" >'true' </span>: 'false'
+            await redisDb.hdel(data.ctid, data.oid)
+            if (await redisDb.hset(data.ctid, data.oid, rw)) {
+                logger.info('Contract ' + data.ctid + ' was updated')
+            } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >                logger.warn('Contract ' + data.ctid + ' could not be updated...')</span>
             }
         } else {
-<span class="cstat-no" title="statement not covered" >            logger.warn('Missing oid or ctid or cid, could not update item in contract...')</span>
+            if (await downloadContract(data.cid)) {
+                logger.info('Contract downloaded and stored: ' + data.ctid)
+            } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >                logger.warn('Contract could not be downloaded: ' + data.ctid)</span>
+            }
         }
     },
     delItemInContract: async (data: ContractItemType): Promise&lt;void&gt; =&gt; {
@@ -529,7 +529,7 @@ const removeContractInfo = async (ctid: string) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Wed Jul 20 2022 14:03:59 GMT+0200 (Central European Summer Time)
+                at Thu Jul 21 2022 12:10:45 GMT+0200 (Central European Summer Time)
             </div>
         <script src="../../prettify.js"></script>
         <script>
