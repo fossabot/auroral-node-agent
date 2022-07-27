@@ -328,10 +328,10 @@ export const gateway = {
      * @param {oid: string, remote_oid: string, pid: string}
      * @returns {error: boolean, message: object} 
      */
-    getProperty: async function(oid: string, remote_oid: string, pid: string): Promise<GatewayResponse> {
+    getProperty: async function(oid: string, remote_oid: string, pid: string, reqParams: JsonType): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`objects/${remote_oid}/properties/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
+            return request(`objects/${remote_oid}/properties/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization }, reqParams) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)
@@ -345,10 +345,10 @@ export const gateway = {
      * @param {oid: string, remote_oid: string, pid: string, body: json}
      * @returns {error: boolean, message: object} 
      */
-    putProperty: async function(oid: string, remote_oid: string, pid: string, body: JsonType): Promise<GatewayResponse> {
+    putProperty: async function(oid: string, remote_oid: string, pid: string, body: JsonType, reqParams: JsonType): Promise<GatewayResponse> {
         try {
             const Authorization = await getAuthorization(oid)
-            return request(`objects/${remote_oid}/properties/${pid}`, 'PUT', body, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
+            return request(`objects/${remote_oid}/properties/${pid}`, 'PUT', body, { ...ApiHeader, Authorization }, reqParams) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)
@@ -550,7 +550,7 @@ const getAuthorization = async (oid?: string): Promise<string> => {
     }
 }
 
-const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<{ message: JsonType[] | JsonType, error: boolean}> => {
+const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType): Promise<{ message: JsonType[] | JsonType, error: boolean}> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     return response.body
 }

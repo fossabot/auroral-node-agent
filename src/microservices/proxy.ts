@@ -52,9 +52,9 @@ export const proxy = {
      * @param method 
      * @returns 
      */ 
-    sendMessageViaProxy: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
+    sendMessageViaProxy: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
         logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + iid)
-        return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization })
+        return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization }, reqParams)
     },
     /**
      * Access adapter to get interaction info
@@ -64,14 +64,14 @@ export const proxy = {
      * @param method 
      * @returns 
      */ 
-     sendMessageViaWot: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> {
+     sendMessageViaWot: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
         const thing = (await wot.retrieveTD(oid)).message
         if (thing) {
             const forms = getInteractionsForms(interaction, thing, iid)
             if (forms) {
                 const url = forms[0].href
                 const headers = validateContentType(forms[0].contentType)
-                return requestSemantic(url , method, body, { ...headers, Authorization })
+                return requestSemantic(url , method, body, { ...headers, Authorization }, reqParams)
             } else {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + iid + ' does not specify url to access data...' })
             }
@@ -83,7 +83,7 @@ export const proxy = {
 
 // PRIVATE FUNCTIONS
 
-const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {
+const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType): Promise<any> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     try {
         return JSON.parse(response.body)
@@ -93,7 +93,7 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
     }
 }
 
-const requestSemantic = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string): Promise<any> => {
+const requestSemantic = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType): Promise<any> => {
     const response = await callSemantic(endpoint, { method, json, headers, searchParams })
     try {
         return JSON.parse(response.body)

@@ -13,15 +13,16 @@ import { Config } from '../../../config'
 
 // ***** Consume remote resources *****
 
-type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, {}, {}, any, {}>
+type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, {}, JsonType, any, {}>
 
 /**
  * Request remote property
  */
  export const getProperty: getPropertyCtrl = async (req, res) => {
     const { id, oid, pid } = req.params
+    const reqParams = req.query
       try {
-        const data = await gateway.getProperty(id, oid, pid)
+        const data = await gateway.getProperty(id, oid, pid, reqParams)
         // Parse response to get only the final payload
         if (data.error) {
           const response: string = data.statusCodeReason
@@ -39,7 +40,7 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
       }
   }
 
-type setPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, JsonType, {}, GatewayResponse, {}>
+type setPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, JsonType, JsonType, GatewayResponse, {}>
 
 /**
  * Set remote property
@@ -47,12 +48,13 @@ type setPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
 export const setProperty: setPropertyCtrl = async (req, res) => {
     const { id, oid, pid } = req.params
     const body = req.body
+    const reqParams = req.query
     try {
       if (!body) {
         logger.warn('Missing body')
         return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
       }
-      const data = await gateway.putProperty(id, oid, pid, body)
+      const data = await gateway.putProperty(id, oid, pid, body, reqParams)
       // Parse response to get only the final payload
       if (data.error) {
         const response: string = data.statusCodeReason

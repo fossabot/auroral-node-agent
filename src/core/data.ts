@@ -34,11 +34,11 @@ export enum Interaction {
 // Public Methods
 
 export const Data = {
-    readProperty: async (oid: string, pid: string) => {
-        return reachAdapter(oid, pid, Method.GET, Interaction.PROPERTY)
+    readProperty: async (oid: string, pid: string, reqParams: JsonType) => {
+        return reachAdapter(oid, pid, Method.GET, Interaction.PROPERTY, undefined,  reqParams)
     },
-    updateProperty: async (oid: string, pid: string, body: JsonType) => {
-        return reachAdapter(oid, pid, Method.PUT, Interaction.PROPERTY, body)
+    updateProperty: async (oid: string, pid: string, body: JsonType, reqParams: JsonType) => {
+        return reachAdapter(oid, pid, Method.PUT, Interaction.PROPERTY, body, reqParams)
     },
     receiveEvent: async (oid: string, eid: string, body: JsonType) => {
         return reachAdapter(oid, eid, Method.PUT, Interaction.EVENT, body)
@@ -63,7 +63,7 @@ export const Data = {
  * @param body 
  * @returns 
  */
-const reachAdapter = async (oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise<JsonType> => {
+const reachAdapter = async (oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> => {
         if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
             if (interaction === Interaction.EVENT) {
                 logger.info('Event received in dummy mode...')
@@ -74,7 +74,7 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
             }
         } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
             return iid && method ?
-                proxy.sendMessageViaWot(oid, iid, method, interaction, body) :
+                proxy.sendMessageViaWot(oid, iid, method, interaction, body, reqParams) :
                 Promise.resolve({ success: false, message: 'Missing parameters' })
         } else {
             if (!(iid && method)) {
@@ -84,13 +84,13 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
             if (Config.WOT.ENABLED && Config.ADAPTER.USE_MAPPING && interaction !== Interaction.EVENT) {
                 // property mappings
                 if (iid === 'getAll' || iid === 'getHistorical') {
-                    return useMappingArray(oid, iid, await proxy.sendMessageViaProxy(oid, iid, method, interaction, body))
+                    return useMappingArray(oid, iid, await proxy.sendMessageViaProxy(oid, iid, method, interaction, body, reqParams))
                 } else {
-                    return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, body))
+                    return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, body, reqParams))
                 }
             } else {
                 // event or Mapping off
-                return proxy.sendMessageViaProxy(oid, iid, method, interaction, body)
+                return proxy.sendMessageViaProxy(oid, iid, method, interaction, body, reqParams)
             }
         }
 }
