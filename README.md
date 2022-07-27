@@ -2,6 +2,7 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/AuroralH2020/auroral-node-agent)
 ![GitHub issues](https://img.shields.io/github/issues-raw/AuroralH2020/auroral-node-agent)
 ![GitHub](https://img.shields.io/github/license/AuroralH2020/auroral-node-agent)
+[![Quality Gate Status](https://sonar.bavenir.eu/api/project_badges/measure?project=auroral-agent&metric=alert_status&token=squ_e64ed9495d1181d95b08bfa140900651abd56422)](https://sonar.bavenir.eu/dashboard?id=auroral-agent)
 
 # AURORAL NODE AGENT #
 
