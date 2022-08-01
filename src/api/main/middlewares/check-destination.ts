@@ -19,17 +19,18 @@ enum Method {
     PUT = 'PUT'
 }
 
-type checkDestinationController = expressTypes.Controller<{ id: string, oid: string, pid: string }, JsonType, {}, void, {}>
+type checkDestinationController = expressTypes.Controller<{ id: string, oid: string, pid: string }, JsonType, JsonType, void, {}>
 
 export const checkDestination = (method: Method) => {
     return function (req, res, next) {
         const { oid, pid } = req.params
         const body = req.body
+        const reqParams = req.query
         isRegistered(oid)
         .then((local) => { 
             if (local) {
                 logger.debug('Local consumption request')
-                getLocalData(oid, pid, body, method)
+                getLocalData(oid, pid, body, method, reqParams)
                 .then((response) => {
                     return responseBuilder(HttpStatusCode.OK, res, null, response)
                 })
@@ -51,11 +52,11 @@ export const checkDestination = (method: Method) => {
 
 // Private
 
-const getLocalData = async (oid: string, pid: string, body: JsonType, method: Method): Promise<JsonType> => {
+const getLocalData = async (oid: string, pid: string, body: JsonType, method: Method, reqParams: JsonType): Promise<JsonType> => {
     if (method === Method.GET) {
-       return Data.readProperty(oid, pid) 
+       return Data.readProperty(oid, pid, reqParams) 
     } else {
-        return Data.updateProperty(oid, pid, body)
+        return Data.updateProperty(oid, pid, body, reqParams)
     }
 }
 

@@ -12,13 +12,14 @@ import { Config } from '../../config'
 
 // Controllers
 
-type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, {}, { wrapper: JsonType }, PermissionLocals>
+type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, JsonType, { wrapper: JsonType }, PermissionLocals>
  
 export const getProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
+  const reqParams  = req.query
 	try {
     logger.info('Requested READ property ' + pid + ' from ' + oid)
-    const data = await Data.readProperty(oid, pid)
+    const data = await Data.readProperty(oid, pid, reqParams)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
@@ -30,9 +31,10 @@ export const getProperty: PropertyCtrl = async (req, res) => {
 export const setProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
   const body = req.body
+  const reqParams  = req.query
 	try {
     logger.info('Requested UPDATE property ' + pid + ' from ' + oid)
-    const data = await Data.updateProperty(oid, pid, body)
+    const data = await Data.updateProperty(oid, pid, body, reqParams)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
