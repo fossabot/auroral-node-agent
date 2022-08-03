@@ -21,7 +21,7 @@ GIT_REGISTRY=ghcr.io
 GIT_IMAGE_NAME=auroralh2020/auroral-node-agent
 
 # Get configuration
-while getopts 'hd:v:' OPTION; do
+while getopts 'hd:v:l' OPTION; do
 case "$OPTION" in
     h)
     echo "$USAGE"
@@ -29,6 +29,9 @@ case "$OPTION" in
     ;;
     v)
     VERSION="$OPTARG"
+    ;;
+    l)
+    LATEST="1";
     ;;
 esac
 done
@@ -56,43 +59,46 @@ docker login ${REGISTRY}
 
 # Compile ts into js
 tsc
+if [ $? != 0 ] 
+then
+    echo "Error running tsc"
+    say 'Error running tsc'
+    exit 1;
+fi
+
 
 # Multiarch builder
 docker buildx use multiplatform
 
 # Build images & push to private registry
-docker buildx build --platform ${PLATFORMS} \
-                    --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} \
-                    --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-                    --build-arg BUILD_VERSION=${VERSION} \
-                    -f Dockerfile . --push
 
-# Pull local arch version
-docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
-
-
-# docker login ${GIT_REGISTRY}
-
-# Build images & push to github
-docker buildx build --platform ${PLATFORMS} \
-                    --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} \
-                    --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-                    --build-arg BUILD_VERSION=${VERSION} \
-                    -f Dockerfile . --push
-
-# Build latest when new version
-
-if [ ${LATEST} == 1 ]
+if [ ${LATEST} == 1 ] 
 then
     docker buildx build --platform ${PLATFORMS} \
+                        --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} \
+                        --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} \
                         --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:latest \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg BUILD_VERSION=${VERSION} \
                         -f Dockerfile . --push
+    # Pull local arch version
+    docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
+    docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} # Build latest when new version
+    docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:latest # Build latest when new version
+
+else 
+     # with latest tag 
+    docker buildx build --platform ${PLATFORMS} \
+                    --tag ${REGISTRY}/${IMAGE_NAME}:${ENV} \
+                    --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} \
+                    --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                    --build-arg BUILD_VERSION=${VERSION} \
+                    -f Dockerfile . --push
+     # Pull local arch version
+    docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
+    docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} # Build latest when new version
 fi
-
-# Pull local arch version 
-docker pull ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV}
-
 # END
 echo Build and publish ended successfully!
+say 'Done!'
+

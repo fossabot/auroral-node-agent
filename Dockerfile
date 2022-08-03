@@ -1,7 +1,7 @@
 ARG ARCH
 ARG BUILD_DATE
 ARG BUILD_VERSION
-ARG BASE_IMAGE=node:12-slim 
+ARG BASE_IMAGE=node:16-slim 
 
 # BUILD PHASE
 FROM $BASE_IMAGE AS build-env
@@ -14,7 +14,7 @@ COPY --chown=node:node package*.json tsconfig.json ./
 RUN npm ci && npm cache clean --force
 
 # RUN PHASE
-FROM node:12-slim
+FROM node:16-slim
 # FROM gcr.io/distroless/nodejs:12-debug
 COPY --from=build-env /app /app
 COPY healthcheck.js /app/healthcheck.js
