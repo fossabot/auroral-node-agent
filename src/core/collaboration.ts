@@ -25,7 +25,7 @@ export const discovery = {
         const cid = (await gateway.getCid(id)).message
         if (id === Config.GATEWAY.ID) {
             logger.info('Caching your node CID: ' + cid)
-            redisDb.caching('cid:' + id, cid)
+            redisDb.set('cid:' + id, cid)
             await redisDb.hset('configuration', 'cid', cid)
         }
         return cid
@@ -54,7 +54,10 @@ export const discovery = {
 
 const relationshipSwitch = async (cid: string): Promise<RelationshipType> => {
     const partners = await redisDb.hget('configuration', 'partners')
-    const partnersArray = partners.split(',')
+    let partnersArray: string[] = []
+    if (partners) {
+        partnersArray = partners.split(',')
+    }
     const me = await redisDb.hget('configuration', 'cid')
     if (cid === me) {
         return RelationshipType.ME
@@ -70,7 +73,7 @@ const getCid = async (id: string): Promise<string> => {
     // Check if incoming id's cid is already stored
     if (!cid) {
         const newcid = (await gateway.getCid(id)).message
-        redisDb.caching('cid:' + id, newcid)
+        redisDb.set('cid:' + id, newcid)
         return newcid
     }
     return cid

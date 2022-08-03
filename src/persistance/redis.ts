@@ -3,186 +3,141 @@
  * Interface to REDIS DB
  * @interface
  */
-import redis, { ClientOpts } from 'redis'
+ import { createClient } from 'redis'
 import { Request, Response, NextFunction } from 'express'
 import { Config } from '../config'
 import { logger } from '../utils/logger'
 import { JsonType } from '../types/misc-types'
+import { errorHandler } from '../utils/error-handler'
 
-const redisOptions = {
-    port: Number(Config.DB.PORT), 
-    host: Config.DB.HOST,
-    auth_pass: Config.DB.PASSWORD
- } as ClientOpts
+ // Workaround to solve Redis issue with types
+ type RedisClientType = ReturnType<typeof createClient>
+ type RedisClientOptions = Parameters<typeof createClient>[0]
 
-const client = redis.createClient(redisOptions)
+// Redis client connection settings
+ const redisOptions = {
+  // port: Number(Config.REDIS.PORT), 
+  url: Config.DB.HOST,
+  password: Config.DB.PASSWORD,
+  database: 0 // DB for sessions
+} as RedisClientOptions
 
-// Exposes functions for working with the cache db REDIS
-export const redisDb = {
-   // CACHE
-   /**
-    * Listens to incoming property requests ;
-    * Acts as a middleware for Express Library;
-    * If the key exists retrieves value from cache;
-    * @returns {next() or res.json()}
-    */
-   getCached: (req: Request, res: Response, next: NextFunction) => {
-     const redis_key = req.path
-     if (Config.DB.CACHE) {
-       client.get(redis_key, (err, reply) => {
-         if (err) {
-           logger.error('Error reading cache')
-           res.status(500).json({
-             message: 'Error retrieving cached data'
-           })
-         }
-         if (reply == null) {
-           logger.warn('Cache miss ' + redis_key)
-           next()
-         } else {
-           logger.info('Cache hit ' + redis_key)
-           const response = JSON.parse(reply)  
-           res.status(200).json(response)
-         }
-       })
-     } else {
-       next() 
-     } 
-   },
-   /**
-    * Store value in cache after request to the source API;
-    * TTL is configurable in .env file;
-    * @returns {void}
-    */
-   caching: (key: string, data: string, ttl?: number) => {
-     logger.debug('Cache adition ' + key + ': ' + data)
-     const timeToLive = ttl ? ttl :  Number(Config.DB.CACHE_TTL)
-     const dataAsString = typeof data === 'string' ? data : JSON.stringify(data)
-     client.set(key, dataAsString, 'EX', timeToLive)
-   },
-   /**
-    * Remove manually key stored for the cache;
-    * @returns {void}
-    */
-   delCache: (key: string) => {
-     client.del(key)
-   },
-   // INIT
-   /**
-    * Starts REDIS and listens to connect or error events;
-    * @returns {void}
-    */
-   start: () => {
-     client.on('error', (err) => {
-         logger.error(err.message)
-         process.exit(1)
-     })
-     client.on('connect', () => {
-         logger.info('Connected successfully to Redis!!')
-     })
-   },
-   /**
-    * Checks REDIS connection status;
-    * Rejects if REDIS not ready;
-    * @async
-    * @returns {boolean}
-    */
-   health: (): Promise<boolean> => {
-     return new Promise((resolve, reject) => {
-       client.ping((err, _reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-          //  logger.debug('Redis is ready: ' + reply)
-           resolve(true)
-         }
-       })
-     })
-   },
-   // PERSIST
-   /**
-    * Force saving changes to dump.rdb;
-    * Use to ensure critical changes will not be lost;
-    * Does not reject on error, resolves false;
-    * @async
-    * @returns {string}
-    */
-   save: (): Promise<string | boolean> => {
-     return new Promise((resolve, _reject) => {
-       client.save((err, reply) => {
-         if (err) {
-           logger.warn(err)
-           resolve(false)
-         } else {
-           logger.info(`REDIS DB persisted: ${reply}`)
-           resolve(reply)
-         }
-       })
-     })
-   },
-   // BASIC STRING STORAGE & REMOVAL
-   /**
-    * Save a string;
-    * Custom defined ttl => 0 = no TTL;
-    * rejects on error;
-    * @async
-    * @param {string} key
-    * @param {*} item
-    * @param {integer} ttl
-    * @returns {boolean}
-    */
-   set: (key: string, item: string, ttl: number): Promise<boolean> => {
-     return new Promise((resolve, reject) => {
-       client.set(key, item, 'EX', ttl, (err, _reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(true)
-         }
-       })
-     })
-   },
-   /**
-    * Remove manually one key or list stored;
-    * rejects on error a boolean;
-    * @async
-    * @param {string} key
-    * @returns {boolean}
-    */
-   remove: (key: string): Promise<boolean> => {
-     return new Promise((resolve, reject) => {
-       client.del(key, (err, _reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(true)
-         }
-       })
-     })
-   },
-   /**
-    * Get manually one key or list stored;
-    * rejects on error a boolean;
-    * @async
-    * @param {string} key
-    * @returns {string}
-    */
-   get: (key: string): Promise<string | null> => {
-     return new Promise((resolve, reject) => {
-       client.get(key, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
-   // SETS
+export class RedisFactory {
+  private client: RedisClientType
+
+  constructor(options: RedisClientOptions) {
+    this.client = createClient(options)
+  }
+
+  // Initialization and status
+
+  /**
+  * Starts REDIS and listens to connect or error events;
+  * @returns {void}
+  */
+  public start = async () => {
+      try {
+          await this.client.connect()
+      } catch (err) {
+          const error = errorHandler(err)
+          logger.error(error.message)
+          logger.error('Could not connect to Redis...')
+      }
+  }
+
+  /**
+   * Checks REDIS connection status;
+   * Rejects if REDIS not ready;
+   * @async
+   * @returns {void}
+   */
+  public health = async (): Promise<boolean> => {
+      const reply = await this.client.ping()
+      logger.debug('Redis is ready: ' + reply)
+      return true
+  }
+
+  // PERSIST
+
+  /**
+   * Force saving changes to dump.rdb;
+   * Use to ensure critical changes will not be lost;
+   * Does not reject on error, resolves false;
+   * @async
+   * @returns {string}
+   */
+  public save = async (): Promise<void> => {
+      await this.client.save()
+  }
+
+  // BASIC STRING STORAGE & REMOVAL
+
+  /**
+   * Save a string;
+   * Custom defined ttl => 0 = no TTL;
+   * rejects on error;
+   * @async
+   * @param {string} key
+   * @param {*} item
+   * @param {integer} ttl
+   * @returns {void}
+   */
+  public set = async (key: string, item: string, ttl?: number): Promise<void> => {
+      if (ttl) {
+        await this.client.set(key, item, { 'EX': ttl }) // Other options NX, GET (Check redis for more)...
+      } else {
+        await this.client.set(key, item)
+      }
+  }
+
+  /**
+   * Remove manually one key or list stored;
+   * rejects on error a boolean;
+   * @async
+   * @param {string} key
+   * @returns {void}
+   */
+  public remove = async (key: string): Promise<void> => {
+      await this.client.del(key)
+  }
+
+  /**
+   * Get manually one key or list stored;
+   * rejects on error a boolean;
+   * @async
+   * @param {string} key
+   * @returns {string | null}
+   */
+  public get = (key: string): Promise<string | null> => {
+      return this.client.get(key)
+  }
+
+  /**
+   * Get manually one key or list stored;
+   * rejects on error a boolean;
+   * @async
+   * @param {string} key
+   * @returns {string | null}
+   */
+  public getWithTTL = async (key: string): Promise<{ value: string | null, ttl: number }> => {
+      const ttl = await this.client.TTL(key)
+      const value = await this.client.get(key)
+      return { value, ttl }
+  }
+
+  /**
+   * Get manually one key or list stored;
+   * rejects on error a boolean;
+   * @async
+   * @param {string} key
+   * @returns {string | null}
+   */
+  public scan = (cursor: number): Promise<{ cursor: number, keys: string[]}> => {
+      return this.client.scan(cursor)
+  }
+
+  // SETS
+
    /**
     * Adds item to set;
     * item can be an array of items or a string;
@@ -192,18 +147,10 @@ export const redisDb = {
     * @param {string} item
     * @returns {boolean}
     */
-   sadd: (key: string, item: string): Promise<number> => {
-     return new Promise((resolve, reject) => {
-       client.sadd(key, item, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public sadd = (key: string, item: string): Promise<number> => {
+      return this.client.sAdd(key, item)
+   }
+
    /**
     * Remove item from set;
     * item can be an array of items or a string;
@@ -213,18 +160,10 @@ export const redisDb = {
     * @param {string} item
     * @returns {boolean}
     */
-   srem: (key: string, item: string): Promise<number> => {
-     return new Promise((resolve, reject) => {
-       client.srem(key, item, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public srem = (key: string, item: string): Promise<number> => {
+       return this.client.sRem(key, item)
+   }
+
    /**
     * Check if item is a set member;
     * rejects on error a boolean;
@@ -233,18 +172,10 @@ export const redisDb = {
     * @param {*} item
     * @returns {boolean}
     */
-   sismember: (key: string, item: string): Promise<number> => {
-     return new Promise((resolve, reject) => {
-       client.sismember(key, item, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public sismember = (key: string, item: string): Promise<boolean> => {
+      return this.client.sIsMember(key, item)
+   }
+
    /**
     * Count of members in set;
     * rejects on error a boolean;
@@ -252,18 +183,10 @@ export const redisDb = {
     * @param {string} key
     * @returns {integer}
     */
-   scard: (key: string): Promise<number> => {
-     return new Promise((resolve, reject) => {
-       client.scard(key, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public scard = (key: string): Promise<number> => {
+      return this.client.sCard(key)
+   }
+
    /**
     * Retrieve all set members;
     * rejects on error a boolean;
@@ -271,20 +194,13 @@ export const redisDb = {
     * @param {string} key
     * @returns {array of strings}
     */
-   smembers: (key: string): Promise<string[]> => {
-     return new Promise((resolve, reject) => {
-       client.smembers(key, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
-   // HASH
-   /**
+   public smembers = (key: string): Promise<string[]> => {
+      return this.client.sMembers(key)
+   }
+
+  // HASH
+   
+  /**
     * Get value of a key in a hash
     * rejects on error a boolean;
     * @async
@@ -292,18 +208,10 @@ export const redisDb = {
     * @param {string} key
     * @returns {*}
     */
-   hget: (hkey: string, key: string): Promise<string> => {
-     return new Promise((resolve, reject) => {
-       client.hget(hkey, key, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public hget = (hkey: string, key: string): Promise<string | undefined> => {
+      return this.client.hGet(hkey, key)
+   }
+
    /**
     * Set value of a key in a hash;
     * rejects on error a boolean;
@@ -313,18 +221,10 @@ export const redisDb = {
     * @param {*} value
     * @returns {boolean}
     */
-   hset: (hkey: string, key: string, value: string): Promise<number> => {
-     return new Promise((resolve, reject) => {
-       client.hset(hkey, key, value, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public hset = (hkey: string, key: string, value: string): Promise<number> => {
+      return this.client.hSet(hkey, key, value)
+   }
+
    /**
     * Remove key in a hash;
     * rejects on error a boolean;
@@ -333,18 +233,10 @@ export const redisDb = {
     * @param {string} key
     * @returns {boolean}
     */
-   hdel: (hkey: string, key: string): Promise<number> => {
-     return new Promise((resolve, reject) => {
-       client.hdel(hkey, key, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public hdel = (hkey: string, key: string): Promise<number> => {
+      return this.client.hDel(hkey, key)
+   }
+
    /**
     * Check if key exists in hash;
     * rejects on error a boolean;
@@ -353,18 +245,10 @@ export const redisDb = {
     * @param {string} key
     * @returns {boolean}
     */
-   hexists: (hkey: string, key: string): Promise<number> => {
-     return new Promise((resolve, reject) => {
-       client.hexists(hkey, key, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
-   },
+   public hexists = (hkey: string, key: string): Promise<boolean> => {
+      return this.client.hExists(hkey, key)
+   }
+
    /**
     * Get all key:value in a hash;
     * rejects on error a boolean;
@@ -372,17 +256,14 @@ export const redisDb = {
     * @param {string} hkey
     * @returns {object}
     */
-   hgetall: (hkey: string): Promise<JsonType> => {
-     return new Promise((resolve, reject) => {
-       client.hgetall(hkey, (err, reply) => {
-         if (err) {
-           logger.error(err.message)
-           reject(err)
-         } else {
-           resolve(reply)
-         }
-       })
-     })
+   public hgetall = (hkey: string): Promise<JsonType> => {
+      return this.client.hGetAll(hkey)
    }
- }
- 
+
+}
+
+// Expose singleton class
+
+ export const redisDb = new RedisFactory(redisOptions)
+ redisDb.start()
+ logger.info('Connected successfully Redis for CommServer!!')
