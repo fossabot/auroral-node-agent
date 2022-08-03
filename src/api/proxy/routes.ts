@@ -27,7 +27,7 @@ const ProxyRouter = Router()
 
 ProxyRouter
      // ***** Gateway proxy *****
-     .get('/objects/:oid/properties/:pid', validatePermissions(ReqType.DATA), redisDb.getCached, ctrl.getProperty) // receive property request from gtw
+     .get('/objects/:oid/properties/:pid', validatePermissions(ReqType.DATA), ctrl.getProperty) // receive property request from gtw
      .put('/objects/:oid/properties/:pid', validatePermissions(ReqType.DATA), ctrl.setProperty) // receive request to upd property from gtw
      // .post('/objects/:oid/actions/:aid') // receive request to start action
      // .delete('/objects/:oid/actions/:aid') // receive request to stop action
