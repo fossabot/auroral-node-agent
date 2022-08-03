@@ -17,7 +17,7 @@ import { errorHandler } from '../utils/error-handler'
 // Redis client connection settings
  const redisOptions = {
   // port: Number(Config.REDIS.PORT), 
-  url: Config.DB.HOST,
+  url: 'redis://' + Config.DB.HOST,
   password: Config.DB.PASSWORD,
   database: 0 // DB for sessions
 } as RedisClientOptions
