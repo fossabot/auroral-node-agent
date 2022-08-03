@@ -33,7 +33,7 @@ export const redisDb = {
          if (err) {
            logger.error('Error reading cache')
            res.status(500).json({
-             message: 'Something Went Wrong'
+             message: 'Error retrieving cached data'
            })
          }
          if (reply == null) {
