@@ -38,7 +38,7 @@ describe('Gateway Microservice', () => {
         try {
             await gateway.login('string')
         } catch (error) {
-            expect((error as Error).message).toMatch('authorization')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(4)
     })
@@ -179,11 +179,11 @@ describe('Gateway Microservice', () => {
     })
     it('Do getProperty', async () => {
         const spy = jest.spyOn(gateway, 'getProperty')
-        const response = await gateway.getProperty('oid', 'roid', 'pid')
+        const response = await gateway.getProperty('oid', 'roid', 'pid', {})
         expect(response).toEqual('GetProperty succesful')
         got.__toFail()
         try {
-            await gateway.getProperty('oid', 'roid', 'pid')
+            await gateway.getProperty('oid', 'roid', 'pid', {})
         } catch (error) {
             expect((error as Error).message).toMatch('MOCKED ERROR')
         }
@@ -191,11 +191,11 @@ describe('Gateway Microservice', () => {
     })
     it('Do putProperty', async () => {
         const spy = jest.spyOn(gateway, 'putProperty')
-        const response = await gateway.putProperty('oid', 'roid', 'pid', {})
+        const response = await gateway.putProperty('oid', 'roid', 'pid', {}, {})
         expect(response).toEqual('PutProperty succesful')
         got.__toFail()
         try {
-            await gateway.putProperty('oid', 'roid', 'pid', {})
+            await gateway.putProperty('oid', 'roid', 'pid', {}, {})
         } catch (error) {
             expect((error as Error).message).toMatch('MOCKED ERROR')
         }

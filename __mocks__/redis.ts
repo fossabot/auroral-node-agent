@@ -4,60 +4,140 @@ const redis = jest.createMockFromModule('redis') as any
 
 let fail = false
 const client = {
-    ping: (cb: CB) => {
-        cb(fail, 'OK') 
-    },
-    save: (cb: CB) => {
-        cb(fail, true) 
-    },
-    get: (a: string, cb: CB) => {
-        cb(fail, 'string') 
-    },
-    set: (a: string, b: string, c: string, d: any, cb?: CB) => {
-        if (cb) {
-            cb(false, true) 
-        } else {
+    ping: () => {
+        return new Promise((resolve, reject) => {
             if (fail) {
-                throw new Error('MOCK ERROR')
+                reject(new Error('Test Error'))
+            } else {
+                resolve('OK')
             }
-        }
+        })
     },
-    del: (a: string, cb: CB) => {
-        cb(fail, true) 
+    save: () => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })
     },
-    hget: (a: string, b: string, cb: CB) => {
-        if (fail) {
-            cb(false, null) 
-        } else {
-            cb(fail, 'string') 
-        }
+    get: (a: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve('string')
+            }
+        })
     },
-    hdel: (a: string, b: string, cb: CB) => {
-        cb(fail, true) 
+    set: (a: string, b: string, c: string, d: any) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })
     },
-    hset: (a: string, b: string, c: string, cb: CB) => {
-        cb(fail, true) 
+    del: (a: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })
     },
-    hgetall: (a: string, cb: CB) => {
-        cb(fail, { test: true }) 
+    hGet: (a: string, b: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve('string')
+            }
+        })
     },
-    hexists: (a: string, b: string, cb: CB) => {
-        cb(fail, true) 
+    hDel: (a: string, b: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })
     },
-    scard: (a: string, cb: CB) => {
-        cb(fail, 2) 
+    hSet: (a: string, b: string, c: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })
     },
-    sadd: (a: string, b: string, cb: CB) => {
-        cb(fail, true) 
+    hGetAll: (a: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve({ test: true })
+            }
+        }) 
     },
-    srem: (a: string, b: string, cb: CB) => {
-        cb(fail, true) 
+    hExists: (a: string, b: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })    
     },
-    sismember: (a: string, b: string, cb: CB) => {
-        cb(fail, true) 
+    sCard: (a: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(2)
+            }
+        })    
     },
-    smembers: (a: string, cb: CB) => {
-        cb(fail, ['a','b']) 
+    sAdd: (a: string, b: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })
+    },
+    sRem: (a: string, b: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        })
+    },
+    sIsMember: (a: string, b: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(true)
+            }
+        }) 
+    },
+    sMembers: (a: string) => {
+        return new Promise((resolve, reject) => {
+            if (fail) {
+                reject(new Error('Test Error'))
+            } else {
+                resolve(['a','b'])
+            }
+        })    
     }
 }
 
@@ -68,9 +148,10 @@ function __notFail() {
     fail = false
 }
 
-redis.createClient = () => { 
+export const createClient = () => { 
     return client 
 }
+
 redis.__toFail = __toFail
 redis.__notFail = __notFail
 

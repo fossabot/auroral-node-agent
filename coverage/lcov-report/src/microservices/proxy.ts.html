@@ -375,9 +375,9 @@ export const proxy = {
      * @param method 
      * @returns 
      */ 
-    sendMessageViaProxy: <span class="fstat-no" title="function not covered" >async function(o</span>id: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise&lt;JsonType&gt; {
+    sendMessageViaProxy: <span class="fstat-no" title="function not covered" >async function(o</span>id: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise&lt;JsonType&gt; {
 <span class="cstat-no" title="statement not covered" >        logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + iid)</span>
-<span class="cstat-no" title="statement not covered" >        return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization })</span>
+<span class="cstat-no" title="statement not covered" >        return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization }, reqParams)</span>
     },
     /**
      * Access adapter to get interaction info
@@ -387,14 +387,14 @@ export const proxy = {
      * @param method 
      * @returns 
      */ 
-     sendMessageViaWot: <span class="fstat-no" title="function not covered" >async function(o</span>id: string, iid: string, method: Method, interaction: Interaction, body?: JsonType): Promise&lt;JsonType&gt; {
+     sendMessageViaWot: <span class="fstat-no" title="function not covered" >async function(o</span>id: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise&lt;JsonType&gt; {
         const <span class="cstat-no" title="statement not covered" >thing = (<span class="cstat-no" title="statement not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >await wot.retrieveTD(oid)).</span></span>message</span>
 <span class="cstat-no" title="statement not covered" >        if (thing) {</span>
             const <span class="cstat-no" title="statement not covered" >forms = getInteractionsForms(interaction, thing, iid)</span>
 <span class="cstat-no" title="statement not covered" >            if (forms) {</span>
                 const <span class="cstat-no" title="statement not covered" >url = forms[0].href</span>
                 const <span class="cstat-no" title="statement not covered" >headers = validateContentType(forms[0].contentType)</span>
-<span class="cstat-no" title="statement not covered" >                return requestSemantic(url , method, body, { ...headers, Authorization })</span>
+<span class="cstat-no" title="statement not covered" >                return requestSemantic(url , method, body, { ...headers, Authorization }, reqParams)</span>
             } else {
 <span class="cstat-no" title="statement not covered" >                return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + iid + ' does not specify url to access data...' })</span>
             }
@@ -406,7 +406,7 @@ export const proxy = {
 &nbsp;
 // PRIVATE FUNCTIONS
 &nbsp;
-const request = <span class="fstat-no" title="function not covered" >async (e</span>ndpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >): Promise&lt;any&gt; =&gt; {</span></span>
+const request = <span class="fstat-no" title="function not covered" >async (e</span>ndpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >): Promise&lt;any&gt; =&gt; {</span></span>
     const <span class="cstat-no" title="statement not covered" >response = <span class="cstat-no" title="statement not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >await callApi(endpoint, { method, json, headers, searchParams }) as JsonType</span></span></span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >        return JSON.parse(response.body)</span>
@@ -416,7 +416,7 @@ const request = <span class="fstat-no" title="function not covered" >async (e</s
     }
 }
 &nbsp;
-const requestSemantic = <span class="fstat-no" title="function not covered" >async (e</span>ndpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: string<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >): Promise&lt;any&gt; =&gt; {</span></span>
+const requestSemantic = <span class="fstat-no" title="function not covered" >async (e</span>ndpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >): Promise&lt;any&gt; =&gt; {</span></span>
     const <span class="cstat-no" title="statement not covered" >response = <span class="cstat-no" title="statement not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >await callSemantic(endpoint, { method, json, headers, searchParams })</span></span></span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >        return JSON.parse(response.body)</span>
@@ -457,7 +457,7 @@ const validateContentType = <span class="fstat-no" title="function not covered" 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Thu Jul 21 2022 12:10:45 GMT+0200 (Central European Summer Time)
+                at Thu Aug 04 2022 12:49:43 GMT+0200 (Central European Summer Time)
             </div>
         <script src="../../prettify.js"></script>
         <script>

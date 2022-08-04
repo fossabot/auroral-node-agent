@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.77% </span>
+                <span class="strong">65.1% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>98/149</span>
+                <span class='fraction'>97/149</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">51.92% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>27/52</span>
+                <span class='fraction'>26/52</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.12% </span>
+                <span class="strong">63.35% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>84/131</span>
+                <span class='fraction'>83/131</span>
             </div>
         
             
@@ -660,20 +660,20 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -747,10 +747,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
@@ -1025,7 +1025,7 @@ export const registrationFuncs = {
         for (let i = 0, l = ids.length; i &lt; l; i++) {
             const oid = ids[i]
             const todo = []
-            const adapterId = await redisDb.hget(oid, 'adapterId')
+            const adapterId = await redisDb.hget(oid, 'adapterId') as string
             todo.push(redisDb.srem('registrations', oid))
             todo.push(redisDb.srem('adapterIds', adapterId))
             todo.push(redisDb.hdel(adapterId, 'oid'))
@@ -1109,17 +1109,17 @@ export const registrationFuncs = {
     },
     existsAdapterId: async (adapterId: string): Promise&lt;boolean&gt; =&gt; {
         const exists = await redisDb.sismember('adapterIds', adapterId)
-        return Boolean(exists)
+        return exists
     },
     sameAdapterId: async (oid: string, adapterId: string): Promise&lt;boolean&gt; =&gt; {
         const oldAdapterId = await redisDb.hget(oid, 'adapterId')
         if (oldAdapterId === adapterId) {
             return true
-        } else {
-            throw new MyError('REGISTRATION ERROR: On update is not allowed to change adapterId', HttpStatusCode.FORBIDDEN)
+        } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >            throw new MyError('REGISTRATION ERROR: On update is not allowed to change adapterId', HttpStatusCode.FORBIDDEN)</span>
         }
     },
-    getOidByAdapterId: async (adapterId: string): Promise&lt;string&gt; =&gt; {
+    getOidByAdapterId: async (adapterId: string): Promise&lt;string | undefined&gt; =&gt; {
         return redisDb.hget(adapterId, 'oid')
     }
 }
@@ -1168,7 +1168,7 @@ const storeItems = async (array: Registration[]) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Thu Jul 21 2022 12:10:45 GMT+0200 (Central European Summer Time)
+                at Thu Aug 04 2022 12:49:43 GMT+0200 (Central European Summer Time)
             </div>
         <script src="../../../prettify.js"></script>
         <script>

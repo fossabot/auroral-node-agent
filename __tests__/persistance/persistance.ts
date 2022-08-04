@@ -28,13 +28,13 @@ describe('Persistance Methods', () => {
         try {
             await persistance.getItem('registrations')
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
     it('addItem', async () => {
         const spy = jest.spyOn(persistance, 'addItem')
-        let item = { credentials: 'string',
+        const item = { credentials: 'string',
             password: 'string',
             created: 'string',
             adapterId: 'string',
@@ -52,7 +52,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.addItem('registrations', item)
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(4)
     })
@@ -63,7 +63,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.updateItem({ oid: 'string' })
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -75,7 +75,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.removeItem('registrations', ['string'])
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(3)
     })
@@ -103,7 +103,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.getItem('registrations', 'string')
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(3)
     })
@@ -117,7 +117,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.getCountOfItems('registrations')
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(3)
     })
@@ -129,7 +129,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.existsAdapterId('string')
         } catch (error) {
-            expect((error)).toBe(true)
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -141,7 +141,8 @@ describe('Persistance Methods', () => {
         try {
             await persistance.sameAdapterId('string', 'string')
         } catch (error) {
-            expect((error as Error).message).toMatch('REGISTRATION ERROR')
+            expect((error as Error).message).toMatch('Test Error')
+
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -153,7 +154,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.getOidByAdapterId('string')
         } catch (error) {
-            expect((error)).toBe(true)
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -165,7 +166,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.getCredentials('string')
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -177,7 +178,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.combinationExists('string', 'string')
         } catch (error) {
-            expect((error as Error).message).toMatch('error')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -190,7 +191,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.isRegistered('string')
         } catch (error) {
-            expect(error).toBe(true)
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -215,7 +216,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.getConfigInfo()
         } catch (error) {
-            expect(error).toBe(true)
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
@@ -228,7 +229,7 @@ describe('Persistance Methods', () => {
         try {
             await persistance.addToCache('string', 'string')
         } catch (error) {
-            expect((error as Error).message).toMatch('MOCK')
+            expect((error as Error).message).toMatch('Test Error')
         }
         expect(spy).toHaveBeenCalledTimes(2)
     })
