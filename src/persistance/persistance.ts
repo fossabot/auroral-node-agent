@@ -338,7 +338,7 @@ export const reloadConfigInfo = async function(cid: string, name: string, nodes:
  */
  export const addToCache = async function(key: string, data: string) {
     try {
-        redisDb.set(key, data)
+        await redisDb.set(key, data)
         return Promise.resolve(true)
     } catch (err) {
         const error = errorHandler(err)

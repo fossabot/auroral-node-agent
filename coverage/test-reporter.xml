@@ -1,76 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/core/data.ts">
-        <testCase name="Data core Do readProperty dummy mode" duration="2"/>
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/persistance/persistance.ts">
+        <testCase name="Persistance Methods Get all items registered" duration="5"/>
+        <testCase name="Persistance Methods addItem" duration="4"/>
+        <testCase name="Persistance Methods updateItem" duration="6"/>
+        <testCase name="Persistance Methods removeItem" duration="1"/>
+        <testCase name="Persistance Methods getItem" duration="36"/>
+        <testCase name="Persistance Methods getCountOfItems" duration="1"/>
+        <testCase name="Persistance Methods existsAdapterId" duration="0"/>
+        <testCase name="Persistance Methods sameAdapterId" duration="1"/>
+        <testCase name="Persistance Methods getOidByAdapterId" duration="0"/>
+        <testCase name="Persistance Methods getCredentials" duration="2"/>
+        <testCase name="Persistance Methods combinationExists" duration="2"/>
+        <testCase name="Persistance Methods isRegistered" duration="2"/>
+        <testCase name="Persistance Methods reloadConfigInfo" duration="1"/>
+        <testCase name="Persistance Methods getConfigInfo" duration="1"/>
+        <testCase name="Persistance Methods addToCache" duration="1"/>
+        <testCase name="Persistance Methods redisHealth" duration="0"/>
+    </file>
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/core/data.ts">
+        <testCase name="Data core Do readProperty dummy mode" duration="3"/>
         <testCase name="Data core Do updateProperty dummy mode" duration="0"/>
         <testCase name="Data core Do receiveEvent dummy mode" duration="1"/>
-        <testCase name="Data core Do tdDiscovery dummy mode" duration="28"/>
-        <testCase name="Data core Do sparqlDiscovery dummy mode" duration="1"/>
+        <testCase name="Data core Do tdDiscovery dummy mode" duration="8"/>
+        <testCase name="Data core Do sparqlDiscovery dummy mode" duration="0"/>
         <testCase name="Data core Do readProperty proxy mode" duration="0"/>
         <testCase name="Data core Do readProperty semantic mode" duration="0"/>
-        <testCase name="Data core Do sparqlDiscovery semantic mode" duration="2"/>
+        <testCase name="Data core Do sparqlDiscovery semantic mode" duration="1"/>
     </file>
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/core/gateway.ts">
-        <testCase name="GtwServices core Do doLogins" duration="5"/>
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/core/gateway.ts">
+        <testCase name="GtwServices core Do doLogins" duration="4"/>
         <testCase name="GtwServices core Do doLogouts" duration="1"/>
         <testCase name="GtwServices core Do registerObject" duration="10"/>
         <testCase name="GtwServices core Do updateObject" duration="1"/>
         <testCase name="GtwServices core Do compareLocalAndRemote" duration="0"/>
     </file>
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/core/collaboration.ts">
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/core/td-parser.ts">
+        <testCase name="td-parser core Do tdParser" duration="26"/>
+        <testCase name="td-parser core Do tdParserWoT" duration="11"/>
+        <testCase name="td-parser core Do tdParserUpdate" duration="1"/>
+        <testCase name="td-parser core Do tdParserUpdateWot" duration="2"/>
+    </file>
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/microservices/gateway.ts">
+        <testCase name="Gateway Microservice Do logins" duration="26"/>
+        <testCase name="Gateway Microservice Do logout" duration="1"/>
+        <testCase name="Gateway Microservice Do getRegistrations" duration="1"/>
+        <testCase name="Gateway Microservice Do postRegistrations" duration="0"/>
+        <testCase name="Gateway Microservice Do updateRegistration" duration="1"/>
+        <testCase name="Gateway Microservice Do removeRegistrations" duration="1"/>
+        <testCase name="Gateway Microservice Do discovery" duration="0"/>
+        <testCase name="Gateway Microservice Do discoveryRemote" duration="1"/>
+        <testCase name="Gateway Microservice Do getCid" duration="2"/>
+        <testCase name="Gateway Microservice Do getPartners" duration="1"/>
+        <testCase name="Gateway Microservice Do getPartnerInfo" duration="1"/>
+        <testCase name="Gateway Microservice Do getProperty" duration="1"/>
+        <testCase name="Gateway Microservice Do putProperty" duration="1"/>
+        <testCase name="Gateway Microservice Do activateEventChannel" duration="10"/>
+        <testCase name="Gateway Microservice Do publishEvent" duration="1"/>
+        <testCase name="Gateway Microservice Do deactivateEventChannel" duration="1"/>
+        <testCase name="Gateway Microservice Do statusRemoteEventChannel" duration="1"/>
+        <testCase name="Gateway Microservice Do subscribeRemoteEventChannel" duration="1"/>
+        <testCase name="Gateway Microservice Do unsubscribeRemoteEventChannel" duration="3"/>
+        <testCase name="Gateway Microservice Do health" duration="9"/>
+        <testCase name="Gateway Microservice Do getItemsPrivacy" duration="1"/>
+        <testCase name="Gateway Microservice Do getContracts" duration="1"/>
+    </file>
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/core/collaboration.ts">
         <testCase name="Discovery core Do getRelationship" duration="2"/>
-        <testCase name="Discovery core Do getCid" duration="0"/>
-        <testCase name="Discovery core Do getPartnerInfo" duration="1"/>
+        <testCase name="Discovery core Do getCid" duration="1"/>
+        <testCase name="Discovery core Do getPartnerInfo" duration="0"/>
         <testCase name="Discovery core Do getPartners" duration="1"/>
         <testCase name="Discovery core Do reloadCid" duration="0"/>
         <testCase name="Discovery core Do reloadPartners" duration="1"/>
-        <testCase name="Discovery core Do reloadPartnerInfo" duration="1"/>
         <testCase name="Discovery core Do reloadPartnerInfo" duration="0"/>
+        <testCase name="Discovery core Do reloadPartnerInfo" duration="1"/>
     </file>
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/core/security.ts">
-        <testCase name="Secirity core Do getItemsPrivacy" duration="3"/>
-        <testCase name="Secirity core Do cacheItemsPrivacy" duration="28"/>
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/core/security.ts">
+        <testCase name="Secirity core Do getItemsPrivacy" duration="2"/>
+        <testCase name="Secirity core Do cacheItemsPrivacy" duration="18"/>
         <testCase name="Secirity core Do contractExists" duration="2"/>
-        <testCase name="Secirity core Do canWriteItem" duration="0"/>
+        <testCase name="Secirity core Do canWriteItem" duration="1"/>
         <testCase name="Secirity core Do delContract" duration="0"/>
         <testCase name="Secirity core Do getContract" duration="1"/>
         <testCase name="Secirity core Do updItemInContract" duration="0"/>
         <testCase name="Secirity core Do delItemInContract" duration="1"/>
     </file>
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/core/main.ts.ts">
+    <file path="/Users/peter/Documents/bavenir/AURORAL/auroral_node_agent/__tests__/core/main.ts.ts">
         <testCase name="Main core Do initialize" duration="3"/>
         <testCase name="Main core Do stop" duration="0"/>
-    </file>
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/core/td-parser.ts">
-        <testCase name="td-parser core Do tdParser" duration="63"/>
-        <testCase name="td-parser core Do tdParserWoT" duration="13"/>
-        <testCase name="td-parser core Do tdParserUpdate" duration="2"/>
-        <testCase name="td-parser core Do tdParserUpdateWot" duration="3"/>
-    </file>
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/microservices/gateway.ts">
-        <testCase name="Gateway Microservice Do logins" duration="20"/>
-        <testCase name="Gateway Microservice Do logout" duration="1"/>
-        <testCase name="Gateway Microservice Do getRegistrations" duration="2"/>
-        <testCase name="Gateway Microservice Do postRegistrations" duration="1"/>
-        <testCase name="Gateway Microservice Do updateRegistration" duration="0"/>
-        <testCase name="Gateway Microservice Do removeRegistrations" duration="1"/>
-        <testCase name="Gateway Microservice Do discovery" duration="1"/>
-        <testCase name="Gateway Microservice Do discoveryRemote" duration="1"/>
-        <testCase name="Gateway Microservice Do getCid" duration="1"/>
-        <testCase name="Gateway Microservice Do getPartners" duration="1"/>
-        <testCase name="Gateway Microservice Do getPartnerInfo" duration="0"/>
-        <testCase name="Gateway Microservice Do getProperty" duration="1"/>
-        <testCase name="Gateway Microservice Do putProperty" duration="0"/>
-        <testCase name="Gateway Microservice Do activateEventChannel" duration="1"/>
-        <testCase name="Gateway Microservice Do publishEvent" duration="1"/>
-        <testCase name="Gateway Microservice Do deactivateEventChannel" duration="1"/>
-        <testCase name="Gateway Microservice Do statusRemoteEventChannel" duration="0"/>
-        <testCase name="Gateway Microservice Do subscribeRemoteEventChannel" duration="1"/>
-        <testCase name="Gateway Microservice Do unsubscribeRemoteEventChannel" duration="0"/>
-        <testCase name="Gateway Microservice Do health" duration="1"/>
-        <testCase name="Gateway Microservice Do getItemsPrivacy" duration="0"/>
-        <testCase name="Gateway Microservice Do getContracts" duration="1"/>
-    </file>
-    <file path="/Users/jorgemac/Documents/projects/bAvenir/auroral/auroral_node_agent/__tests__/persistance/persistance.ts">
     </file>
 </testExecutions>
