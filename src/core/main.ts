@@ -50,12 +50,12 @@ export const initialize = async function() {
         logger.warn('--- WoT directory is not active')
     }
 
-    // Check if chache is active
-    if (Config.DB.CACHE) {
-        logger.info('--- Adapter values are being cached with expiration ' + Config.DB.CACHE_TTL + 's')
-    } else {
-        logger.warn('--- Adapter values are not being cached by redis')
-    }
+    // Check if chache is active -- Cache removed from agent
+    // if (Config.DB.CACHE) {
+    //     logger.info('--- Adapter values are being cached with expiration ' + Config.DB.CACHE_TTL + 's')
+    // } else {
+    //     logger.warn('--- Adapter values are not being cached by redis')
+    // }
 
     // Update Items privacy in node
     await security.cacheItemsPrivacy()

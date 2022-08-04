@@ -172,13 +172,33 @@ type UpdateRet = {
       */
      compareLocalAndRemote: (local: string[], platform: string[]) => {
          try {
+            let mismatch = false // Flag to store unsynchronized status
+            const notInCloud: string[] = []
+            const notInLocal: string[] = []
              for (let i = 0, l = local.length; i < l; i++) {
                  if (platform.indexOf(local[i]) === -1) {
-                     throw new Error('Local and platform objects are not the same')
+                     notInCloud.push(local[i])
+                     mismatch = true
                  }
              }
-             logger.info('Local and platform objects match!')
-             return true
+             for (let i = 0, l = platform.length; i < l; i++) {
+                if (local.indexOf(platform[i]) === -1) {
+                    notInLocal.push(platform[i])
+                    mismatch = true
+                }
+            }
+            if (mismatch) {
+            logger.warn('--- Please resynchronize cloud and local infrastructure, following the instructions below: ')
+            if (notInCloud.length > 0) {
+                logger.warn('Objects not registered in Cloud, please remove and register again using the AURORAL Open API: ' + notInCloud.join(','))
+            }
+            if (notInLocal.length > 0) {
+                logger.warn('Objects not registered locally, please register again using the AURORAL Open API and ask admin to remove broken OIDs from cloud: ' + notInLocal.join(','))
+            }
+            } else {
+            logger.info('--- Local and platform objects match!')
+            }
+            return true
          } catch (err) {
              const error = errorHandler(err)
              logger.warn(error.message)

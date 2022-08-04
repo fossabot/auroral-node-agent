@@ -35,7 +35,7 @@ export enum Interaction {
 
 export const Data = {
     readProperty: async (oid: string, pid: string, reqParams: JsonType) => {
-        return reachAdapter(oid, pid, Method.GET, Interaction.PROPERTY, undefined,  reqParams)
+        return reachAdapter(oid, pid, Method.GET, Interaction.PROPERTY, undefined, reqParams)
     },
     updateProperty: async (oid: string, pid: string, body: JsonType, reqParams: JsonType) => {
         return reachAdapter(oid, pid, Method.PUT, Interaction.PROPERTY, body, reqParams)

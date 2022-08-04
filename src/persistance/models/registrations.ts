@@ -312,7 +312,7 @@ export const registrationFuncs = {
     },
     existsAdapterId: async (adapterId: string): Promise<boolean> => {
         const exists = await redisDb.sismember('adapterIds', adapterId)
-        return Boolean(exists)
+        return exists
     },
     sameAdapterId: async (oid: string, adapterId: string): Promise<boolean> => {
         const oldAdapterId = await redisDb.hget(oid, 'adapterId')

@@ -34,7 +34,7 @@ describe('Persistance Methods', () => {
     })
     it('addItem', async () => {
         const spy = jest.spyOn(persistance, 'addItem')
-        let item = { credentials: 'string',
+        const item = { credentials: 'string',
             password: 'string',
             created: 'string',
             adapterId: 'string',

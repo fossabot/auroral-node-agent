@@ -26,14 +26,14 @@ describe('Data core', () => {
     it('Do readProperty dummy mode', async () => {
         myConfig.ADAPTER = { MODE: 'dummy', PORT: '', HOST: '', USE_MAPPING: false }
         const spy = jest.spyOn(Data, 'readProperty')
-        const response = await Data.readProperty('oid1','pid1')
+        const response = await Data.readProperty('oid1','pid1', {})
         expect(JSON.stringify(response)).toMatch('oid1')
         expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Do updateProperty dummy mode', async () => {
         myConfig.ADAPTER = { MODE: 'dummy', PORT: '', HOST: '', USE_MAPPING: false }
         const spy = jest.spyOn(Data, 'updateProperty')
-        const response = await Data.updateProperty('oid1','pid1', {})
+        const response = await Data.updateProperty('oid1','pid1', {}, {})
         expect(JSON.stringify(response)).toMatch('oid1')
         expect(spy).toHaveBeenCalledTimes(1)
     })
@@ -66,7 +66,7 @@ describe('Data core', () => {
         myConfig.ADAPTER = { MODE: 'proxy', PORT: '', HOST: '', USE_MAPPING: false }
         myProxy.sendMessageViaProxy.mockResolvedValue({ 'test': true })
         const spy = jest.spyOn(Data, 'readProperty')
-        const response = await Data.readProperty('oid1','pid1')
+        const response = await Data.readProperty('oid1','pid1', {})
         expect(response.test).toBe(true)
         expect(spy).toHaveBeenCalledTimes(1)
     })
@@ -74,7 +74,7 @@ describe('Data core', () => {
         myConfig.ADAPTER = { MODE: 'semantic', PORT: '', HOST: '', USE_MAPPING: false }
         myProxy.sendMessageViaWot.mockResolvedValue({ 'test': true })
         const spy = jest.spyOn(Data, 'readProperty')
-        const response = await Data.readProperty('oid1','pid1')
+        const response = await Data.readProperty('oid1','pid1', {})
         expect(response.test).toBe(true)
         expect(spy).toHaveBeenCalledTimes(1)
     })
