@@ -8,8 +8,6 @@
  
 // Express router
 import { Router } from 'express'
-// Persistance
-import { redisDb } from '../../persistance/redis'
 // Controllers
 import * as ctrl from './controller'
 // Middlewares

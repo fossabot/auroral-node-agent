@@ -1,3 +1,9 @@
+/**
+ * Deprecated use
+ * To Be Removed in future releases
+ * Code refactoring needed in persistance/persistance.ts
+ */
+
 // Global packages
 import { JsonType } from '../../types/misc-types'
 import { logger, errorHandler } from '../../utils'
@@ -38,7 +44,7 @@ export const interactionFuncs = {
     loadFromMemory: async (type: InteractionsType): Promise<Interaction[]> => {
         const all_interactions = await redisDb.smembers(type)
         return Promise.all(all_interactions.map(async (it) => {
-            return JSON.parse(await redisDb.hget(`${type}:${it}`, 'body')) as unknown as Interaction
+            return JSON.parse(await redisDb.hget(`${type}:${it}`, 'body') as string) as unknown as Interaction
         }))
     },
     // Add item to db
@@ -67,7 +73,7 @@ export const interactionFuncs = {
     getItem: async (type: InteractionsType, id?: string): Promise<Interaction | string[]> => {
         let obj
         if (id) {
-            obj = await redisDb.hget(type + ':' + id, 'body')
+            obj = await redisDb.hget(type + ':' + id, 'body') as string
             return JSON.parse(obj)
         } else {
             return redisDb.smembers(type)

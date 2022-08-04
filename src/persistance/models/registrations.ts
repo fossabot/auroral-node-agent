@@ -228,7 +228,7 @@ export const registrationFuncs = {
         for (let i = 0, l = ids.length; i < l; i++) {
             const oid = ids[i]
             const todo = []
-            const adapterId = await redisDb.hget(oid, 'adapterId')
+            const adapterId = await redisDb.hget(oid, 'adapterId') as string
             todo.push(redisDb.srem('registrations', oid))
             todo.push(redisDb.srem('adapterIds', adapterId))
             todo.push(redisDb.hdel(adapterId, 'oid'))
@@ -322,7 +322,7 @@ export const registrationFuncs = {
             throw new MyError('REGISTRATION ERROR: On update is not allowed to change adapterId', HttpStatusCode.FORBIDDEN)
         }
     },
-    getOidByAdapterId: async (adapterId: string): Promise<string> => {
+    getOidByAdapterId: async (adapterId: string): Promise<string | undefined> => {
         return redisDb.hget(adapterId, 'oid')
     }
 }
