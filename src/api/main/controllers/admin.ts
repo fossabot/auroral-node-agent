@@ -8,6 +8,9 @@ import { responseBuilder } from '../../../utils/response-builder'
 import * as persistance from '../../../persistance/persistance'
 import { gateway } from '../../../microservices/gateway'
 import { Configuration } from '../../../persistance/models/configurations'
+import { JsonType } from '../../../types/misc-types'
+import { wot } from '../../../microservices/wot'
+import { Thing } from '../../../types/wot-types'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -33,37 +36,37 @@ export const getConfiguration: configurationCtrl = async (_req, res) => {
 	}
 }
 
-type importsCtrl = expressTypes.Controller<{}, {}, {}, null, {}>
+// type importsCtrl = expressTypes.Controller<{}, {}, {}, null, {}>
  
-export const importFiles: importsCtrl = async (_req, res) => {
-    try {
-                // await persistance.loadConfigurationFile(registrationAndInteractions.PROPERTIES)
-                // await persistance.loadConfigurationFile(registrationAndInteractions.EVENTS)
-                // await persistance.loadConfigurationFile(registrationAndInteractions.ACTIONS)
-                await persistance.loadConfigurationFile(registrationAndInteractions.REGISTRATIONS)
-                return responseBuilder(HttpStatusCode.OK, res, null, null)
-	} catch (err) {
-                const error = errorHandler(err)
-                logger.error(error.message)
-                return responseBuilder(error.status, res, error.message)
-	}
-}
+// export const importFiles: importsCtrl = async (_req, res) => {
+//     try {
+//                 // await persistance.loadConfigurationFile(registrationAndInteractions.PROPERTIES)
+//                 // await persistance.loadConfigurationFile(registrationAndInteractions.EVENTS)
+//                 // await persistance.loadConfigurationFile(registrationAndInteractions.ACTIONS)
+//                 await persistance.loadConfigurationFile(registrationAndInteractions.REGISTRATIONS)
+//                 return responseBuilder(HttpStatusCode.OK, res, null, null)
+// 	} catch (err) {
+//                 const error = errorHandler(err)
+//                 logger.error(error.message)
+//                 return responseBuilder(error.status, res, error.message)
+// 	}
+// }
 
-type exportsCtrl = expressTypes.Controller<{}, {}, {}, null, {}>
+// type exportsCtrl = expressTypes.Controller<{}, {}, {}, null, {}>
  
-export const exportFiles: exportsCtrl = async (req, res) => {
-    try {
-        // await persistance.saveConfigurationFile(registrationAndInteractions.PROPERTIES)
-        // await persistance.saveConfigurationFile(registrationAndInteractions.EVENTS)
-        // await persistance.saveConfigurationFile(registrationAndInteractions.ACTIONS)
-        await persistance.saveConfigurationFile(registrationAndInteractions.REGISTRATIONS)
-        return responseBuilder(HttpStatusCode.OK, res, null, null)
-	} catch (err) {
-        const error = errorHandler(err)
-        logger.error(error.message)
-        return responseBuilder(error.status, res, error.message)
-	}
-}
+// export const exportFiles: exportsCtrl = async (req, res) => {
+//     try {
+//         // await persistance.saveConfigurationFile(registrationAndInteractions.PROPERTIES)
+//         // await persistance.saveConfigurationFile(registrationAndInteractions.EVENTS)
+//         // await persistance.saveConfigurationFile(registrationAndInteractions.ACTIONS)
+//         await persistance.saveConfigurationFile(registrationAndInteractions.REGISTRATIONS)
+//         return responseBuilder(HttpStatusCode.OK, res, null, null)
+// 	} catch (err) {
+//         const error = errorHandler(err)
+//         logger.error(error.message)
+//         return responseBuilder(error.status, res, error.message)
+// 	}
+// }
 
 type healthCheckCtrl = expressTypes.Controller<{}, {}, {}, { Redis: string, Gateway: string, NodeApp: string }, {}>
  
@@ -80,3 +83,33 @@ export const healthCheck: healthCheckCtrl = async (_req, res) => {
 	}
 }
 
+// exportItems
+
+type exportItemsCtrl = expressTypes.Controller<{}, {}, {}, { td: Thing }[], {}>
+
+export const exportItems: exportItemsCtrl = async (_req, res) => {
+    try {
+        const items = [] as JsonType[]
+        const oids = (await gateway.getRegistrations()).message
+        for (const oid of oids) {
+            const td = await wot.retrieveTD(oid)
+            if (td.error || !td.message) {
+                throw new Error(`Could not retrieve TD for ${oid}`)
+            } 
+            items.push({ td: cleanTD(td.message) })
+        }
+        return res.status(200).json(items)
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+    }
+}
+
+// Private functions
+
+function cleanTD(td: Thing) :Thing {
+    delete td.oid
+    delete td.id
+    return td
+}

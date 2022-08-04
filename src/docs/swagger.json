@@ -1382,6 +1382,77 @@
           }
         }
       }
+    },
+    "/api/agent/export": {
+      "get": {
+        "summary": "Exporting registered items",
+        "description": "Retrieving all registered items TDs",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ExportedItemsResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/api/agent/import": {
+      "post": {
+        "summary": "Importing registered items",
+        "description": "Register previously exported items TDs",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/bodyRegistryArray"
+              }
+            }
+          },
+          "description": "Registration info",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/Registration"
+          },
+          "400": {
+            "description": "WRONG BODY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationSuccesArray"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1610,6 +1681,16 @@
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ItemArray"
+            }
+          }
+        }
+      },
+      "ExportedItemsResponse": {
+        "description": "List of exported TDs",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ExportedItems"
             }
           }
         }
@@ -1937,6 +2018,18 @@
           }
         }
       },
+      "bodyRegistryArray": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "td": {
+              "type": "object",
+              "description": "Thing description object in JSON-LD"
+            }
+          }
+        }
+      },
       "bodyItemUpdate": {
         "properties": {
           "td": {
@@ -2046,6 +2139,18 @@
           "statusCode": {
             "type": "number",
             "description": "HTTP StatusCode from header"
+          }
+        }
+      },
+      "ExportedItems": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "td": {
+              "type": "object",
+              "description": "Thing description object in JSON-LD"
+            }
           }
         }
       }

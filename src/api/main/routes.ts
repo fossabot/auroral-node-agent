@@ -87,8 +87,11 @@ MainRouter
 
   // ***** ADMIN endpoints *****
   .get('/agent/info', json(), admin.getConfiguration)
-  .get('/agent/imports', json(), admin.importFiles)
-  .get('/agent/exports', json(), admin.exportFiles)
+  .get('/agent/export', json(), admin.exportItems)
+  .post('/agent/import', json(), registry.postRegistrations)
   .get('/agent/healthcheck', json(), admin.healthCheck)
+    // .get('/agent/imports', json(), admin.importFiles)
+  // .get('/agent/exports', json(), admin.exportFiles)
+
 
 export { MainRouter }
