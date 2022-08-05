@@ -18,28 +18,20 @@ enum XmppNotificationTypes {
     CONTRACT_ITEM_REMOVE = 'contractsItemRemove'
 }
 
-// User sending notifications
-const XMPP_USER = 'auroral-dev-user'
-
 export const listenForNotifications = () => {
     return function (req, res, _next) {
         const { nid } = req.params
         const data = req.body
         const sourceoid = req.headers.sourceoid as string
-        if (sourceoid === XMPP_USER) {
-            notificationsSwitch(nid, data)
-            .then(() => { 
-                return responseBuilder(HttpStatusCode.OK, res, null)
-            })
-            .catch((err) => {
-                const error = errorHandler(err)
-                logger.error(error.message)
-                return responseBuilder(HttpStatusCode.OK, res, null)
-            })
-        } else {
-            logger.error('The user ' + sourceoid + ' cannot send notifications')
-            return responseBuilder(HttpStatusCode.FORBIDDEN, res, 'Notification sent by unauthorized user')
-        }
+        notificationsSwitch(nid, data)
+        .then(() => { 
+            return responseBuilder(HttpStatusCode.OK, res, null)
+        })
+        .catch((err) => {
+            const error = errorHandler(err)
+            logger.error(error.message)
+            return responseBuilder(HttpStatusCode.OK, res, null)
+        })
     } as notifListenerController
 }
 
