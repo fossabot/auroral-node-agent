@@ -141,7 +141,7 @@
     "/api/registration": {
       "post": {
         "summary": "Register an item",
-        "description": "Register an object in the AURORAL platform.\n\nFor the registration AURORAL uses W3C Thing Descriptions, and optional parameters to send additional information to the platform. \n- td: [Mandatory] Thing Description Object.\n- avatar: [Optional] Base64 image representation for the object. It will be displayed in the Neighbourhood Manager.\n\nFor creating a Thing Description please refer [here](https://www.w3.org/TR/wot-thing-description/), note that besides the standard, other fields are accepted. Currently the **adapterId** and the **@type**.\n- adapterId: It supports adding an additional ID that would help the integrator map the object to the local infrastructure. If it is not included it will be equal to the AURORAL object ID (oid).\n- @type: Can be added at global level and also for each interaction. Describes the type of object or interaction respect to the AURORAL ontology. For list of available values refer to the ontology.\n\nOr use the online [editor](https://eclipse.github.io/editdor/).\n\nNote: An AURORAL object ID or OID will be automatically added during the registration under the field **id**. This id will be the same as the OID in the AURORAL platform.\n",
+        "description": "Register an object in the AURORAL platform.\n\nFor the registration AURORAL uses W3C Thing Descriptions, and optional parameters to send additional information to the platform. \n- td: [Mandatory] Thing Description Object.\n- avatar: [Optional] Base64 image representation for the object. It will be displayed in the Neighbourhood Manager.\n\nFor creating a Thing Description please refer [here](https://www.w3.org/TR/wot-thing-description/), note that besides the standard, other fields are accepted. Currently the **adapterId** and the **@type**.\n- adapterId: It supports adding an additional ID that would help the integrator map the object to the local infrastructure. If it is not included it will be equal to the AURORAL object ID (oid).\n- @type: Can be added at global level and also for each interaction. Describes the type of object or interaction respect to the AURORAL ontology. For list of available values refer to the ontology.\n\nOr use the online [editor](https://eclipse.github.io/editdor/).\n\nExample TDs can be found in [repository](https://github.com/AuroralH2020/auroral-thing-descriptions)\n\nNote: An AURORAL object ID or OID will be automatically added during the registration under the field **id**. This id will be the same as the OID in the AURORAL platform.\n",
         "security": [
           {
             "basicAuth": []
@@ -2057,7 +2057,7 @@
       "SparqlRequestObject": {
         "description": "Sparql query",
         "type": "string",
-        "example": "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \\nSELECT * WHERE { ?sub ?pred ?obj . } \\nLIMIT 10",
+        "example": "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT * WHERE { ?sub ?pred ?obj . } LIMIT 10",
         "default": ""
       },
       "NodeArray": {

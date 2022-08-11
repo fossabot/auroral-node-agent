@@ -2,6 +2,7 @@
  * Error handler
  */
 
+import { HTTPError } from 'got/dist/source'
 import { HttpStatusCode } from './http-status-codes'
 import { logger } from './logger'
 
@@ -33,21 +34,29 @@ export class MyError {
 }
 
 export const errorHandler = (err: unknown): MyError => {
-    if (err instanceof MyError) {
-        return err
-    } else if (err instanceof Error) {
-        return {
-            status: HttpStatusCode.INTERNAL_SERVER_ERROR,
-            message: err.message,
-            source: ErrorSource.UNKNOWN
-        }
-    } else {
+    try {
+        if (err instanceof MyError) {
+            return err
+        } else if (err instanceof HTTPError) {
+            return {
+                message: (err.response.body as { statusCodeReason: string }).statusCodeReason,
+                status: err.response.statusCode,
+            } 
+        } else if (err instanceof Error) {
+            console.log('basic ERROR TYPE')
+             return {
+                ...err, // Workaround for ErrnoException type (code, path, syscall, stack, ...)
+                message: err.message,
+                status: HttpStatusCode.INTERNAL_SERVER_ERROR
+             }
+         }
+        throw new Error('Unknown error')
+    } catch {
         logger.warn('Caught unexpected error type...')
         logger.warn('Error type: ' + typeof err)
         return {
-            status: HttpStatusCode.INTERNAL_SERVER_ERROR,
             message: 'Server error',
-            source: ErrorSource.UNKNOWN
+            status: HttpStatusCode.INTERNAL_SERVER_ERROR
         }
     }
 }
