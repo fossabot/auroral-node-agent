@@ -24,7 +24,7 @@ export const login: loginCtrl = async (req, res) => {
         const error = errorHandler(err)
         logger.error(error.message)
         // Harcoded response message, TBD fix in gateway
-        return responseBuilder(error.status, res, 'Timeout while waiting for establishing TLS, please retry')
+        return responseBuilder(error.status, res, error.message)
 	}
 }
  
@@ -43,6 +43,6 @@ export const logout: logoutCtrl = async (req, res) => {
         const error = errorHandler(err)
         logger.error(error.message)
         // Harcoded response message, TBD fix in gateway
-        return responseBuilder(error.status, res, 'Timeout while waiting for establishing TLS, please retry')
+        return responseBuilder(error.status, res, error.message)
 	}
 }

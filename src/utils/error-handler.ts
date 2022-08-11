@@ -43,7 +43,6 @@ export const errorHandler = (err: unknown): MyError => {
                 status: err.response.statusCode,
             } 
         } else if (err instanceof Error) {
-            console.log('basic ERROR TYPE')
              return {
                 ...err, // Workaround for ErrnoException type (code, path, syscall, stack, ...)
                 message: err.message,
