@@ -523,6 +523,43 @@
         }
       }
     },
+    "/api/discovery/items/contract/{ctid}/origin/{oid}": {
+      "get": {
+        "summary": "Retrieve items existing in a contract",
+        "description": "See all the items you are sharing data with, related to given oid\n\nYou need to provide the id of the contract as a parameter and oid, which is used to define dataAccess option.\n",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "Neighbourhood Discovery"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ctid",
+            "description": "Contract id - CTID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "0000-0000-0000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ItemArrayResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
+    },
     "/api/discovery/local/td/{id}": {
       "get": {
         "summary": "Discover a local item's semantic description",
@@ -2128,6 +2165,9 @@
                   "type": "string"
                 },
                 "name": {
+                  "type": "string"
+                },
+                "dataAccess": {
                   "type": "string"
                 },
                 "company": {

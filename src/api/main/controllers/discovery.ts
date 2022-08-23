@@ -5,7 +5,7 @@ import { logger, errorHandler } from '../../../utils'
 import { responseBuilder } from '../../../utils/response-builder'
 
 // Other imports
-import { JsonType } from '../../../types/misc-types'
+import { ContractItemType, JsonType } from '../../../types/misc-types'
 import { Registration } from '../../../persistance/models/registrations'
 import { gateway } from '../../../microservices/gateway'
 import { wot } from '../../../microservices/wot'
@@ -87,17 +87,20 @@ type organisationItemsCtrl = expressTypes.Controller<{}, {}, {}, string[], {}>
         }
     }
 
-type getContractItemsCtrl = expressTypes.Controller<{ ctid: string }, {}, {}, string[], {}>
+type getContractItemsCtrl = expressTypes.Controller<{ ctid: string, oid?: string }, {}, {}, ContractItemType[], {}>
 
 /**
  * Discovery endpoint LOCAL
  * Check what items can you see in a contract
  */
     export const getContractItems: getContractItemsCtrl = async (req, res) => {
-    const { ctid } = req.params
+    const { ctid, oid } = req.params
         try {
-            const data = (await gateway.contractItems(ctid)).message
-            return responseBuilder(HttpStatusCode.OK, res, null, data)
+            if (oid) {
+                return responseBuilder(HttpStatusCode.OK, res, null, (await gateway.contractItemsByOwner(ctid, oid)).message)
+            } else {
+                return responseBuilder(HttpStatusCode.OK, res, null, (await gateway.contractItems(ctid)).message)
+            }
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)

@@ -53,6 +53,15 @@ export interface IdDiscoveryType {
     objects: { oid: string }[]
 }
 
+export interface ContractItemType {
+    'oid': string,
+    'cid': string,
+    'agid': string,
+    'name': string,
+    'dataAccess': boolean,
+    'company':string
+}
+
 export interface NodeType {
     agid: string,
     cid: string,

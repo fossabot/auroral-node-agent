@@ -6,7 +6,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, IItemPrivacy, WholeContractType, CommunityType } from '../types/misc-types'
+import { JsonType, IItemPrivacy, WholeContractType, CommunityType, ContractItemType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
 import { GtwDeleteResponse, GatewayResponse, RemovalBody, GtwRegistrationResponse, GtwUpdateResponse, IdDiscoveryType, BasicResponse, GtwGetRegistrationsResponse, NodeType } from '../types/gateway-types'
@@ -219,10 +219,19 @@ export const gateway = {
      * @param {ctid: string}
      * @returns {error: boolean, message: string[]} 
     */
-    contractItems: async function(ctid: string): Promise<BasicResponse<string[]>> {
+    contractItems: async function(ctid: string): Promise<BasicResponse<ContractItemType[]>> {
         try {
             const Authorization = await getAuthorization()
-            return request('discovery/items/contract/' + ctid, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string[]>
+            return request(`discovery/items/contract/${ctid}` , 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<ContractItemType[]>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+    contractItemsByOwner: async function(ctid: string, oid: string): Promise<BasicResponse<ContractItemType[]>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request(`discovery/items/contract/${ctid}/origin/${oid}` , 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<ContractItemType[]>
         } catch (err) {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)

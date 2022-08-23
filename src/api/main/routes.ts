@@ -49,6 +49,7 @@ MainRouter
   .get('/discovery/nodes/community/:commid', json(), discovery.getCommunityNodes)
   .get('/discovery/items/organisation', json(), discovery.getOrganisationItems)
   .get('/discovery/items/contract/:ctid', json(), discovery.getContractItems)
+  .get('/discovery/items/contract/:ctid/origin/:oid', json(), discovery.getContractItems)
   //  .get('/discovery/local/neighbours', json(), discovery.discoveryLocal) // All items my gateway can see
   //  .get('/discovery/local/neighbours/:id', json(), discovery.discoveryLocal) // All items my device can see
    // LOCAL Semantic
