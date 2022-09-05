@@ -376,6 +376,13 @@ paths:
           schema:
             type: string
             default: 0000-0000-0000
+        - in: path
+          name: oid
+          description: Origin ID
+          required: true
+          schema:
+            type: string
+            default: 0000-0000-0000
       responses:
         '200':
           $ref: '#/components/responses/ItemArrayResponse'
@@ -1303,6 +1310,8 @@ components:
             nodes:
               type: string
             cid:
+              type: string
+            agid:
               type: string
             last_configuration_update:
               type: string

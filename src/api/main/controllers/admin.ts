@@ -11,6 +11,7 @@ import { Configuration } from '../../../persistance/models/configurations'
 import { JsonType } from '../../../types/misc-types'
 import { wot } from '../../../microservices/wot'
 import { Thing } from '../../../types/wot-types'
+import { Config } from '../../../config'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -28,7 +29,7 @@ export const getConfiguration: configurationCtrl = async (_req, res) => {
     try {
         const config = await persistance.getConfigInfo()
         logger.info('Requested configuration file')
-        return responseBuilder(HttpStatusCode.OK, res, null, config)
+        return responseBuilder(HttpStatusCode.OK, res, null, { ...config, agid: Config.GATEWAY.ID })
 	} catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)

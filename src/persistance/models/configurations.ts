@@ -18,6 +18,7 @@ export type Configuration = {
     organisation: string
     nodes: string
     partners: string
+    agid: string
 }
 
 /**
