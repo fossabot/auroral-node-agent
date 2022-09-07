@@ -53,7 +53,7 @@ export class RedisFactory {
    */
   public health = async (): Promise<boolean> => {
       const reply = await this.client.ping()
-      logger.debug('Redis is ready: ' + reply)
+    //   logger.debug('Redis is ready: ' + reply)
       return true
   }
 
