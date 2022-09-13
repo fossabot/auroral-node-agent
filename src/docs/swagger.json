@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "AURORAL Node interface - developed by bAvenir. Standard API to interact with the AURORAL platform.",
-    "version": "1.0.0",
+    "version": "3.0.2",
     "title": "Auroral Node Agent",
     "contact": {
       "name": "API Support",
