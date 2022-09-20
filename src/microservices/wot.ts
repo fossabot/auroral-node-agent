@@ -162,7 +162,17 @@ export const wot = {
             logger.warn('Error processing SPARQL query ...')
             throw new MyError(error.message, error.status)
         }
-    }
+    },
+    searchFederativeSPARQL: async function(query: string, endpoints: string[]): Promise<BasicResponse<JsonType>> {
+        try {
+            const response = await requestSPARQL('api/search/fed-sparql', 'POST', query, SparqlHeader, { endpoints: endpoints.join(',') })
+            return response
+        } catch (err) {
+            const error = errorHandler(err)
+            logger.warn('Error processing SPARQL query ...')
+            throw new MyError(error.message, error.status)
+        }
+    },
 }
 
 // Private functions
@@ -181,7 +191,7 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
     return response.body as JsonType
 }
 
-const requestSPARQL = async (endpoint: string, method: Method, body?: string, headers?: Headers, searchParams?: string): Promise<JsonType> => {
+const requestSPARQL = async (endpoint: string, method: Method, body?: string, headers?: Headers, searchParams?: JsonType): Promise<JsonType> => {
     const response = await callSPARQL(endpoint, { method, body, headers, searchParams }) as PlainResponse
     if (response.statusCode >= 500) {
         throw new MyError('Error reaching WoT server -- status code 500', HttpStatusCode.INTERNAL_SERVER_ERROR)

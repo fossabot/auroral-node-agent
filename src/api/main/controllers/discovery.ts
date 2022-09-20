@@ -148,20 +148,61 @@ export const discoverLocalSemantic: discoveryLocalSemanticCtrl = async (req, res
     }
 }
 
-type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: string }, string | undefined, {}, Registration[] | Thing[], {}>
+type discoveryRemoteCtrl = expressTypes.Controller<{ id: string }, string | undefined, { query?: string }, Registration[] | Thing[], {}>
 
 /**
- * Discovery endpoint REMOTE
- * Check what remote objects can you see and fetch TDs (and data??)
- * If no originId, it is assumed that you originate the call from your GATEWAY
- * (Gateways can only reach other gateways, while items might see other items)
+ * Used by WOT federative calls
+ * returning without wrapper
+ * @param req 
+ * @param res 
+ * @returns 
  */
  export const discoveryRemote: discoveryRemoteCtrl = async (req, res) => {
-    const { id, originId } = req.params
-    const sparql = req.body  
+    const { id } = req.params
+    const sparql = req.query.query
     try {
-        const params = { sparql, originId }
+        const params = { sparql }
         const data = await gateway.discoveryRemote(id, params)
+        if (data.error) {
+            const response: string = data.statusCodeReason
+            logger.warn('Discovery failed')
+            return responseBuilder(data.statusCode, res, response)
+          } else {
+            try {
+                const response = data.message[0].message.wrapper.message
+                // Return without wrapping
+                return res.status(200).json(response)
+            } catch (err) {
+                const error = errorHandler(err)
+                logger.error(error.message)
+                return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Destination Node could not parse the Sparql query, please revise syntax')
+            }
+          } 
+      } catch (err) {
+        logger.warn('AGID:' + id + ' not reachable')
+        // return empty triplet
+        const empty = {
+            'head': {
+              'vars': [
+                'sub',
+                'pred',
+                'obj',
+              ]
+            },
+            'results': {
+              'bindings': []
+            }
+          }
+        return res.status(200).json(empty)
+      }
+}
+
+type discoveryTdRemoteCtrl = expressTypes.Controller<{ id: string, originId: string }, string | undefined, {}, Thing[], {}>
+
+ export const discoveryTdRemote: discoveryTdRemoteCtrl = async (req, res) => {
+    const { id, originId } = req.params
+    try {
+        const data = await gateway.discoveryRemote(id, { sparql: undefined, originId })
         if (data.error) {
             const response: string = data.statusCodeReason
             logger.warn('Discovery failed')
@@ -181,5 +222,56 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string, originId?: stri
         logger.error(error.message)
         return responseBuilder(error.status, res, error.message)
       }
-  }
+}
 
+type federativeDiscoveryRemoteCtrl = expressTypes.Controller<{ }, string, { agids: string }, JsonType, {}>
+
+export const discoveryFederative: federativeDiscoveryRemoteCtrl = async (req, res) => {
+    const sparql = req.body
+    const agids = req.query.agids
+    try {
+        if (!agids) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing agids')
+        }
+        if (!sparql) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing sparql query')
+        }
+        // build URL to ask remote WOT
+        const urls = agids.split(',').map((agid) => 'http://auroral-agent:4000/api/discovery/remote/semantic/' + agid)
+        const data = await wot.searchFederativeSPARQL(sparql, urls)
+        return responseBuilder(HttpStatusCode.OK, res, null, data)
+      } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+      }
+}
+
+type federativeCommunityDiscoveryCtrl = expressTypes.Controller<{ commid: string }, string, {}, JsonType, {}>
+
+export const discoveryCommunityFederative: federativeCommunityDiscoveryCtrl = async (req, res) => {
+    const sparql = req.body
+    const { commid } = req.params
+    try {
+        if (!commid) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing agids')
+        }
+        if (!sparql) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing sparql query')
+        }
+        // build URL to ask remote WOT
+        const communityInfo = (await gateway.communityNodes(commid)).message
+        if (communityInfo.length === 0) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'There are no nodes in this community')
+        }
+        const agids = communityInfo.map((node) => node.agid)
+        console.log(`AGIDS: ${agids}`)
+        const urls = agids.map((agid) => 'http://auroral-agent:4000/api/discovery/remote/semantic/' + agid)
+        const data = await wot.searchFederativeSPARQL(sparql, urls)
+        return responseBuilder(HttpStatusCode.OK, res, null, data)
+      } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+      }
+}

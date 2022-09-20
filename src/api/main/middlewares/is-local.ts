@@ -19,19 +19,26 @@ import { Config } from '../../../config'
     TD = 'TD'
   }
  
- type isLocalController = expressTypes.Controller<{ id: string, originId: string }, string | undefined, {}, void, {}>
+ type isLocalController = expressTypes.Controller<{ id: string, originId?: string }, string | undefined, { query?: string }, void, {}>
  
  export const isLocal = (type: SemanticType) => {
      return function (req, res, next) {
          const { id } = req.params
-         const body = req.body
+         const query = req.query.query
          isRegistered(id)
          .then((local) => { 
              if (local || Config.GATEWAY.ID === id) {
                  logger.debug('Local discovery request')
-                 localDiscovery(id, type, body)
+                 localDiscovery(id, type, query)
                  .then((response) => {
+                    // IF SEMANTIC -> without wrapper
+                    if (type === SemanticType.TD) {
+                        // wrapping
                      return responseBuilder(HttpStatusCode.OK, res, null, response.message)
+                    } else {
+                        // without wrapping
+                        res.status(200).json(response.message)
+                    }
                  })
                  .catch((err: unknown) => {
                      const error = errorCallback(err)

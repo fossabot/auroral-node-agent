@@ -1,0 +1,1469 @@
+openapi: 3.0.0
+info:
+  description: AURORAL Node interface - developed by bAvenir. Standard API to interact with the AURORAL platform.
+  version: 3.0.2
+  title: Auroral Node Agent
+  contact:
+    name: API Support
+    url: https://github.com/AuroralH2020/auroral-node/wiki
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+security:
+  - type:
+      - http
+  - scheme:
+      - basic
+externalDocs:
+  description: AURORAL platform
+  url: https://auroral.dev.bavneir.eu
+tags:
+  - name: Authentication
+    description: Login/Logout of local infrastructure into AURORAL
+  - name: Registry
+    description: Registration of new devices or services into AURORAL
+  - name: Neighbourhood Discovery
+    description: Retrieve visible objects in the AURORAL platform
+  - name: Local Semantic Discovery
+    description: Retrieve semantic metadata about your local infrastructure
+  - name: Remote Semantic Discovery
+    description: Retrieve semantic metadata about remote infrastructures
+  - name: Consumption
+    description: Resource consumption calls, request properties or publish events among others among others
+  - name: Collaboration
+    description: Check your partnerships and contracts
+  - name: Admin
+    description: Monitor and manage your Node
+paths:
+  /api/login/{id}:
+    get:
+      summary: Connect an item
+      description: Log in your gateway instance or any object registered with it (Providing its id)
+      tags:
+        - Authentication
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/logout/{id}:
+    get:
+      summary: Disconnect an item
+      description: Logout your gateway instance or any object registered with it (Providing its id)
+      tags:
+        - Authentication
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/registration:
+    post:
+      summary: Register an item
+      description: |
+        Register an object in the AURORAL platform.
+
+        For the registration AURORAL uses W3C Thing Descriptions, and optional parameters to send additional information to the platform. 
+        - td: [Mandatory] Thing Description Object.
+        - avatar: [Optional] Base64 image representation for the object. It will be displayed in the Neighbourhood Manager.
+
+        For creating a Thing Description please refer [here](https://www.w3.org/TR/wot-thing-description/), note that besides the standard, other fields are accepted. Currently the **adapterId** and the **@type**.
+        - adapterId: It supports adding an additional ID that would help the integrator map the object to the local infrastructure. If it is not included it will be equal to the AURORAL object ID (oid).
+        - @type: Can be added at global level and also for each interaction. Describes the type of object or interaction respect to the AURORAL ontology. For list of available values refer to the ontology.
+
+        Or use the online [editor](https://eclipse.github.io/editdor/).
+
+        Example TDs can be found in [repository](https://github.com/AuroralH2020/auroral-thing-descriptions)
+
+        Note: An AURORAL object ID or OID will be automatically added during the registration under the field **id**. This id will be the same as the OID in the AURORAL platform.
+      security:
+        - basicAuth: []
+      tags:
+        - Registry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bodyRegistry'
+        description: Registration info
+        required: true
+      responses:
+        '201':
+          $ref: '#/components/responses/Registration'
+        '400':
+          description: WRONG BODY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationSuccesArray'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    get:
+      summary: Get all item OIDs
+      description: |
+        See what objects has your gateway registered in the platform. 
+
+        The response is a list of OIDs.
+      security:
+        - basicAuth: []
+      tags:
+        - Registry
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericStringArray'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    put:
+      summary: Update an item
+      description: |
+        Update an object in the AURORAL platform.
+
+        Fields:
+        - td: [Mandatory] Thing Description Object.
+        - avatar: [Optional] Base64 image representation for the object. It will be displayed in the Neighbourhood Manager.
+
+        Important note, **update restrictions** inside the td:
+        - adapterId: Cannot be changed after registration.
+        - id: Cannot be changed after registration. It is assigned by the platform on registration.
+        The response will contain **error** reason on failure and **success** if the update was completed.
+      security:
+        - basicAuth: []
+      tags:
+        - Registry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bodyItemUpdate'
+        description: Update details
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/Update'
+        '400':
+          description: WRONG BODY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateResponseArray'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/registration/{id}:
+    get:
+      summary: Get item registration info
+      description: Obtain the information of a concrete registered item by providing the OID as parameter.
+      security:
+        - basicAuth: []
+      tags:
+        - Registry
+      parameters:
+        - in: path
+          required: true
+          name: id
+          description: Object id - OID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/RedisObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/registration/oid/{adapterId}:
+    get:
+      summary: Get item OID by adapterId
+      description: Obtain the OID of a concrete registered item by providing the adapterId as parameter.
+      security:
+        - basicAuth: []
+      tags:
+        - Registry
+      parameters:
+        - in: path
+          required: true
+          name: adapterId
+          description: adapterId
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/ObjectOIDObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/registration/remove:
+    post:
+      summary: Remove an item
+      description: Unregister an object from the AURORAL platform
+      security:
+        - basicAuth: []
+      tags:
+        - Registry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bodyUnRegistry'
+        description: List of OIDs that have to be removed from the platform
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/Remove'
+        '400':
+          $ref: '#/components/responses/Remove'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/nodes/organisation:
+    get:
+      summary: Retrieve all nodes in my organisation
+      description: See all the agid of the nodes in your organisation so you can send discovery queries to them
+      security:
+        - basicAuth: []
+      tags:
+        - Neighbourhood Discovery
+      responses:
+        '200':
+          $ref: '#/components/responses/NodeArrayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/nodes/organisation/{cid}:
+    get:
+      summary: Retrieve nodes from other organisation
+      description: |
+        See all the nodes that you can reach from a different organisation. 
+
+        Your node has to be part of that partnership.
+      security:
+        - basicAuth: []
+      tags:
+        - Neighbourhood Discovery
+      parameters:
+        - in: path
+          name: cid
+          description: Organisation id - CID
+          required: true
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/NodeArrayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/nodes/community/{commid}:
+    get:
+      summary: Retrieve nodes from a community
+      description: |
+        See all the nodes that you can reach in a community. 
+
+        Your node has to be part of that community to see something.
+      security:
+        - basicAuth: []
+      tags:
+        - Neighbourhood Discovery
+      parameters:
+        - in: path
+          name: commid
+          description: Community id - COMMID
+          required: true
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/NodeArrayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/items/organisation:
+    get:
+      summary: Retrieve all my organisation items
+      description: |
+        See all items in your organisation. 
+
+        See only items that are enabled.
+      security:
+        - basicAuth: []
+      tags:
+        - Neighbourhood Discovery
+      responses:
+        '200':
+          $ref: '#/components/responses/ItemArrayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/items/contract/{ctid}:
+    get:
+      summary: Retrieve items existing in a contract
+      description: |
+        See all the items you are sharing data with. 
+
+        You need to provide the id of the contract as a parameter.
+      security:
+        - basicAuth: []
+      tags:
+        - Neighbourhood Discovery
+      parameters:
+        - in: path
+          name: ctid
+          description: Contract id - CTID
+          required: true
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/ItemArrayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/items/contract/{ctid}/origin/{oid}:
+    get:
+      summary: Retrieve items existing in a contract
+      description: |
+        See all the items you are sharing data with, related to given oid
+
+        You need to provide the id of the contract as a parameter and oid, which is used to define dataAccess option.
+      security:
+        - basicAuth: []
+      tags:
+        - Neighbourhood Discovery
+      parameters:
+        - in: path
+          name: ctid
+          description: Contract id - CTID
+          required: true
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          description: Origin ID
+          required: true
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/ItemArrayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/local/td/{id}:
+    get:
+      summary: Discover a local item's semantic description
+      description: Obtain the TD of a concrete registered item by providing the ID as parameter.
+      security:
+        - basicAuth: []
+      tags:
+        - Local Semantic Discovery
+      parameters:
+        - in: path
+          required: true
+          name: id
+          description: Object id - OID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/SemanticObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/local/semantic:
+    post:
+      summary: SPARQL query to your infrastructure
+      description: Send a discovery query to your gateway to retrieve semantic data from your infrastructure
+      security:
+        - basicAuth: []
+      tags:
+        - Local Semantic Discovery
+      requestBody:
+        $ref: '#/components/requestBodies/SparqlRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SemanticObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/remote/td/{id}/{originId}:
+    get:
+      summary: Discover a remote item's semantic description
+      description: |
+        Remote discovery. Get thing descriptions of remote objects that some of your objects can see. 
+
+        Set the OID of the object you want to reach with **id** parameter and set the OID of the object initiating the request with **originID** (originID must be a neighbour of the target oid). 
+      security:
+        - basicAuth: []
+      tags:
+        - Remote Semantic Discovery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: originId
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/SemanticObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/remote/semantic:
+    post:
+      summary: SPARQL federative query to remote infrastructure - EXPERIMENTAL
+      description: Send a federative discovery query to a remote gateways to retrieve semantic data. Experimental version, a final version of this feature will be available in future releases
+      security:
+        - basicAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/SparqlRequest'
+      tags:
+        - Remote Semantic Discovery
+      parameters:
+        - in: query
+          name: agids
+          description: Comma separated list of remote AGIDS
+          schema:
+            type: string
+            default: agid1,agid2
+          style: form
+          required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/SemanticObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/discovery/remote/semantic/community/{commid}:
+    post:
+      summary: SPARQL federative query to remote infrastructure - EXPERIMENTAL
+      description: Send a federative discovery query to a remote gateways in community to retrieve semantic data. Experimental version, a final version of this feature will be available in future releases
+      security:
+        - basicAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/SparqlRequest'
+      tags:
+        - Remote Semantic Discovery
+      parameters:
+        - in: path
+          name: commid
+          required: true
+          description: Community ID
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/SemanticObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/properties/{id}/{oid}/{pid}:
+    get:
+      summary: Read a property
+      description: Request to get a remote property.
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          required: true
+          description: REMOTE Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: pid
+          required: true
+          description: Property of the remote object - PID
+          schema:
+            type: string
+        - in: query
+          name: params
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          style: form
+          explode: true
+      responses:
+        '200':
+          $ref: '#/components/responses/ConsumptionObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    put:
+      summary: Update a property
+      description: Request the update of a remote property
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          required: true
+          description: REMOTE Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: pid
+          required: true
+          description: Property of the remote object - PID
+          schema:
+            type: string
+        - in: query
+          name: params
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          style: form
+          explode: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: Update property
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/ConsumptionObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/events/remote/channels/{id}/{oid}:
+    get:
+      summary: Get event channels
+      description: Get event channels of a remote object
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          required: true
+          description: REMOTE Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericStringArray'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/events/remote/{id}/{oid}/{eid}:
+    get:
+      summary: Channel status
+      description: Get status of a remote event channel
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          required: true
+          description: REMOTE Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: eid
+          required: true
+          description: Event of the remote object - EID
+          schema:
+            type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    post:
+      summary: Subscribe channel
+      description: Subscribe to remote event channel
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          required: true
+          description: REMOTE Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: eid
+          required: true
+          description: Event of the remote object - EID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    delete:
+      summary: Unsubscribe channel
+      description: Unsubscribe to remote event channel
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: oid
+          required: true
+          description: REMOTE Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: eid
+          required: true
+          description: Event of the remote object - EID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/events/local/{id}/{eid}:
+    post:
+      summary: Create channel
+      description: Create my event channel
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: eid
+          required: true
+          description: ID of my event - EID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    put:
+      summary: Send message
+      description: Put a message in my event channel
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: eid
+          required: true
+          description: ID of my event - EID
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        description: Body of the message
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    delete:
+      summary: Remove channel
+      description: Delete my event channel
+      security:
+        - basicAuth: []
+      tags:
+        - Consumption
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Object id - OID
+          schema:
+            type: string
+            default: 0000-0000-0000
+        - in: path
+          name: eid
+          required: true
+          description: ID of my event - EID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericString'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/collaboration/partners:
+    get:
+      summary: Get your friend's CIDs
+      description: Displays all partners that are in friendship with our organisation. Response list of CIDs.
+      security:
+        - basicAuth: []
+      tags:
+        - Collaboration
+      responses:
+        '200':
+          $ref: '#/components/responses/GenericStringArray'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/collaboration/partners/{cid}:
+    get:
+      summary: Friend's info
+      description: Get info about my partners organisation
+      security:
+        - basicAuth: []
+      tags:
+        - Collaboration
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          description: Partners organisation CID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/PartnerInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/collaboration/contracts/{cid}:
+    get:
+      summary: Check if you have a contract with a friend
+      description: Contract info stored locally. Retrieve the items that you are sharing with a given organisation.
+      security:
+        - basicAuth: []
+      tags:
+        - Collaboration
+      parameters:
+        - in: path
+          required: true
+          name: cid
+          description: Organisation id - CID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/ContractInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/collaboration/communities:
+    get:
+      summary: Get the communities where your node participates
+      description: Displays the communities ids, name and a brief description
+      security:
+        - basicAuth: []
+      tags:
+        - Collaboration
+      responses:
+        '200':
+          $ref: '#/components/responses/CommunityArrayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/agent/info:
+    get:
+      summary: Node information
+      description: Information about your node
+      security:
+        - basicAuth: []
+      tags:
+        - Admin
+      responses:
+        '200':
+          $ref: '#/components/responses/AgentInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/agent/healthcheck:
+    get:
+      summary: Components status
+      description: See status of the adapter main components
+      security:
+        - basicAuth: []
+      tags:
+        - Admin
+      responses:
+        '200':
+          $ref: '#/components/responses/AgentHealth'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/agent/export:
+    get:
+      summary: Exporting registered items
+      description: Retrieving all registered items TDs
+      security:
+        - basicAuth: []
+      tags:
+        - Admin
+      responses:
+        '200':
+          $ref: '#/components/responses/ExportedItemsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /api/agent/import:
+    post:
+      summary: Importing registered items
+      description: Register previously exported items TDs
+      security:
+        - basicAuth: []
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bodyRegistryArray'
+        description: Registration info
+        required: true
+      responses:
+        '201':
+          $ref: '#/components/responses/Registration'
+        '400':
+          description: WRONG BODY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationSuccesArray'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/DefaultError'
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  requestBodies:
+    SparqlRequest:
+      content:
+        text/plain:
+          schema:
+            $ref: '#/components/schemas/SparqlRequestObject'
+      description: 'SPARQL query: Filter out specific content that you wish to see. I.E: Get me only thermometers'
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    DefaultError:
+      description: Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GenericString:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenericResponse'
+    GenericStringArray:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenericResponseArray'
+    Registration:
+      description: Object Registered
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrationSuccesArray'
+    Update:
+      description: Object Updated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateResponseArray'
+    Remove:
+      description: Object Removed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RemoveResponseArray'
+    RedisObject:
+      description: Item Info stored in Redis
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RedisRegistration'
+    ObjectOIDObject:
+      description: Object OID
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObjectOIDByAdapterId'
+    SemanticObject:
+      description: Thing description or SPARQL response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenericResponseObject'
+    ConsumptionObject:
+      description: Measurement data formatted as JSON-LD
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenericResponseObject'
+    PartnerInfo:
+      description: Measurement data formatted as JSON-LD
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PartnerInfoResponse'
+    ContractInfo:
+      description: Measurement data formatted as JSON-LD
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContractInfoResponse'
+    AgentInfo:
+      description: Information about your Node
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AgentInfoResponse'
+    AgentHealth:
+      description: Information about status of Node services
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AgentHealthResponse'
+    NodeArrayResponse:
+      description: List of reachable nodes and its company info
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NodeArray'
+    CommunityArrayResponse:
+      description: List of communities
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CommunityArray'
+    ItemArrayResponse:
+      description: List of reachable items
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ItemArray'
+    ExportedItemsResponse:
+      description: List of exported TDs
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExportedItems'
+  schemas:
+    GenericResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+          example: 200
+    GenericResponseArray:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+          example: 200
+    GenericResponseObject:
+      type: object
+      properties:
+        message:
+          type: object
+          description: JSON document
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+          example: 200
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human readable Error
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    RegistrationSuccesArray:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              oid:
+                type: string
+              password:
+                type: string
+              error:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    UpdateResponseArray:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              oid:
+                type: string
+              error:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    RemoveResponseArray:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              oid:
+                type: string
+              statusCode:
+                type: number
+                example: 200
+              error:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    ObjectOIDByAdapterId:
+      type: object
+      properties:
+        message:
+          type: string
+          description: OID
+          example: 00000000-0000-0000-0000-000000000000
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+          example: 200
+    RedisRegistration:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            type:
+              type: string
+            adapterId:
+              type: string
+            name:
+              type: string
+            privacy:
+              type: string
+            properties:
+              type: array
+              items:
+                type: string
+            events:
+              type: array
+              items:
+                type: string
+            actions:
+              type: array
+              items:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    PartnerInfoResponse:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            name:
+              type: string
+            nodes:
+              type: array
+              items:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    ContractInfoResponse:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            ctid:
+              type: string
+              description: Contract ID
+            cid:
+              type: string
+              description: Organisation ID
+            items:
+              type: array
+              items:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    AgentInfoResponse:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            registrations:
+              type: string
+            partners:
+              type: string
+            organisation:
+              type: string
+            last_privacy_update:
+              type: string
+            last_partners_update:
+              type: string
+            nodes:
+              type: string
+            cid:
+              type: string
+            agid:
+              type: string
+            last_configuration_update:
+              type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    AgentHealthResponse:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            Redis:
+              type: string
+              default: OK
+            Gateway:
+              type: string
+              default: OK
+            NodeApp:
+              type: string
+              default: OK
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    bodyRegistry:
+      properties:
+        td:
+          type: object
+          description: Thing description object in JSON-LD
+        avatar:
+          type: string
+          description: OPTIONAL Base64 representation of an image
+    bodyRegistryArray:
+      type: array
+      items:
+        type: object
+        properties:
+          td:
+            type: object
+            description: Thing description object in JSON-LD
+    bodyItemUpdate:
+      properties:
+        td:
+          type: object
+          description: Thing description object in JSON-LD
+        avatar:
+          type: string
+          description: OPTIONAL Base64 representation of an image
+    bodyUnRegistry:
+      type: object
+      properties:
+        oids:
+          type: array
+          description: OIDs of those objects you would like to unregister
+          items:
+            type: string
+    SparqlRequestObject:
+      description: Sparql query
+      type: string
+      example: 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT * WHERE { ?sub ?pred ?obj . } LIMIT 10'
+      default: ''
+    NodeArray:
+      description: Array of nodes with organisation info
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              agid:
+                type: string
+              cid:
+                type: string
+              company:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    CommunityArray:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              commId:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    ItemArray:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            type: object
+            properties:
+              oid:
+                type: string
+              cid:
+                type: string
+              name:
+                type: string
+              dataAccess:
+                type: string
+              company:
+                type: string
+        statusCode:
+          type: number
+          description: HTTP StatusCode from header
+    ExportedItems:
+      type: array
+      items:
+        type: object
+        properties:
+          td:
+            type: object
+            description: Thing description object in JSON-LD
