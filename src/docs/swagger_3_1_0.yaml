@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: AURORAL Node interface - developed by bAvenir. Standard API to interact with the AURORAL platform.
-  version: 3.0.2
+  version: 3.1.0
   title: Auroral Node Agent
   contact:
     name: API Support
@@ -429,7 +429,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         default:
           $ref: '#/components/responses/DefaultError'
-   /api/discovery/remote/td/{id}/{originId}:
+  /api/discovery/remote/td/{agid}:
     get:
       summary: Discover a remote item's semantic description
       description: |
@@ -442,19 +442,20 @@ paths:
         - Remote Semantic Discovery
       parameters:
         - in: path
-          name: id
+          name: agid
           required: true
-          description: Object id - OID
+          description: Remote gateway - agid
           schema:
             type: string
             default: 0000-0000-0000
-        - in: path
-          name: originId
-          required: true
-          description: Object id - OID
+        - in: query
+          name: oids
+          description: Comma separated list of remote OIDS
           schema:
             type: string
-            default: 0000-0000-0000
+            default: oid1,oid2
+          style: form
+          required: true
       responses:
         '200':
           $ref: '#/components/responses/SemanticObject'
