@@ -86,11 +86,11 @@ export const discovery: DiscoveryCtrl = async (req, res) => {
         logger.info('Received TD discovery to ' + oid)
         // for all requeted oids
         const oidsArray = req.body.oids.split(',')
-        const data = await Promise.all(oidsArray.map(async (oid: string) => {
+        const data = await Promise.all(oidsArray.map(async (objectId: string) => {
           try {
-              return  { oid, success: true, td: (await Data.tdDiscovery(oid, originId, relationship, items)).message }
+              return  { oid: objectId, success: true, td: (await Data.tdDiscovery(objectId, originId, relationship, items)).message }
           } catch {
-            return { oid, success: false }
+            return { oid: objectId, success: false }
           }
         })) as JsonType
         return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
