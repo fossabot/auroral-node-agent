@@ -52,14 +52,14 @@ MainRouter
   // .get('/discovery/local/neighbours', json(), discovery.discoveryLocal) // All items my gateway can see
   // .get('/discovery/local/neighbours/:id', json(), discovery.discoveryLocal) // All items my device can see
   // LOCAL Semantic
-  .get('/discovery/local/td/:id', json(), discovery.discoverLocalTd)
+  .get('/discovery/local/td/:oid', json(), discovery.discoverLocalTd)
   .post('/discovery/local/semantic', text(), discovery.discoverLocalSemantic) // Expects plain text
   // REMOTE Semantic
-  .get('/discovery/remote/td/:id/:originId', json(), isLocal(SemanticType.TD), discovery.discoveryTdRemote)
+  .get('/discovery/remote/td/:agid', json(), isLocal(SemanticType.TD), discovery.discoveryTdRemote)
   .post('/discovery/remote/semantic', text(), discovery.discoveryFederative)
   .post('/discovery/remote/semantic/community/:commid', text(), discovery.discoveryCommunityFederative)
   // WOT internal use for federated queries 
-  .get('/discovery/remote/semantic/:id', text(), isLocal(SemanticType.SPARQL), discovery.discoveryRemote)
+  .get('/discovery/remote/semantic/:agid', text(), isLocal(SemanticType.SPARQL), discovery.discoveryRemote)
   // TBD .post('/discovery/semantic/:agid', ctrl.discoveryRemote)
   // TBD discover neighbours from specific CID or CTID
 

@@ -246,11 +246,11 @@ export const gateway = {
      * @param {oid: string}
      * @returns {error: boolean, message: [oid: string]} 
      */
-    discoveryRemote: async function(oid: string, params: { sparql?: string, originId?: string }): Promise<GatewayResponse> {
+    discoveryRemote: async function(oid: string, params: { sparql?: string, oids?: string }): Promise<GatewayResponse> {
         try {
-            const { originId, sparql } = params
-            const query = typeof sparql === 'string' ? { sparql } : undefined
-            const Authorization = await getAuthorization(originId)
+            const { oids, sparql } = params
+            const query = typeof sparql === 'string' ? { sparql } : { oids }
+            const Authorization = await getAuthorization()
             return request(`objects/${oid}`, 'POST', query, { ...ApiHeader, Authorization }) as unknown as GatewayResponse
         } catch (err) {
             const error = errorHandler(err)

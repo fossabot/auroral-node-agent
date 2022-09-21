@@ -19,40 +19,45 @@ import { Config } from '../../../config'
     TD = 'TD'
   }
  
- type isLocalController = expressTypes.Controller<{ id: string, originId?: string }, string | undefined, { query?: string }, void, {}>
+ type isLocalController = expressTypes.Controller<{ agid: string }, string | undefined, { query?: string, oids?: string }, void, {}>
  
  export const isLocal = (type: SemanticType) => {
-     return function (req, res, next) {
-         const { id } = req.params
-         const query = req.query.query
-         isRegistered(id)
-         .then((local) => { 
-             if (local || Config.GATEWAY.ID === id) {
-                 logger.debug('Local discovery request')
-                 localDiscovery(id, type, query)
-                 .then((response) => {
-                    // IF SEMANTIC -> without wrapper
-                    if (type === SemanticType.TD) {
-                        // wrapping
-                     return responseBuilder(HttpStatusCode.OK, res, null, response.message)
-                    } else {
-                        // without wrapping
-                        res.status(200).json(response.message)
+     return async function (req, res, next) {
+        const { agid } = req.params
+        if (Config.GATEWAY.ID === agid) {
+            try {
+                 // local
+            if (type === SemanticType.SPARQL) {
+                logger.debug('Local SPARQL request')
+                // SPARQL
+                if (!req.query || !req.query.query) {
+                    return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing SPARQL')
+                }
+                const response = (await wot.searchSPARQL(req.query.query)).message
+                res.status(200).json(response)
+            } else {
+                logger.debug('Local TD request')
+                // TD
+                if (!req.query || !req.query.oids) {
+                    return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing oids')
+                }
+                const TDs = await Promise.all(req.query.oids.split(',').map(async (oid: string) => {
+                    try {
+                        return { oid, success: true, td: (await wot.retrieveTD(oid)).message }
+                    } catch (err) {
+                        return { oid, success: false }
                     }
-                 })
-                 .catch((err: unknown) => {
-                     const error = errorCallback(err)
-                     return responseBuilder(error.status, res, error.message)
-                 })
-             } else {
-                 logger.debug('Remote discovery request')
-                 return next()
-             }
-         })
-         .catch((err: unknown) => {
-             const error = errorCallback(err)
-             return responseBuilder(error.status, res, error.message)
-         })
+                }))
+                return responseBuilder(HttpStatusCode.OK, res, null, TDs)
+            }
+            } catch (err) {
+                const error = errorCallback(err)
+                return responseBuilder(error.status, res, error.message)
+            }
+        } else {
+            // remote
+            return next()
+       }
      } as isLocalController
  } 
  

@@ -108,14 +108,14 @@ type getContractItemsCtrl = expressTypes.Controller<{ ctid: string, oid?: string
         }
     }
 
-type discoveryLocalTdCtrl = expressTypes.Controller<{ id: string }, {}, {}, Thing | string, {}>
+type discoveryLocalTdCtrl = expressTypes.Controller<{ oid: string }, {}, {}, Thing | string, {}>
  
 export const discoverLocalTd: discoveryLocalTdCtrl = async (req, res) => {
-    const { id } = req.params
+    const { oid } = req.params
     try {
         let result
         if (Config.WOT.ENABLED) {
-                result = (await wot.retrieveTD(id)).message
+                result = (await wot.retrieveTD(oid)).message
         } else {
                 result = 'You need to enable WoT to use this function'
         }
@@ -148,7 +148,7 @@ export const discoverLocalSemantic: discoveryLocalSemanticCtrl = async (req, res
     }
 }
 
-type discoveryRemoteCtrl = expressTypes.Controller<{ id: string }, string | undefined, { query?: string }, Registration[] | Thing[], {}>
+type discoveryRemoteCtrl = expressTypes.Controller<{ agid: string }, string | undefined, { query?: string }, Registration[] | Thing[], {}>
 
 /**
  * Used by WOT federative calls
@@ -158,11 +158,11 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string }, string | unde
  * @returns 
  */
  export const discoveryRemote: discoveryRemoteCtrl = async (req, res) => {
-    const { id } = req.params
+    const { agid } = req.params
     const sparql = req.query.query
     try {
         const params = { sparql }
-        const data = await gateway.discoveryRemote(id, params)
+        const data = await gateway.discoveryRemote(agid, params)
         if (data.error) {
             const response: string = data.statusCodeReason
             logger.warn('Discovery failed')
@@ -179,7 +179,7 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string }, string | unde
             }
           } 
       } catch (err) {
-        logger.warn('AGID:' + id + ' not reachable')
+        logger.warn('AGID:' + agid + ' not reachable')
         // return empty triplet
         const empty = {
             'head': {
@@ -197,19 +197,23 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ id: string }, string | unde
       }
 }
 
-type discoveryTdRemoteCtrl = expressTypes.Controller<{ id: string, originId: string }, string | undefined, {}, Thing[], {}>
+type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | undefined, { oids?: string }, Thing[], {}>
 
  export const discoveryTdRemote: discoveryTdRemoteCtrl = async (req, res) => {
-    const { id, originId } = req.params
+    const { agid } = req.params
+    const oids = req.query.oids
     try {
-        const data = await gateway.discoveryRemote(id, { sparql: undefined, originId })
+        if (!oids) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing oids')
+        }
+        const data = await gateway.discoveryRemote(agid, { sparql: undefined, oids })
         if (data.error) {
             const response: string = data.statusCodeReason
             logger.warn('Discovery failed')
             return responseBuilder(data.statusCode, res, response)
           } else {
             try {
-                const response = data.message[0].message.wrapper.message
+                const response = data.message[0].message.wrapper
                 return responseBuilder(HttpStatusCode.OK, res, null, response)
             } catch (err) {
                 const error = errorHandler(err)
