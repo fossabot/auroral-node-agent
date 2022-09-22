@@ -279,3 +279,25 @@ export const discoveryCommunityFederative: federativeCommunityDiscoveryCtrl = as
         return responseBuilder(error.status, res, error.message)
       }
 }
+
+type federativeOrganisationDiscoveryCtrl = expressTypes.Controller<{}, string, {}, JsonType, {}>
+
+export const discoveryOrganisationFederative: federativeOrganisationDiscoveryCtrl = async (req, res) => {
+    const sparql = req.body
+    try {
+        if (!sparql) {
+            return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing sparql query')
+        }
+        // get my org agids
+        const agids = (await gateway.organisationNodes()).message.map((node) => node.agid)
+        // create agent URLS
+        const urls = agids.map((agid) => 'http://auroral-agent:4000/api/discovery/remote/semantic/' + agid)
+        // get sparql results
+        const data = await wot.searchFederativeSPARQL(sparql, urls)
+        return responseBuilder(HttpStatusCode.OK, res, null, data)
+      } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+      }
+}

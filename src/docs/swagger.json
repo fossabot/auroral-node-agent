@@ -775,6 +775,40 @@
         }
       }
     },
+    "/api/discovery/remote/semantic/myorganisation": {
+      "post": {
+        "summary": "SPARQL federative query to remote infrastructure - EXPERIMENTAL",
+        "description": "Send a federative discovery query to a remote gateways in your organisation to retrieve semantic data. Experimental version, a final version of this feature will be available in future releases",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/SparqlRequest"
+        },
+        "tags": [
+          "Remote Semantic Discovery"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SemanticObject"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
+    },
     "/api/properties/{id}/{oid}/{pid}": {
       "get": {
         "summary": "Read a property",
