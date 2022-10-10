@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">51.35% </span>
+                <span class="strong">47.5% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>38/74</span>
+                <span class='fraction'>38/80</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">69.23% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>9/12</span>
+                <span class='fraction'>9/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">47.61% </span>
+                <span class="strong">44.11% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>30/63</span>
+                <span class='fraction'>30/68</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -264,7 +264,17 @@
 <a name='L199'></a><a href='#L199'>199</a>
 <a name='L200'></a><a href='#L200'>200</a>
 <a name='L201'></a><a href='#L201'>201</a>
-<a name='L202'></a><a href='#L202'>202</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -423,6 +433,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -629,7 +649,17 @@ export const wot = {
 <span class="cstat-no" title="statement not covered" >            logger.warn('Error processing SPARQL query ...')</span>
 <span class="cstat-no" title="statement not covered" >            throw new MyError(error.message, error.status)</span>
         }
-    }
+    },
+    searchFederativeSPARQL: <span class="fstat-no" title="function not covered" >async function(q</span>uery: string, endpoints: string[]): Promise&lt;BasicResponse&lt;JsonType&gt;&gt; {
+        try {
+            const <span class="cstat-no" title="statement not covered" >response = <span class="cstat-no" title="statement not covered" >await requestSPARQL('api/search/fed-sparql', 'POST', query, SparqlHeader, { endpoints: endpoints.join(',') })</span></span>
+<span class="cstat-no" title="statement not covered" >            return response</span>
+        } catch (err) {
+            const <span class="cstat-no" title="statement not covered" >error = errorHandler(err)</span>
+<span class="cstat-no" title="statement not covered" >            logger.warn('Error processing SPARQL query ...')</span>
+<span class="cstat-no" title="statement not covered" >            throw new MyError(error.message, error.status)</span>
+        }
+    },
 }
 &nbsp;
 // Private functions
@@ -648,7 +678,7 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
     return response.body as JsonType
 }
 &nbsp;
-const requestSPARQL = async (endpoint: string, method: Method, body?: string, headers?: Headers, searchParams?: string): Promise&lt;JsonType&gt; =&gt; {
+const requestSPARQL = async (endpoint: string, method: Method, body?: string, headers?: Headers, searchParams?: JsonType): Promise&lt;JsonType&gt; =&gt; {
     const response = await callSPARQL(endpoint, { method, body, headers, searchParams }) as PlainResponse
     <span class="missing-if-branch" title="if path not taken" >I</span>if (response.statusCode &gt;= 500) {
 <span class="cstat-no" title="statement not covered" >        throw new MyError('Error reaching WoT server -- status code 500', HttpStatusCode.INTERNAL_SERVER_ERROR)</span>
@@ -673,7 +703,7 @@ const buildResponse = (message?: string | JsonType | JsonType[]): BasicResponse&
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Fri Aug 12 2022 09:26:41 GMT+0200 (Central European Summer Time)
+                at Mon Oct 10 2022 11:45:19 GMT+0200 (Central European Summer Time)
             </div>
         <script src="../../prettify.js"></script>
         <script>
