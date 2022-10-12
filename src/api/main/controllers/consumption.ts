@@ -83,7 +83,7 @@ export const getEventChannels: getEventChannelsCtrl = async (req, res) => {
       const data = await gateway.getObjectEventChannels(id, oid)
       _parse_gtw_response(data)
       logger.info(`Channels of ${oid} retrieved`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data.message[0].events)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.message)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
@@ -162,7 +162,7 @@ export const deactivateEventChannel: deactivateEventChannelCtrl = async (req, re
     }
 }
 
-type statusRemoteEventChannelCtrl = expressTypes.Controller<{ id: string, oid: string, eid: string }, {}, {}, boolean, {}>
+type statusRemoteEventChannelCtrl = expressTypes.Controller<{ id: string, oid: string, eid: string }, {}, {}, string, {}>
 
 /**
  * Status of remote event channel
@@ -173,7 +173,7 @@ export const statusRemoteEventChannel: statusRemoteEventChannelCtrl = async (req
       const data = await gateway.statusRemoteEventChannel(id, oid, eid)
       _parse_gtw_response(data)
       logger.info(`Get status of remote channel ${eid} of ${oid}`)
-      return responseBuilder(HttpStatusCode.OK, res, null, data.message[0].active)
+      return responseBuilder(HttpStatusCode.OK, res, null, data.message as unknown as string)
     } catch (err) {
         const error = errorHandler(err)
         logger.error(error.message)
