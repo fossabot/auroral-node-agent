@@ -1,22 +1,23 @@
-image: maven:3.3.9
+image: node:16
 
 definitions:
   steps:
-    - step: &build-step
-        name: SonarQube analysis
+    - step: &test-and-analysis
+        name: Unit Test and Sonar Analysis
         script:
-          - pipe: sonarsource/sonarqube-scan:1.0.0
-            variables:
-              SONAR_HOST_URL: ${SONAR_HOST_URL} # Get the value from the repository/workspace variable.
-              SONAR_TOKEN: ${SONAR_TOKEN} # Get the value from the repository/workspace variable. You shouldn't set secret in clear text here.
-  caches:
-    sonar: ~/.sonar
-
-clone:
-  depth: full
+          - echo 'Starting pipeline'
+          - node -v
+          - npm -v
+          - npm install
+          - npx tsc
+          - NODE_ENV=test npx jest --verbose --runInBand --silent --forceExit --coverage
+          - npm run sonar
+          - echo 'Pipeline Finished'
 
 pipelines:
   branches:
     '{master}': # or the name of your main branch
-      - step: *build-step
+      - step: *test-and-analysis
+    development: # or the name of your main branch
+      - step: *test-and-analysis
 
