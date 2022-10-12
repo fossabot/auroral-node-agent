@@ -701,7 +701,8 @@ paths:
           required: true
           description: Event of the remote object - EID
           schema:
-            type: boolean
+              type: string
+              default: event_id
       responses:
         '200':
           $ref: '#/components/responses/GenericString'
