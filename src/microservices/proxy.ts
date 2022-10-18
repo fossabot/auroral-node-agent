@@ -5,6 +5,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
+import { URLSearchParams } from 'url'
 import { JsonType, CONTENT_TYPE_ENUM, CONTENT_TYPE_LIST } from '../types/misc-types'
 import { Config } from '../config'
 import { Interaction } from '../core/data'
@@ -67,11 +68,24 @@ export const proxy = {
      sendMessageViaWot: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
         const thing = (await wot.retrieveTD(oid)).message
         if (thing) {
+            console.log('thing', thing)
             const forms = getInteractionsForms(interaction, thing, iid)
             if (forms) {
                 const url = forms[0].href
+                const wotParams = url.split('?').length > 1 ? new URLSearchParams(url.split('?')[1]) : []
+                const searchParams =  {} as any
+                // parameters from TD
+                wotParams.forEach((value, key) => {
+                    searchParams[key] = value
+                })
+                // parameters from request
+                if (reqParams) {
+                    Object.entries(reqParams).forEach(([key, value]) => {
+                    searchParams[key] = value
+                   })
+                }
                 const headers = validateContentType(forms[0].contentType)
-                return requestSemantic(url , method, body, { ...headers, Authorization }, reqParams)
+                return requestSemantic(url , method, body, { ...headers, Authorization }, searchParams)
             } else {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + iid + ' does not specify url to access data...' })
             }
@@ -108,6 +122,7 @@ const getInteractionsForms = (interaction: Interaction, thing: Thing, id: string
         case Interaction.PROPERTY:
             return properties[id].forms
         case Interaction.EVENT:
+            // TBD: change to global event URL (from TD)
             return events[id].forms
         default:
             throw new Error('Wrong interaction')
