@@ -66,32 +66,23 @@ export const proxy = {
      * @returns 
      */ 
      sendMessageViaWot: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
-        const thing = (await wot.retrieveTD(oid)).message
-        if (thing) {
-            console.log('thing', thing)
-            const forms = getInteractionsForms(interaction, thing, iid)
-            if (forms) {
-                const url = forms[0].href
-                const wotParams = url.split('?').length > 1 ? new URLSearchParams(url.split('?')[1]) : []
-                const searchParams =  {} as any
-                // parameters from TD
-                wotParams.forEach((value, key) => {
+            const thing = (await wot.retrieveTD(oid)).message
+            if (!thing) {
+                return Promise.resolve({ success: false, message: 'Thing ' + oid + ' not found in infrastructure...' })
+            }
+            try {
+                const url = getInteractionUrl(interaction, thing, iid, reqParams)
+                // TBD ?
+                const headers = validateContentType()
+                // Store searchParams in object (for got)
+                const searchParams = {} as any
+                url.searchParams.forEach((key, value) => {
                     searchParams[key] = value
                 })
-                // parameters from request
-                if (reqParams) {
-                    Object.entries(reqParams).forEach(([key, value]) => {
-                    searchParams[key] = value
-                   })
-                }
-                const headers = validateContentType(forms[0].contentType)
-                return requestSemantic(url , method, body, { ...headers, Authorization }, searchParams)
-            } else {
+                return requestSemantic(url.href , method, body, { ...headers, Authorization }, searchParams)
+            } catch (error) {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + iid + ' does not specify url to access data...' })
             }
-        } else {
-            return Promise.resolve({ success: false, message: 'Thing ' + oid + ' not found in infrastructure...' })
-        }
     }
 }
 
@@ -116,17 +107,43 @@ const requestSemantic = async (endpoint: string, method: Method, json?: JsonType
     }
 }
 
-const getInteractionsForms = (interaction: Interaction, thing: Thing, id: string) => {
-    const { properties, events } = thing
-    switch (interaction) {
-        case Interaction.PROPERTY:
-            return properties[id].forms
-        case Interaction.EVENT:
-            // TBD: change to global event URL (from TD)
-            return events[id].forms
-        default:
-            throw new Error('Wrong interaction')
+const getInteractionUrl = (interaction: Interaction, thing: Thing, id: string, reqParams?:  JsonType) => {
+    const { properties } = thing
+    let url: URL
+    if (interaction === Interaction.PROPERTY) {
+        // PROPERTY
+        try {
+            // Eveything from TD property
+            url = new URL(properties[id].forms![0].href)
+        } catch (error) {
+            // failed - merge with base url
+            if (!thing.base) {
+                throw new Error('PID href is not absolute and Thing does not specify base url')
+            }
+            const baseUrl = new URL(thing.base)
+            // origin + path + relative path from TD  
+            // split to remove double slashes
+            const href = (baseUrl.origin + baseUrl.pathname + '/' + properties[id].forms![0].href).split('/').filter(x => x).join('/')
+            url = new URL(href)
+        }
+        // add reqParams
+        if (reqParams) {
+            Object.entries(reqParams).forEach(([key, value]) => {
+                url.searchParams.set(key, value)
+            })
+        }
+    } else if (interaction === Interaction.EVENT) {
+        // EVENT
+        if (!thing.base) {
+            throw new Error('PID href is not absolute and Thing does not specify base url')
+        }
+        url = new URL(thing.base)
+        // add static /events/oid and remove trailing slash
+        url.pathname = (url.pathname +  '/events/' + id).split('/').filter(x => x).join('/')
+    } else {
+        throw new Error('Wrong interaction')
     }
+    return url
 }
 
 const validateContentType = (x?: CONTENT_TYPE_ENUM): { 'Content-Type': CONTENT_TYPE_ENUM, 'Accept': CONTENT_TYPE_ENUM } => {
