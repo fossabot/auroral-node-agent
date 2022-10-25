@@ -128,14 +128,14 @@ describe('Gateway Microservice', () => {
     })
     it('Do discoveryRemote', async () => {
         const spy = jest.spyOn(gateway, 'discoveryRemote')
-        const response = await gateway.discoveryRemote('oid1', { sparql: 'sparql', originId: 'originId' })
+        const response = await gateway.discoveryRemote('oid1', { sparql: 'sparql', oids: 'oid1' })
         expect(response).toEqual('DiscoveryRemote succesful')
         const prop = JSON.parse('{ "sparql": {}, "originId": "originId" }')
         const response2 = await gateway.discoveryRemote('oid1', { ...prop })
         expect(response2).toEqual('DiscoveryRemote succesful')
         got.__toFail()
         try {
-            await gateway.discoveryRemote('oid1', { sparql: 'sparql', originId: 'originId' })
+            await gateway.discoveryRemote('oid1', { sparql: 'sparql', oids: 'oid1' })
         } catch (error) {
             expect((error as Error).message).toMatch('MOCKED ERROR')
         }

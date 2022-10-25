@@ -15,6 +15,7 @@ gateway/data/
 redis/data
 .env
 .token
+coverage/
 
 # Tests
 .scannerwork/
