@@ -5,12 +5,11 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { URLSearchParams } from 'url'
 import { JsonType, CONTENT_TYPE_ENUM, CONTENT_TYPE_LIST } from '../types/misc-types'
 import { Config } from '../config'
 import { Interaction } from '../core/data'
 import { wot } from './wot'
-import { logger } from '../utils/logger'
+import { HttpStatusCode, logger, MyError } from '../utils'
 import { Thing } from '../types/wot-types'
 
 // CONSTANTS 
@@ -118,7 +117,7 @@ const getInteractionUrl = (interaction: Interaction, thing: Thing, id: string, r
         } catch (error) {
             // failed - merge with base url
             if (!thing.base) {
-                throw new Error('PID href is not absolute and Thing does not specify base url')
+                throw new MyError('PID href is not absolute and Thing does not specify base url', HttpStatusCode.BAD_REQUEST)
             }
             const baseUrl = new URL(thing.base)
             // origin + path + relative path from TD  
@@ -135,13 +134,13 @@ const getInteractionUrl = (interaction: Interaction, thing: Thing, id: string, r
     } else if (interaction === Interaction.EVENT) {
         // EVENT
         if (!thing.base) {
-            throw new Error('PID href is not absolute and Thing does not specify base url')
+            throw new MyError('BASE URL not specified in TD, recipient of event could not be found, dropping message...', HttpStatusCode.BAD_REQUEST)
         }
         url = new URL(thing.base)
         // add static /events/oid and remove trailing slash
         url.pathname = (url.pathname +  '/events/' + id).split('/').filter(x => x).join('/')
     } else {
-        throw new Error('Wrong interaction')
+        throw new MyError('Wrong interaction', HttpStatusCode.BAD_REQUEST)
     }
     return url
 }
