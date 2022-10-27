@@ -36,9 +36,11 @@ export const security = {
         await removeContractInfo(data.ctid)
     },
     getContract: async (cid: string): Promise<WholeContractType> => {
-        const ctid = await redisDb.get('contract:' + cid)
+        let ctid = await redisDb.get('contract:' + cid)
         if (!ctid) {
+            // download + retry
             await downloadContract(cid)
+            ctid = await redisDb.get('contract:' + cid)
         }
         if (!ctid || ctid === 'NOT_EXISTS') {  
             return {
