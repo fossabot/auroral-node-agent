@@ -61,7 +61,7 @@ const relationshipSwitch = async (cid: string): Promise<RelationshipType> => {
     const me = await redisDb.hget('configuration', 'cid')
     if (cid === me) {
         return RelationshipType.ME
-    } else if (partnersArray.indexOf(cid)) {
+    } else if (partnersArray.indexOf(cid) !== -1) {
         return RelationshipType.FRIEND
     } else {
         return RelationshipType.OTHER
