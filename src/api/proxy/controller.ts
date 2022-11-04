@@ -17,9 +17,10 @@ type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, J
 export const getProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
   const reqParams  = req.query
+  const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
 	try {
     logger.info('Requested READ property ' + pid + ' from ' + oid)
-    const data = await Data.readProperty(oid, pid, reqParams)
+    const data = await Data.readProperty(oid, pid, sourceoid, reqParams)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
@@ -32,9 +33,10 @@ export const setProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
   const body = req.body
   const reqParams  = req.query
+  const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
 	try {
     logger.info('Requested UPDATE property ' + pid + ' from ' + oid)
-    const data = await Data.updateProperty(oid, pid, body, reqParams)
+    const data = await Data.updateProperty(oid, pid, sourceoid, body, reqParams)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
@@ -48,9 +50,10 @@ type EventCtrl = expressTypes.Controller<{ oid: string, eid: string }, { wrapper
 export const receiveEvent: EventCtrl = async (req, res) => {
     const { oid, eid } = req.params
     const  body  = req.body.wrapper
+    const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
       try {
         logger.info('Event received to ' + oid + ' from channel ' + eid)
-        await Data.receiveEvent(oid, eid, body)     
+        await Data.receiveEvent(oid, eid, sourceoid, body)     
         return responseBuilder(HttpStatusCode.OK, res, null, {})
       } catch (err) {
         const error = errorHandler(err)

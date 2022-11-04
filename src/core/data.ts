@@ -34,14 +34,14 @@ export enum Interaction {
 // Public Methods
 
 export const Data = {
-    readProperty: async (oid: string, pid: string, reqParams: JsonType) => {
-        return reachAdapter(oid, pid, Method.GET, Interaction.PROPERTY, undefined, reqParams)
+    readProperty: async (oid: string, pid: string, sourceoid: string, reqParams: JsonType) => {
+        return reachAdapter(oid, pid, Method.GET, Interaction.PROPERTY, sourceoid, undefined, reqParams)
     },
-    updateProperty: async (oid: string, pid: string, body: JsonType, reqParams: JsonType) => {
-        return reachAdapter(oid, pid, Method.PUT, Interaction.PROPERTY, body, reqParams)
+    updateProperty: async (oid: string, pid: string, sourceoid: string, body: JsonType, reqParams: JsonType) => {
+        return reachAdapter(oid, pid, Method.PUT, Interaction.PROPERTY, sourceoid, body, reqParams)
     },
-    receiveEvent: async (oid: string, eid: string, body: JsonType) => {
-        return reachAdapter(oid, eid, Method.PUT, Interaction.EVENT, body)
+    receiveEvent: async (oid: string, eid: string, sourceoid: string, body: JsonType) => {
+        return reachAdapter(oid, eid, Method.PUT, Interaction.EVENT, sourceoid, body)
     },
     tdDiscovery: async (oid: string, originId: string, relationship: RelationshipType, items?: string[]) => {
         return thingDiscovery(oid, originId, relationship, items)
@@ -63,7 +63,7 @@ export const Data = {
  * @param body 
  * @returns 
  */
-const reachAdapter = async (oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> => {
+const reachAdapter = async (oid: string, iid: string, method: Method, interaction: Interaction, sourceoid: string, body?: JsonType, reqParams?: JsonType): Promise<JsonType> => {
         if (Config.ADAPTER.MODE === AdapterMode.DUMMY) {
             if (interaction === Interaction.EVENT) {
                 logger.info('Event received in dummy mode...')
@@ -74,7 +74,7 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
             }
         } else if (Config.ADAPTER.MODE === AdapterMode.SEMANTIC) {
             return iid && method ?
-                proxy.sendMessageViaWot(oid, iid, method, interaction, body, reqParams) :
+                proxy.sendMessageViaWot(oid, iid, method, interaction, sourceoid, body, reqParams) :
                 Promise.resolve({ success: false, message: 'Missing parameters' })
         } else {
             if (!(iid && method)) {
@@ -84,13 +84,13 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
             if (Config.WOT.ENABLED && Config.ADAPTER.USE_MAPPING && interaction !== Interaction.EVENT) {
                 // property mappings
                 if (iid === 'getAll' || iid === 'getHistorical') {
-                    return useMappingArray(oid, iid, await proxy.sendMessageViaProxy(oid, iid, method, interaction, body, reqParams))
+                    return useMappingArray(oid, iid, await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams))
                 } else {
-                    return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, body, reqParams))
+                    return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams))
                 }
             } else {
                 // event or Mapping off
-                return proxy.sendMessageViaProxy(oid, iid, method, interaction, body, reqParams)
+                return proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams)
             }
         }
 }

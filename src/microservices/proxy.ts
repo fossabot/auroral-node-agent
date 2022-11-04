@@ -52,9 +52,9 @@ export const proxy = {
      * @param method 
      * @returns 
      */ 
-    sendMessageViaProxy: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
+    sendMessageViaProxy: async function(oid: string, iid: string, method: Method, interaction: Interaction, sourceoid: string, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
         logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + iid)
-        return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization }, reqParams)
+        return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization, sourceoid }, reqParams)
     },
     /**
      * Access adapter to get interaction info
@@ -64,7 +64,7 @@ export const proxy = {
      * @param method 
      * @returns 
      */ 
-     sendMessageViaWot: async function(oid: string, iid: string, method: Method, interaction: Interaction, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
+     sendMessageViaWot: async function(oid: string, iid: string, method: Method, interaction: Interaction, sourceoid: string, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
             const thing = (await wot.retrieveTD(oid)).message
             if (!thing) {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' not found in infrastructure...' })
@@ -78,7 +78,7 @@ export const proxy = {
                 url.searchParams.forEach((key, value) => {
                     searchParams[key] = value
                 })
-                return requestSemantic(url.href , method, body, { ...headers, Authorization }, searchParams)
+                return requestSemantic(url.href , method, body, { ...headers, Authorization, sourceoid }, searchParams)
             } catch (error) {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + iid + ' does not specify url to access data...' })
             }
