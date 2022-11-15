@@ -112,6 +112,8 @@ export class ExpectedResponse implements ExpectedResponse {
 /** Implements the Interaction Form description */
 export class Form implements Form {
     href: string
+    odrl?: string
+    shacl?: string
     subprotocol?: string
     op?: string | Array<string>
     contentType?: CONTENT_TYPE_ENUM

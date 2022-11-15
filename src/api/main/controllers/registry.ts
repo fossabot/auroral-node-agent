@@ -16,6 +16,7 @@ import { Config } from '../../../config'
 import { wot } from '../../../microservices/wot'
 import { RemoveResult, UpdateResult } from '../../../types/misc-types'
 import { removeMapping, storeMapping } from '../../../core/mapping'
+import { createOdrlPolicy } from '../../../core/odrl'
 
 // Types and enums
 enum registrationAndInteractions {
@@ -265,3 +266,20 @@ export const getOidByAdapter: getOidByAdapterIdCtrl = async (req, res) => {
 	}
 }
 
+type postOdrlCtrl = expressTypes.Controller<{ oid: string, pid: string }, string, {}, {}, {}>
+/**
+ * Register ODRL policy
+ * 
+ */
+export const postOdrl: postOdrlCtrl = async (req, res) => {
+  const policy = req.body
+  const { oid, pid } = req.params
+  try {
+    await createOdrlPolicy(oid, pid, policy)
+    return responseBuilder(HttpStatusCode.OK, res)
+  } catch (err) {
+      const error = errorHandler(err)
+      logger.error(error.message)
+      return responseBuilder(error.status, res, error.message)
+  }
+}

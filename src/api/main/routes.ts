@@ -40,6 +40,8 @@ MainRouter
   .put('/registration', json(), registry.modifyRegistration)
   .post('/registration/remove', json(), registry.removeRegistrations)
   .get('/registration/oid/:adapterId', json(), registry.getOidByAdapter)
+  .post('/registration/odrl/:oid/:pid', json(), registry.postOdrl)
+
 
   // ***** DISCOVERY endpoints *****
   // Neighbourhood
@@ -93,7 +95,7 @@ MainRouter
   .get('/agent/export', json(), admin.exportItems)
   .post('/agent/import', json(), registry.postRegistrations)
   .get('/agent/healthcheck', json(), admin.healthCheck)
-    // .get('/agent/imports', json(), admin.importFiles)
+  // .get('/agent/imports', json(), admin.importFiles)
   // .get('/agent/exports', json(), admin.exportFiles)
 
 export { MainRouter }

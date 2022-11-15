@@ -18,6 +18,11 @@ const normalConfig = {
 	IP: process.env.IP!,
 	EXTERNAL_PORT: process.env.EXTERNAL_PORT!,
 	PORT: process.env.PORT!,
+	ODRL: {
+		ENABLED: process.env.SEMANTIC_ODRL_ENABLED! === 'true' ? true : false,
+		HOST: process.env.ODRL_HOST! || 'http://helio',
+		PORT: process.env.ODRL_PORT! || 4567,
+	},
 	GATEWAY: {
 		HOST: process.env.GTW_HOST!,
 		PORT: process.env.GTW_PORT!,
@@ -53,6 +58,11 @@ const testConfig = {
 	IP: '0.0.0.0',
 	EXTERNAL_PORT: '81',
 	PORT: '4000',
+	ODRL: {
+		ENABLED: false,
+		HOST: 'http://helio',
+		PORT: 4567,
+	},
 	GATEWAY: {
 		HOST: 'http://gateway',
 		PORT: '8181',

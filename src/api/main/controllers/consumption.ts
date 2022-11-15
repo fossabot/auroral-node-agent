@@ -10,6 +10,7 @@ import { gateway } from '../../../microservices/gateway'
 import { GatewayResponse } from '../../../types/gateway-types'
 import { useMapping } from '../../../core/mapping'
 import { Config } from '../../../config'
+import { checkODRLPolicy } from '../../../core/odrl'
 
 // ***** Consume remote resources *****
 
@@ -22,6 +23,7 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
     const { id, oid, pid } = req.params
     const reqParams = req.query
       try {
+        await checkODRLPolicy(oid, pid, reqParams)
         const data = await gateway.getProperty(id, oid, pid, reqParams)
         // Parse response to get only the final payload
         if (data.error) {
@@ -50,6 +52,7 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
     const body = req.body
     const reqParams = req.query
     try {
+      await checkODRLPolicy(oid, pid, reqParams)
       if (!body) {
         logger.warn('Missing body')
         return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
