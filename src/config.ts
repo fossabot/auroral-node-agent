@@ -23,6 +23,9 @@ const normalConfig = {
 		HOST: process.env.ODRL_HOST! || 'http://helio',
 		PORT: process.env.ODRL_PORT! || 4567,
 	},
+	SHACL: {
+		ENABLED: process.env.SEMANTIC_SHACL_ENABLED! === 'true' ? true : false,
+	},
 	GATEWAY: {
 		HOST: process.env.GTW_HOST!,
 		PORT: process.env.GTW_PORT!,
@@ -62,6 +65,9 @@ const testConfig = {
 		ENABLED: false,
 		HOST: 'http://helio',
 		PORT: 4567,
+	},
+	SHACL: {
+		ENABLED: false,
 	},
 	GATEWAY: {
 		HOST: 'http://gateway',
