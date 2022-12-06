@@ -9,6 +9,8 @@ import { JsonType } from '../../types/misc-types'
 import { PermissionLocals } from '../../types/locals-types'
 import { Data } from '../../core/data'
 import { Config } from '../../config'
+import { checkODRLPolicy } from '../../core/odrl'
+import { checkSHACL } from '../../core/shacl'
 
 // Controllers
 
@@ -19,8 +21,10 @@ export const getProperty: PropertyCtrl = async (req, res) => {
   const reqParams  = req.query
   const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
 	try {
+    await checkODRLPolicy(oid, pid, reqParams)
     logger.info('Requested READ property ' + pid + ' from ' + oid)
     const data = await Data.readProperty(oid, pid, sourceoid, reqParams)
+    await checkSHACL(oid, pid, data)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
@@ -35,8 +39,10 @@ export const setProperty: PropertyCtrl = async (req, res) => {
   const reqParams  = req.query
   const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
 	try {
+    await checkODRLPolicy(oid, pid, reqParams)
     logger.info('Requested UPDATE property ' + pid + ' from ' + oid)
     const data = await Data.updateProperty(oid, pid, sourceoid, body, reqParams)
+    await checkSHACL(oid, pid, data)
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)

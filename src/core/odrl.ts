@@ -32,7 +32,7 @@ export const createOdrlPolicy = async (oid: string, pid: string, policy: string)
                 throw new MyError('Object Property has no forms', HttpStatusCode.BAD_REQUEST)
             }
             // add policy
-            td.message.properties[pid].forms![0].odrl = `${Config.ODRL.HOST}:${Config.ODRL.PORT}/policy${oid}/${pid}/data`
+            td.message.properties[pid].forms![0].odrl = `${Config.ODRL.HOST}:${Config.ODRL.PORT}/api/policySolver/data?name=${oid}/${pid}`
             // send to WoT
             await wot.upsertTD(oid, td.message)
             return
