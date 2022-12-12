@@ -1,4 +1,5 @@
 // Controller common imports
+import { IncomingHttpHeaders } from 'http'
 import { expressTypes } from '../../types/index'
 import { HttpStatusCode } from '../../utils/http-status-codes'
 import { logger, errorHandler } from '../../utils'
@@ -19,7 +20,7 @@ type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, J
 export const getProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
   const reqParams  = req.query
-  const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
+  const sourceoid = retrieveSourceoid(req.headers)
 	try {
     await checkODRLPolicy(oid, pid, reqParams)
     logger.info('Requested READ property ' + pid + ' from ' + oid)
@@ -37,7 +38,7 @@ export const setProperty: PropertyCtrl = async (req, res) => {
   const { oid, pid } = req.params
   const body = req.body
   const reqParams  = req.query
-  const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
+  const sourceoid = retrieveSourceoid(req.headers)
 	try {
     await checkODRLPolicy(oid, pid, reqParams)
     logger.info('Requested UPDATE property ' + pid + ' from ' + oid)
@@ -56,8 +57,8 @@ type EventCtrl = expressTypes.Controller<{ oid: string, eid: string }, { wrapper
 export const receiveEvent: EventCtrl = async (req, res) => {
     const { oid, eid } = req.params
     const  body  = req.body.wrapper
-    const sourceoid = req.headers.sourceoid ? req.headers.sourceoid.toString() : 'undefined'
-      try {
+    const sourceoid = retrieveSourceoid(req.headers)
+    try {
         logger.info('Event received to ' + oid + ' from channel ' + eid)
         await Data.receiveEvent(oid, eid, sourceoid, body)     
         return responseBuilder(HttpStatusCode.OK, res, null, {})
@@ -111,4 +112,15 @@ export const discovery: DiscoveryCtrl = async (req, res) => {
       logger.error(error.message)
       return responseBuilder(error.status, res, error.message)
     }
+}
+
+// Private functions
+
+const retrieveSourceoid = (headers: IncomingHttpHeaders): string => {
+  const x = headers.sourceoid || headers['X-sourceoid']
+  if (x) {
+    return x.toString()
+  } else {
+    return 'undefined'
+  }
 }

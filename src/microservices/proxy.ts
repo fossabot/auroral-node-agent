@@ -77,7 +77,7 @@ export const proxy = {
                 url.searchParams.forEach((key: string, value: any) => {
                     searchParams[key] = value
                 })
-                return requestSemantic(url.href , method, body, { ...headers, Authorization, sourceoid }, searchParams)
+                return requestSemantic(url.href , method, body, { ...headers, Authorization, 'X-sourceoid': sourceoid }, searchParams)
             } catch (error) {
                 return Promise.resolve({ success: false, message: 'Thing ' + oid + ' with property ' + iid + ' does not specify url to access data...' })
             }

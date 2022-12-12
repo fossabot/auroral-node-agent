@@ -18,7 +18,7 @@ type proxyGuardController = expressTypes.Controller<{ oid: string }, { sparql: s
 
 export const validatePermissions = (endpoint: ReqType) => {
     return function (req, res, next) {
-        const sourceoid = req.headers.sourceoid as string
+        const sourceoid = req.headers.sourceoid || req.headers['X-sourceoid'] as string
         
         // CASE sourceId not provided --> Reject request
         if (!sourceoid) {

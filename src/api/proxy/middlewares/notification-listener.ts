@@ -22,7 +22,7 @@ export const listenForNotifications = () => {
     return function (req, res, _next) {
         const { nid } = req.params
         const data = req.body
-        const sourceoid = req.headers.sourceoid as string
+        const sourceoid = req.headers.sourceoid || req.headers['X-sourceoid'] as string
         notificationsSwitch(nid, data)
         .then(() => { 
             return responseBuilder(HttpStatusCode.OK, res, null)
