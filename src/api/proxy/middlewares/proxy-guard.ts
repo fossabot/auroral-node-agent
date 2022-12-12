@@ -27,7 +27,7 @@ export const validatePermissions = (endpoint: ReqType) => {
         }
 
         // Add originId to locals
-        res.locals.originId = sourceoid
+        res.locals.originId = sourceoid.toString()
 
         // CASE is local request -- Gateway
         if (sourceoid === Config.GATEWAY.ID) {
@@ -36,7 +36,7 @@ export const validatePermissions = (endpoint: ReqType) => {
             return next()
         }
 
-        isLocal(sourceoid).then((local) => {
+        isLocal(sourceoid.toString()).then((local) => {
             // CASE is local request -- Item registered in the Node
             if (local) {
                 logger.debug('Receiving discovery from my node infrastructure')
@@ -44,7 +44,7 @@ export const validatePermissions = (endpoint: ReqType) => {
                 return next()
             }
             // CASE is NOT local request - Test relationship
-            discovery.getRelationship(sourceoid).then(
+            discovery.getRelationship(sourceoid.toString()).then(
                 (relationship) => {
                     // Check if relationship is valid --> Reject if invalid
                     if (VALID_RELATIONSHIPS.indexOf(relationship) === -1) {
