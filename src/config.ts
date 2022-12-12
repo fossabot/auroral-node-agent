@@ -4,12 +4,16 @@ import { AdapterMode } from './types/misc-types'
 
 dotenv.config()
 
-if (
+if (process.env.NODE_ENV === 'test') {
+	logger.debug('Using test configuration...')
+} else if (
 	!process.env.NODE_ENV || !process.env.IP
 	|| !process.env.PORT
 ) {
 	logger.error('Please provide valid .env configuration')
 	process.exit()
+} else {
+	logger.debug('Using normal configuration...')
 }
 
 const normalConfig = {
@@ -55,6 +59,7 @@ const normalConfig = {
 		USE_MAPPING: process.env.USE_MAPPING === 'true',
 	}
 }
+
 const testConfig = {
 	HOME_PATH: process.cwd(),
 	NODE_ENV: 'test',

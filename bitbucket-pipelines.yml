@@ -12,7 +12,6 @@ definitions:
           - npx tsc
           - NODE_ENV=test npx jest --verbose --runInBand --silent --forceExit --coverage
           - ls -la
-          - ls coverage/
           - npm run sonar
           - echo 'Pipeline Finished'
 
