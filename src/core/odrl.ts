@@ -71,12 +71,13 @@ export const checkODRLPolicy = async (oid: string, pid: string, queryParams?: Js
         }
         // Check if odrl is defined in TD
         if (!td.properties[pid].forms![0].odrl) {
-            throw new MyError('Object Property has no odrl', HttpStatusCode.BAD_REQUEST)
+            logger.debug('Object Property has no ODRL')
+            return
         }
         // check policy in ODRL
         const response = await got.get(td.properties[pid].forms![0].odrl!, { searchParams: queryParams })
         if (response.statusCode !== HttpStatusCode.OK) {
-            throw new MyError('ODRL policy not satisfied', HttpStatusCode.FORBIDDEN)
+            throw new MyError('ODRL policy not satisfied', HttpStatusCode.BAD_REQUEST)
         }
         return 
     } catch (err) {

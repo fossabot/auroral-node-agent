@@ -71,11 +71,10 @@ export const proxy = {
             }
             try {
                 const url = getInteractionUrl(interaction, thing, iid, reqParams)
-                // TBD ?
-                const headers = validateContentType()
+                const headers = validateContentType(interaction, thing, iid)
                 // Store searchParams in object (for got)
                 const searchParams = {} as any
-                url.searchParams.forEach((key, value) => {
+                url.searchParams.forEach((key: string, value: any) => {
                     searchParams[key] = value
                 })
                 return requestSemantic(url.href , method, body, { ...headers, Authorization, sourceoid }, searchParams)
@@ -145,16 +144,19 @@ const getInteractionUrl = (interaction: Interaction, thing: Thing, id: string, r
     return url
 }
 
-const validateContentType = (x?: CONTENT_TYPE_ENUM): { 'Content-Type': CONTENT_TYPE_ENUM, 'Accept': CONTENT_TYPE_ENUM } => {
-    if (x) {
-        if (!CONTENT_TYPE_LIST.indexOf(x.toLowerCase() as CONTENT_TYPE_ENUM)) {
-            logger.warn('Not valid Content-Type provided in TD: ' + x + ' , reverting to default: ' + CONTENT_TYPE_ENUM.PLAIN)
-            return { 'Content-Type': CONTENT_TYPE_ENUM.PLAIN, 'Accept': CONTENT_TYPE_ENUM.PLAIN }
+const validateContentType = (interaction: Interaction, thing: Thing, id: string): { 'Content-Type': CONTENT_TYPE_ENUM, 'Accept': CONTENT_TYPE_ENUM } => {
+    if (interaction === Interaction.PROPERTY) {
+        const { properties } = thing
+        const x = properties[id].forms![0].contentType
+        const y = properties[id].forms![0].response?.contentType
+        if (x && !CONTENT_TYPE_LIST.indexOf(x.toLowerCase() as CONTENT_TYPE_ENUM)) {
+            logger.warn('Not valid Content-Type provided in TD: ' + x + ' , reverting to default: ' + CONTENT_TYPE_ENUM.JSON)
+            return { 'Content-Type': CONTENT_TYPE_ENUM.JSON, 'Accept': CONTENT_TYPE_ENUM.JSON }
         }
-        return { 'Content-Type': x, 'Accept': x }
+        return { 'Content-Type': x || CONTENT_TYPE_ENUM.JSON, 'Accept': y || CONTENT_TYPE_ENUM.JSON }
     } else {
-        logger.warn('Missing Content-Type in TD, reverting to default: ' + CONTENT_TYPE_ENUM.PLAIN)
-        return { 'Content-Type': CONTENT_TYPE_ENUM.PLAIN, 'Accept': CONTENT_TYPE_ENUM.PLAIN }
+        logger.debug('Using default content type and accept headers: ' + CONTENT_TYPE_ENUM.JSON)
+        return { 'Content-Type': CONTENT_TYPE_ENUM.JSON, 'Accept': CONTENT_TYPE_ENUM.JSON }
     }
 }
 

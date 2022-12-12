@@ -3,7 +3,7 @@ import { logger, errorHandler, HttpStatusCode, MyError } from '../utils'
 import { wot } from '../microservices/wot'
 import { Config } from '../config'
 
-export const checkSHACL = async (oid: string, pid: string) : Promise<void> => {
+export const checkSHACL = async (oid: string, pid: string, data: any) : Promise<void> => {
     try {
         if (!Config.SHACL.ENABLED) {
             // SHACL is not enabled
@@ -21,16 +21,18 @@ export const checkSHACL = async (oid: string, pid: string) : Promise<void> => {
         }
         // Check if forms is defiend in TD
         if (!td.properties[pid].forms || td.properties[pid].forms!.length === 0) {
-            throw new MyError('Object Property has no forms', HttpStatusCode.BAD_REQUEST)
+            logger.debug('Object Property has no forms')
+            return
         }
         // Check if odrl is defined in TD
         if (!td.properties[pid].forms![0].shacl) {
-            throw new MyError('Object Property has no shacl url', HttpStatusCode.BAD_REQUEST)
+            logger.debug('Object Property has no shacl url')
+            return
         }
         // check policy in ODRL
-        const response = await got.get(td.properties[pid].forms![0].shacl!, {})
+        const response = await got.post(td.properties[pid].forms![0].shacl!, { body: data })
         if (response.statusCode !== HttpStatusCode.OK) {
-            throw new MyError('SHACL not satisfied', HttpStatusCode.FORBIDDEN)
+            throw new MyError('SHACL not satisfied', HttpStatusCode.BAD_REQUEST)
         }
         return 
     } catch (err) {
