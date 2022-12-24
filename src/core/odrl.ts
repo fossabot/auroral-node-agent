@@ -1,4 +1,3 @@
-import got from 'got'
 import { logger, errorHandler, HttpStatusCode, MyError } from '../utils'
 import { wot } from '../microservices/wot'
 import { Config } from '../config'
@@ -32,7 +31,7 @@ export const createOdrlPolicy = async (oid: string, pid: string, policy: string)
                 throw new MyError('Object Property has no forms', HttpStatusCode.BAD_REQUEST)
             }
             // add policy
-            td.message.properties[pid].forms![0].odrl = `${Config.ODRL.HOST}:${Config.ODRL.PORT}/api/policySolver/data?name=${oid}/${pid}`
+            td.message.properties[pid].forms![0].odrl = `${Config.ODRL.HOST}:${Config.ODRL.PORT}/api/policySolver/data?name=policy:${oid}:${pid}`
             // send to WoT
             await wot.upsertTD(oid, td.message)
             return
@@ -44,7 +43,7 @@ export const createOdrlPolicy = async (oid: string, pid: string, policy: string)
         }
       } catch (err) {
           const error = errorHandler(err)
-          logger.error(error.message)
+        //   logger.error(error.message)
           throw new MyError(error.message, error.status)
       }
 }
@@ -75,10 +74,24 @@ export const checkODRLPolicy = async (oid: string, pid: string, queryParams?: Js
             return
         }
         // check policy in ODRL
-        const response = await got.get(td.properties[pid].forms![0].odrl!, { searchParams: queryParams })
-        if (response.statusCode !== HttpStatusCode.OK) {
-            throw new MyError('ODRL policy not satisfied', HttpStatusCode.BAD_REQUEST)
+        const url = new URL(td.properties[pid].forms![0].odrl!)
+        // Merging query params
+        if (queryParams) {
+            Object.entries(queryParams).forEach(([key, value]) => {
+                url.searchParams.set(key, value)
+            })
         }
+        // Creating query params object for GOT
+        const searchParams = {} as any
+        url.searchParams.forEach((value: string, key: string) => {
+            searchParams[key] = value
+        })
+        const href: string = url.origin + url.pathname
+        const success = await odrl.validatePolicy(href, searchParams)
+        if (!success) {
+            throw new MyError('ODRL policy not satisfied', HttpStatusCode.FORBIDDEN)
+        }
+        logger.info('ODRL policy validated and accepted!!')
         return 
     } catch (err) {
         const error = errorHandler(err)

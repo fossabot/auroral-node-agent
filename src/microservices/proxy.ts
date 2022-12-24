@@ -18,7 +18,7 @@ const callApi = got.extend({
     prefixUrl: Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT,
     responseType: 'text',
     isStream: false,
-    retry: 2, // Retries on failure N times
+    // retry: 0, // Retries on failure N times
     throwHttpErrors: true, // If true 4XX and 5XX throw an error
     timeout: 30000, // 30sec to timeout
     decompress: true // accept-encoding header gzip
@@ -74,7 +74,7 @@ export const proxy = {
                 const headers = validateContentType(interaction, thing, iid)
                 // Store searchParams in object (for got)
                 const searchParams = {} as any
-                url.searchParams.forEach((key: string, value: any) => {
+                url.searchParams.forEach((value: string, key: string) => {
                     searchParams[key] = value
                 })
                 return requestSemantic(url.href , method, body, { ...headers, Authorization, 'X-sourceoid': sourceoid }, searchParams)

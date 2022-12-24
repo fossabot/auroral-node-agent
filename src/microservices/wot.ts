@@ -16,7 +16,7 @@ const callApi = got.extend({
     prefixUrl: Config.WOT.HOST + ':' + Config.WOT.PORT,
     responseType: 'json',
     isStream: false,
-    retry: 2, // Retries on failure N times
+    // retry: 0, // Retries on failure N times
     throwHttpErrors: false, // If true 4XX and 5XX throw an error
     timeout: 30000, // 30sec to timeout
     decompress: true // accept-encoding header gzip

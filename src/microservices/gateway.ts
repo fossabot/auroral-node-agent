@@ -19,7 +19,7 @@ const callApi = got.extend({
     prefixUrl: Config.GATEWAY.HOST + ':' + Config.GATEWAY.PORT + '/' + Config.GATEWAY.ROUTE,
     responseType: 'json',
     isStream: false,
-    retry: 2, // Retries on failure N times
+    // retry: 0, // Retries on failure N times
     throwHttpErrors: true, // If true 4XX and 5XX throw an error
     timeout: Config.GATEWAY.TIMEOUT, // 30sec to timeout is the default
     decompress: true // accept-encoding header gzip
