@@ -22,6 +22,9 @@ const normalConfig = {
 	IP: process.env.IP!,
 	EXTERNAL_PORT: process.env.EXTERNAL_PORT!,
 	PORT: process.env.PORT!,
+	DLT: {
+		ENABLED: process.env.DLT_ENABLED === 'true' ? true : false,
+	},
 	ODRL: {
 		ENABLED: process.env.SEMANTIC_ODRL_ENABLED! === 'true' ? true : false,
 		HOST: process.env.ODRL_HOST! || 'http://helio',
@@ -66,6 +69,9 @@ const testConfig = {
 	IP: '0.0.0.0',
 	EXTERNAL_PORT: '81',
 	PORT: '4000',
+	DLT: {
+		ENABLED: false,
+	},
 	ODRL: {
 		ENABLED: false,
 		HOST: 'http://helio',

@@ -6,7 +6,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, IItemPrivacy, WholeContractType, CommunityType, ContractItemType } from '../types/misc-types'
+import { JsonType, IItemPrivacy, WholeContractType, CommunityType, ContractItemType, DLTContractType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
 import { GtwDeleteResponse, GatewayResponse, RemovalBody, GtwRegistrationResponse, GtwUpdateResponse, IdDiscoveryType, BasicResponse, GtwGetRegistrationsResponse, NodeType } from '../types/gateway-types'
@@ -528,7 +528,7 @@ export const gateway = {
         }
     },
     /**
-    * Get a privacy status of all node items
+    * Get information about a contract and items included
     * @async
     * @param 
     * @returns {error: boolean, message: object} 
@@ -537,6 +537,23 @@ export const gateway = {
         try {
             const Authorization = await getAuthorization()
             return request('security/contracts/' + cid, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<WholeContractType>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+    /**
+    * Get information about ALL contracts and items included
+    * For a single ORG
+    * DLT version
+    * @async
+    * @param 
+    * @returns {error: boolean, message: object} 
+    */
+     getContractsDlt: async function (): Promise<BasicResponse<DLTContractType[]>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('dlt/contracts', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<DLTContractType[]>
         } catch (err) {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)

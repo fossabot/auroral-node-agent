@@ -2,7 +2,9 @@ import { gateway } from '../microservices/gateway'
 import { redisDb } from '../persistance/redis'
 import { registrationFuncs } from '../persistance/models/registrations'
 import { logger } from '../utils'
-import { ContractType, ContractItemType, WholeContractType } from '../types/misc-types'
+import { ContractType, ContractItemType, WholeContractType, DLTContractType } from '../types/misc-types'
+import { Config } from '../config'
+import { discovery } from '../core/collaboration'
 
 // Public
 
@@ -104,7 +106,14 @@ export const security = {
 // Private
 
 const downloadContract = async (cid: string): Promise<boolean> => {
-    // Download
+    if (Config.DLT.ENABLED) {
+        return downloadContractDlt(cid)
+    } else {
+        return downloadContractCloud(cid)
+    }
+}
+
+const downloadContractCloud = async (cid: string): Promise<boolean> => {
     const contract = (await gateway.getContracts(cid)).message
     if (contract && contract.ctid) {
     // If contract in cloud store it and add key with TTL 1 day --> return true
@@ -123,6 +132,42 @@ const downloadContract = async (cid: string): Promise<boolean> => {
     }
 }
 
+const downloadContractDlt = async (cid: string): Promise<boolean> => {
+    let flag = false // Returns true if cid found in any contract, otherwise false
+    const contracts = (await gateway.getContractsDlt()).message
+    const mycid = await discovery.getCid(Config.GATEWAY.ID)
+    if (contracts.length > 0) {
+        for (let i = 0, len = contracts.length; i <= len; i++) { 
+            const ct = contracts[i]
+            if (ct.orgs.length === 2 && ct.orgs.indexOf(mycid) !== -1) {
+                // Return true if cid found in contracts
+                if (ct.orgs.indexOf(cid) !== -1) {
+                    flag = true
+                }
+                // Find foreign CID in orgs array
+                const indexOfMyCid = ct.orgs.indexOf(mycid) // Position 0 or 1
+                const foreignCid = ct.orgs[1 - indexOfMyCid] // It is the position where my CID isn't
+                // If contract in cloud store it and add key with TTL 1 day --> return true
+                // Reset contract info -> remove and then add new
+                await removeContractInfo(ct.contract_id)
+                await redisDb.remove('contract:' + foreignCid)
+                await addContractDlt(ct)
+                // Keep local copy of contract for an hour
+                await redisDb.set('contract:' + foreignCid, ct.contract_id, 30 * 60) // persists contract 30min
+            } else {
+                // If orgs array does not contain mine and foreign CID do nothing
+                logger.warn('DLT contract ' + ct.contract_id + ' is corrupted, contact admin, ignoring...')
+            }
+        }
+        return flag
+    } else {
+        // If contract NOT in cloud add key with TTL 5 min that returns 'null' --> return false
+        await redisDb.remove('contract:' + cid)
+        await redisDb.set('contract:' + cid, 'NOT_EXISTS', 300) // persists a Not_Exists flag 5 min
+        return false
+    }
+}
+
 /**
  * Creates a contract and adds its items
  * @param data
@@ -134,6 +179,19 @@ const addContract = async (data: WholeContractType) => {
         await redisDb.hset(data.ctid, it.oid, rw)
     }
     logger.info('Contract ' + data.ctid + ' info was added!')
+}
+
+/**
+ * Creates a contract and adds its items
+ * @param data
+ */
+const addContractDlt = async (data: DLTContractType) => {
+    for (let i = 0, l = data.items.length; i < l; i++) {
+        const it = data.items[i]
+        const rw = it.write ? 'true' : 'false'
+        await redisDb.hset(data.contract_id, it.object_id, rw)
+    }
+    logger.info('Contract ' + data.contract_id + ' info was added!')
 }
 
 /**

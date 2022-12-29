@@ -50,6 +50,19 @@ export interface WholeContractType extends ContractType {
     items: { oid: string, rw: boolean }[]
 }
 
+export interface DLTContractType {
+    contract_id: string
+    // contract_type: string
+    orgs: string[]
+    items: {
+        enabled: boolean
+        write: boolean
+        object_id: string
+        org_id: string
+        object_type: string
+    }[]
+}
+
 // Interface for communities
 export interface CommunityType {
     commId: string,
