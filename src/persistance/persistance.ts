@@ -346,6 +346,64 @@ export const reloadConfigInfo = async function(cid: string, name: string, nodes:
     }
 }
 
+// WoT
+// Persist TDs in cache
+// td:<oid>
+// tds: [ <oids> ]
+
+export const addTDtoCache = async function(key: string, data: string) {
+    try {
+        await redisDb.set('td:' + key, data)
+        await redisDb.sadd('thingdescriptions', key)
+        logger.debug('Added TD to cache: ' + key)
+        return true
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.debug('Error adding TD to cache: ' + key)
+        logger.error(error.message)
+        return false
+    }
+}
+
+export const getTDfromCache = async function(key?: string): Promise<string | string[] | null> {
+    try {
+       if (key) {
+            logger.debug('Getting TD from cache: ' + key)
+            const tdStr = await redisDb.get('td:' + key)
+            return tdStr ? JSON.parse(tdStr) : tdStr
+       } else {
+            const keys = await redisDb.smembers('thingdescriptions')
+            const tds = []
+            for (let i = 0, len = keys.length; i <= len; i++) {
+                const td = await redisDb.get('td:' + key)
+                if (td) {
+                    tds.push(JSON.parse(td))
+                }
+            }
+            return tds
+       }
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.debug('Error getting TD from cache: ' + key)
+        logger.error(error.message)
+        return null
+    }
+}
+
+export const delTDfromCache = async function(key: string) {
+    try {
+        await redisDb.remove('td:' + key)
+        await redisDb.srem('thingdescriptions', key)
+        logger.debug('Removed TD from cache: ' + key)
+        return true
+    } catch (err) {
+        const error = errorHandler(err)
+        logger.debug('Error removing TD from cache: ' + key)
+        logger.error(error.message)
+        return false
+    }
+}
+
 // System Health
 
 /**

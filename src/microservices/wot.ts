@@ -9,6 +9,8 @@ import { JsonType, BasicResponse } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
 import { Thing } from '../types/wot-types'
+import { addTDtoCache, delTDfromCache, getTDfromCache } from '../persistance/persistance'
+
 
 // CONSTANTS 
 
@@ -53,7 +55,9 @@ export const wot = {
      */
     upsertTD: async function(oid: string, body: JsonType): Promise<BasicResponse<null>> {
         try {
+            await delTDfromCache(oid)
             const response = await request(`api/things/${oid}`, 'PUT', body, ApiHeader)
+            await addTDtoCache(oid, JSON.stringify(response))
             return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
@@ -72,6 +76,7 @@ export const wot = {
     createTD: async function(oid: string, _body: JsonType): Promise<BasicResponse<null>> {
         try {
             const response = await request('api/things/', 'POST', undefined, ApiHeader)
+            await addTDtoCache(oid, JSON.stringify(response))
             return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
@@ -88,7 +93,9 @@ export const wot = {
      */
      updatePartialTD: async function(oid: string, _body: JsonType): Promise<BasicResponse<null>> {
         try {
+            await delTDfromCache(oid)
             const response = await request(`api/things/${oid}`, 'PATCH', undefined, ApiHeader)
+            await addTDtoCache(oid, JSON.stringify(response))
             return buildResponse(response)
         } catch (err) {
             const error = errorHandler(err)
@@ -105,6 +112,7 @@ export const wot = {
      */
     deleteTD: async function(oid: string): Promise<BasicResponse<null>> {
         try {
+            await delTDfromCache(oid)
             const response = await request(`api/things/${oid}`, 'DELETE', undefined, ApiHeader)
             return buildResponse(response)
         } catch (err) {
@@ -122,8 +130,16 @@ export const wot = {
      */
      retrieveTD: async function(oid: string): Promise<BasicResponse<Thing>> {
         try {
-            const response = await request(`api/things/${oid}`, 'GET', undefined, ApiHeader)
-            return buildResponse(response)
+            const td = await getTDfromCache(oid)
+            if (td) {
+                logger.debug('Cache hit')
+                return buildResponse(td)
+            } else {
+                logger.debug('Cache miss')
+                const response = await request(`api/things/${oid}`, 'GET', undefined, ApiHeader)
+                await addTDtoCache(oid, JSON.stringify(response))
+                return buildResponse(response)
+            }
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Problem retrieving TD of object with id ' + oid + ':' + error.message)
@@ -138,8 +154,13 @@ export const wot = {
      */
     retrieveTDs: async function(): Promise<BasicResponse<Thing[]>> {
         try {
-            const response = await request('api/things/', 'GET', undefined, ApiHeader)
-            return buildResponse(response)
+            const td = await getTDfromCache()
+            if (td) {
+                return buildResponse(td)
+            } else {
+                const response = await request('api/things/', 'GET', undefined, ApiHeader)
+                return buildResponse(response)
+            }
         } catch (err) {
             const error = errorHandler(err)
             logger.warn('Error retrieving TDs ...')

@@ -53,7 +53,8 @@ const normalConfig = {
 		ENABLED: process.env.WOT_ENABLED === 'true',
 		HOST: process.env.WOT_HOST!,
 		PORT: process.env.WOT_PORT!,
-		BASE_URI: process.env.WOT_BASE_URI!
+		BASE_URI: process.env.WOT_BASE_URI!,
+		CACHE: process.env.WOT_CACHE === 'false' ? false : true // Default is true
 	},
 	ADAPTER: {
 		MODE: process.env.ADAPTER_MODE ? process.env.ADAPTER_MODE : AdapterMode.PROXY,
@@ -100,7 +101,8 @@ const testConfig = {
 		ENABLED: true,
 		HOST: 'http://wothive',
 		PORT: '9000',
-		BASE_URI: undefined
+		BASE_URI: undefined,
+		CACHE: false
 	},
 	ADAPTER: { 
 		MODE: 'dummy', 

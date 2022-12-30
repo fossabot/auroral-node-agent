@@ -50,6 +50,13 @@ export const initialize = async function() {
         logger.warn('--- WoT directory is not active')
     }
 
+    // Initialize DLT
+    if (Config.DLT.ENABLED) {
+        logger.info('DLT connection is active')
+    } else {
+        logger.info('DLT connection is not active')
+    }
+
     // Check if chache is active -- Cache removed from agent
     // if (Config.DB.CACHE) {
     //     logger.info('--- Adapter values are being cached with expiration ' + Config.DB.CACHE_TTL + 's')
