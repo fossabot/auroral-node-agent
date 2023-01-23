@@ -13,6 +13,7 @@ import { security } from './security'
 import { discovery } from './collaboration'
 import { scheduledJobs } from './scheduler'
 import { storeMapping } from './mapping'
+import { sendInfoToNM } from './info'
  
  /**
   * Initialization process of the agent module;
@@ -87,7 +88,9 @@ export const initialize = async function() {
     scheduledJobs.start()
 
     // End of initialization
-    logger.info(' ##### Agent startup completed!')
+    logger.info(' ##### Agent startup completed AAAAA!')
+    // Send node info to NM
+    await sendInfoToNM()
     return true
  }
  
@@ -112,3 +115,4 @@ export const initialize = async function() {
         await storeMapping(oids[i])
     }
  }
+

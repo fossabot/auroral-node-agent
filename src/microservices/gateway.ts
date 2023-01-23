@@ -558,7 +558,26 @@ export const gateway = {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)
         }
+    },
+    healthcheck: async function (): Promise<BasicResponse<{ version: string }>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('dlt/contracts', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<{ version: string }>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+    sendnodeInfo: async function (nodeInfo: { versions: {gtw: string, agent: string, wot: string}}): Promise<BasicResponse<string>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('nodeInfo', 'POST', nodeInfo, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
     }
+
 }
 
 // PRIVATE FUNCTIONS

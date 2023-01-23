@@ -11,7 +11,6 @@ import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
 import { Thing } from '../types/wot-types'
 import { addTDtoCache, delTDfromCache, getTDfromCache } from '../persistance/persistance'
 
-
 // CONSTANTS 
 
 const callApi = got.extend({
@@ -192,6 +191,17 @@ export const wot = {
             const error = errorHandler(err)
             logger.warn('Error processing SPARQL query ...')
             throw new MyError(error.message, error.status)
+        }
+    },
+    healthcheck: async function(): Promise<BasicResponse<{ version: string }>> {
+        try {
+            const response = await requestSPARQL('api/healthcheck', 'POST', undefined, ApiHeader, undefined) 
+            return buildResponse(response)
+        } catch (err) {
+            return buildResponse({ version: '0.0.1' })
+            // const error = errorHandler(err)
+            // logger.warn('Error processing SPARQL query ...')
+            // throw new MyError(error.message, error.status)
         }
     },
 }
