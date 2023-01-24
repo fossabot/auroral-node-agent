@@ -195,10 +195,11 @@ export const wot = {
     },
     healthcheck: async function(): Promise<BasicResponse<{ version: string }>> {
         try {
-            const response = await requestSPARQL('api/healthcheck', 'POST', undefined, ApiHeader, undefined) 
+            // TBD: change when WoT healthcheck is implemented
+            const response = await requestSPARQL('api/healthcheck', 'GET', undefined, ApiHeader, undefined) 
             return buildResponse(response)
         } catch (err) {
-            return buildResponse({ version: '0.0.1' })
+            return buildResponse({ version: 'unknown' })
             // const error = errorHandler(err)
             // logger.warn('Error processing SPARQL query ...')
             // throw new MyError(error.message, error.status)
