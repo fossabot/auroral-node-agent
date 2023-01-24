@@ -14,7 +14,6 @@ export const sendInfoToNM = async function() {
             wot: (await wot.healthcheck()).message!.version,
             agent: agentVersion
         }
-        console.log(versions)
         logger.debug('Sending node info to NM: ' + JSON.stringify(versions))
         await gateway.sendnodeInfo({ versions })
     } catch (error) {
