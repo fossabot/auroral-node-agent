@@ -562,7 +562,7 @@ export const gateway = {
     healthcheck: async function (): Promise<BasicResponse<{ version: string }>> {
         try {
             const Authorization = await getAuthorization()
-            return request('dlt/contracts', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<{ version: string }>
+            return request('healthcheck', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<{ version: string }>
         } catch (err) {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)

@@ -88,7 +88,7 @@ export const initialize = async function() {
     scheduledJobs.start()
 
     // End of initialization
-    logger.info(' ##### Agent startup completed AAAAA!')
+    logger.info(' ##### Agent startup completed!')
     // Send node info to NM
     await sendInfoToNM()
     return true
