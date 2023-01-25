@@ -564,8 +564,8 @@ export const gateway = {
             const Authorization = await getAuthorization()
             return request('healthcheck', 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<{ version: string }>
         } catch (err) {
-            const error = errorHandler(err)
-            throw new MyError(error.message, error.status)
+            logger.warn('GTW healthcheck failed - old GTW version?')
+            return { message: { version: 'unknown' }, error: null }
         }
     },
     sendnodeInfo: async function (nodeInfo: { versions: {gtw: string, agent: string, wot: string}}): Promise<BasicResponse<string>> {
