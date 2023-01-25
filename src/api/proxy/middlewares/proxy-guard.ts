@@ -14,6 +14,7 @@ import { Config } from '../../../config'
 type ReqType = 'Data' | 'Discovery'
 const VALID_RELATIONSHIPS = Object.values(RelationshipType)
 
+// Workaround: Locals is of type PermissionLocals but there is an issue with the express types
 type proxyGuardController = expressTypes.Controller<{ oid: string }, { sparql: string }, {}, void, PermissionLocals>
 
 export const validatePermissions = (endpoint: ReqType) => {

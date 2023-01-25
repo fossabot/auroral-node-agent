@@ -19,7 +19,7 @@ import { Config } from '../../../config'
     TD = 'TD'
   }
  
- type isLocalController = expressTypes.Controller<{ agid: string }, string | undefined, { query?: string, oids?: string }, void, {}>
+ type isLocalController = expressTypes.Controller<{ agid: string }, string | undefined, { query?: string, oids?: string }, any, {}>
  
  export const isLocal = (type: SemanticType) => {
      return async function (req, res, next) {
@@ -34,7 +34,7 @@ import { Config } from '../../../config'
                     return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing SPARQL')
                 }
                 const response = (await wot.searchSPARQL(req.query.query)).message
-                res.status(200).json(response)
+                return responseBuilder(HttpStatusCode.OK, res, null, response)
             } else {
                 logger.debug('Local TD request')
                 // TD
