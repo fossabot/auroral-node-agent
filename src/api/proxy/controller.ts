@@ -15,6 +15,7 @@ import { checkSHACL } from '../../core/shacl'
 
 // Controllers
 
+// Workaround: Locals is of type PermissionLocals but there is an issue with the express types
 type PropertyCtrl = expressTypes.Controller<{ oid: string, pid: string }, any, JsonType, { wrapper: JsonType }, PermissionLocals>
  
 export const getProperty: PropertyCtrl = async (req, res) => {
@@ -69,6 +70,7 @@ export const receiveEvent: EventCtrl = async (req, res) => {
       }
   }
 
+// Workaround: Locals is of type PermissionLocals but there is an issue with the express types
 type DiscoveryCtrl = expressTypes.Controller<{ oid: string }, { sparql?: string, oids?: string } | undefined, {}, { wrapper: JsonType }, PermissionLocals>
 
 export const discovery: DiscoveryCtrl = async (req, res) => {
