@@ -46,7 +46,7 @@ describe('Main core', () => {
         jest.spyOn(discovery, 'reloadPartners').mockResolvedValue(['cid1', 'cid2'])
         jest.spyOn(persistance, 'reloadConfigInfo').mockResolvedValue()
         jest.spyOn(myGateway, 'getRegistrations').mockResolvedValue({ error: false, message: ['item1'], statusCode: 200, statusCodeReason: '', contentType: '' })
-        jest.spyOn(global, 'setTimeout').mockReturnValue(1)
+        jest.spyOn(global, 'setTimeout').mockReturnValue({} as any as NodeJS.Timeout) 
 
         // 1
         await main.initialize()

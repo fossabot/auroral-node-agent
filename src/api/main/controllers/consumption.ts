@@ -10,6 +10,7 @@ import { gateway } from '../../../microservices/gateway'
 import { GatewayResponse } from '../../../types/gateway-types'
 import { useMapping } from '../../../core/mapping'
 import { Config } from '../../../config'
+import { addTDtoCache, getTDfromCache } from '../../../persistance/persistance'
 
 // ***** Consume remote resources *****
 
@@ -22,6 +23,18 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
     const { id, oid, pid } = req.params
     const reqParams = req.query
       try {
+        // Retrieve TD (cache or from remote)
+        const td = await getTDfromCache(oid)
+        if (td) {
+          // logger.debug('TD retrieved from cache')
+          // Use TD later for detail extraction
+        } else {
+          // get remote agid
+          const agid = (await gateway.getAgentByOid(oid)).message
+          const td = (await gateway.discoveryRemote(agid, { oids: oid })).message
+          // cache TD
+          await addTDtoCache(oid, JSON.stringify(td))
+        }
         const data = await gateway.getProperty(id, oid, pid, reqParams)
         // Parse response to get only the final payload
         if (data.error) {

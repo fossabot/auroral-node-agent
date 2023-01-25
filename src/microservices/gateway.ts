@@ -576,6 +576,15 @@ export const gateway = {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)
         }
+    },
+    getAgentByOid: async function (oid: string): Promise<BasicResponse<string>> {
+        try {
+            const Authorization = await getAuthorization()
+            return await request('agents/oid/' + oid, 'GET', undefined, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
     }
 
 }
