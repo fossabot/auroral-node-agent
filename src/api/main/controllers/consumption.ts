@@ -25,6 +25,7 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
     const reqParams = req.query
       try {
         const td = await getTdForOutcomingRequest(oid)
+        logger.debug(`TD of ${oid} retrieved`)
         // td is not used now, but later we can check how to retrieve the property
         const data = await gateway.getProperty(id, oid, pid, reqParams)
         // Parse response to get only the final payload
@@ -59,6 +60,7 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
         return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
       }
       const td = await getTdForOutcomingRequest(oid)
+      logger.debug(`TD of ${oid} retrieved`)
       // td is not used now, but later we can check how to retrieve the property
       const data = await gateway.putProperty(id, oid, pid, body, reqParams)
       // Parse response to get only the final payload
