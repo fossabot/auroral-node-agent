@@ -27,7 +27,7 @@ const swagger_options = {
 }
 
 // Basic cors setup
-app.use(cors())
+// app.use(cors())
 
 app.use((req, res, next) => {
   res.header('Access-Controll-Allow-Origin', '*')

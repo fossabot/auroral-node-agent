@@ -585,6 +585,24 @@ export const gateway = {
             const error = errorHandler(err)
             throw new MyError(error.message, error.status)
         }
+    },
+    getHttpToken: async function(sourceoid: string, oid: string, pid: string): Promise<BasicResponse<string>> {
+        try {
+            const Authorization = await getAuthorization(sourceoid)
+            return request(`security/sign/${sourceoid}/${oid}/${pid}`, 'GET', undefined, { ...ApiHeader, Authorization: Authorization }) as unknown as BasicResponse<string>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
+        }
+    },
+    validateHttpToken: async function(token: string): Promise<boolean> {
+        try {
+            const Authorization = await getAuthorization()
+            await request('security/validate', 'GET', undefined, { ...ApiHeader, Authorization: Authorization },{ token }) 
+            return true
+        } catch (err) {
+            return false
+        }
     }
 
 }

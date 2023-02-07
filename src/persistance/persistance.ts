@@ -369,7 +369,6 @@ export const addTDtoCache = async function(key: string, data: string) {
 export const getTDfromCache = async function(key?: string): Promise<Thing | Thing[] | undefined > {
     try {
        if (key) {
-            logger.debug('Getting TD from cache: ' + key)
             const tdStr = await redisDb.get('td:' + key)
             return tdStr ? JSON.parse(tdStr) as Thing : undefined
        } else {

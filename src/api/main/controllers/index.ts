@@ -4,5 +4,6 @@ import * as collaborate from './collaboration'
 import * as discovery from './discovery'
 import * as consume from './consumption'
 import * as admin from './admin'
+import * as httpProxy from './httpProxy'
 
-export { auth, registry, collaborate, discovery, consume, admin }
+export { auth, registry, collaborate, discovery, consume, admin, httpProxy }

@@ -10,7 +10,7 @@
 // Express router
 import { Router, json, text } from 'express'
 // Controllers
-import { auth, registry, collaborate, discovery, consume, admin } from './controllers' 
+import { auth, registry, collaborate, discovery, consume, admin, httpProxy } from './controllers' 
 // Middlewares
 import { checkDestination, isLocal } from './middlewares'
 
@@ -66,8 +66,8 @@ MainRouter
   // TBD discover neighbours from specific CID or CTID
 
   // ***** CONSUME remote resources *****
-  .get('/properties/:id/:oid/:pid', json(), checkDestination(Method.GET), consume.getProperty) // Request remote property
-  .put('/properties/:id/:oid/:pid', json(), checkDestination(Method.PUT), consume.setProperty) // Update remote property
+  .get('/properties/:id/:oid/:pid', httpProxy.tryHttpProxy, json(), checkDestination(Method.GET), consume.getProperty) // Request remote property
+  .put('/properties/:id/:oid/:pid', httpProxy.tryHttpProxy, json(), checkDestination(Method.PUT), consume.setProperty) // Update remote property
   // .get('/actions/:id/:oid/:aid/:tid') // Get action status
   // .post('/actions/:id/:oid/:aid') // Start task on remote action
   // .put('/actions/:id/:oid/:aid') // Update status of task
@@ -96,5 +96,9 @@ MainRouter
   .get('/agent/healthcheck', json(), admin.healthCheck)
   // .get('/agent/imports', json(), admin.importFiles)
   // .get('/agent/exports', json(), admin.exportFiles)
+
+  // HTTP TOKENS
+  .get('/auth/token/:id/:oid/:pid', json(), httpProxy.generateToken)
+  .get('/auth/validate', httpProxy.validateToken)
 
 export { MainRouter }
