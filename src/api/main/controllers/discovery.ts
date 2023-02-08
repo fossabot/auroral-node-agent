@@ -12,6 +12,7 @@ import { wot } from '../../../microservices/wot'
 import { Config } from '../../../config'
 import { Thing } from '../../../types/wot-types'
 import { NodeType } from '../../../types/gateway-types'
+import { _ } from '../../../utils/is-type'
 
 type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string[], {}>
 
@@ -170,8 +171,12 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ agid: string }, string | un
           } else {
             try {
                 const response = data.message[0].message.wrapper.message
-                // Return without wrapping
-                return res.status(200).json(response)
+                // Return without wrapping and as JSON or TEXT
+                if (_.isJSON(response)) {
+                    return res.status(200).json(response)
+                } else {
+                    return res.status(200).send(response)
+                }
             } catch (err) {
                 const error = errorHandler(err)
                 logger.error(error.message)
@@ -269,7 +274,6 @@ export const discoveryCommunityFederative: federativeCommunityDiscoveryCtrl = as
             return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'There are no nodes in this community')
         }
         const agids = communityInfo.map((node) => node.agid)
-        console.log(`AGIDS: ${agids}`)
         const urls = agids.map((agid) => 'http://auroral-agent:4000/api/discovery/remote/semantic/' + agid)
         const data = await wot.searchFederativeSPARQL(sparql, urls)
         return responseBuilder(HttpStatusCode.OK, res, null, data)
