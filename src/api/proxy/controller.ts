@@ -107,7 +107,7 @@ export const discovery: DiscoveryCtrl = async (req, res) => {
         })) as JsonType
         return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
       }
-      throw new Error('Not valid body. In clude oids or sparql')
+      throw new Error('Not valid body. Include oids or sparql')
     } catch (err) {
       const error = errorHandler(err)
       logger.error('Error while returning discovery')

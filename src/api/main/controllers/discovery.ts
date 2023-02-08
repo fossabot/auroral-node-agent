@@ -12,6 +12,7 @@ import { wot } from '../../../microservices/wot'
 import { Config } from '../../../config'
 import { Thing } from '../../../types/wot-types'
 import { NodeType } from '../../../types/gateway-types'
+import { queries } from '../../../core/semantics'
 import { _ } from '../../../utils/is-type'
 
 type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string[], {}>
@@ -109,6 +110,10 @@ type getContractItemsCtrl = expressTypes.Controller<{ ctid: string, oid?: string
         }
     }
 
+/**
+ * Semantic discovery
+ */
+
 type discoveryLocalTdCtrl = expressTypes.Controller<{ oid: string }, {}, {}, Thing | string, {}>
  
 export const discoverLocalTd: discoveryLocalTdCtrl = async (req, res) => {
@@ -128,10 +133,10 @@ export const discoverLocalTd: discoveryLocalTdCtrl = async (req, res) => {
     }
 }
 
-type discoveryLocalSemanticCtrl = expressTypes.Controller<{}, string, {}, JsonType | string, {}>
+type discoveryLocalSemanticCtrl = expressTypes.Controller<{ query?: string}, string, {}, JsonType | string, {}>
  
 export const discoverLocalSemantic: discoveryLocalSemanticCtrl = async (req, res) => {
-    const sparql =  req.body
+    const sparql = req.params.query ? queries.getByName(req.params.query) : req.body
     try {
         let result
         if (!sparql) {
@@ -233,10 +238,10 @@ type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | 
       }
 }
 
-type federativeDiscoveryRemoteCtrl = expressTypes.Controller<{ }, string, { agids: string }, JsonType, {}>
+type federativeDiscoveryRemoteCtrl = expressTypes.Controller<{ query?: string }, string | undefined, { agids: string }, JsonType, {}>
 
 export const discoveryFederative: federativeDiscoveryRemoteCtrl = async (req, res) => {
-    const sparql = req.body
+    const sparql = req.params.query ? queries.getByName(req.params.query) : req.body
     const agids = req.query.agids
     try {
         if (!agids) {
