@@ -56,13 +56,13 @@ export const tryHttpProxy  = async (req: Request, res: Response, next: NextFunct
     }
   }
 
-type generateTokenCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, {}, { token: string }, any, {}>
+type generateTokenCtrl = expressTypes.Controller<{ id: string, oid: string, pid: string }, {}, string, any, {}>
 
 export const generateToken: generateTokenCtrl = async (req, res, next) => {
   try {
     logger.debug('Generating token for ' + req.params.id + ' ' + req.params.oid + ' ' + req.params.pid)
     const token = (await gateway.getHttpToken(req.params.id, req.params.oid, req.params.pid)).message
-    return responseBuilder(HttpStatusCode.OK, res, null, { token: token })
+    return responseBuilder(HttpStatusCode.OK, res, null, token)
   } catch (error) {
     const err = errorHandler(error)
     logger.error(err.message)
@@ -70,21 +70,22 @@ export const generateToken: generateTokenCtrl = async (req, res, next) => {
   }
 }
 
-type validateTokenCtrl = expressTypes.Controller<{}, {}, { valid: boolean }, any, {}>
+type validateTokenCtrl = expressTypes.Controller<{}, {},{ authorization: string }, string, {}>
 
 export const validateToken: validateTokenCtrl = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1]
-    if (!token) {
+    // Accept token in headers and in queryparams (swagger does not support header authorization)
+    const authorization = req.query.authorization ?  req.query.authorization : req.headers.authorization
+    if (!authorization) {
       return responseBuilder(HttpStatusCode.UNAUTHORIZED, res, 'Missing token')
     } 
-    if (!token.startsWith('Bearer ')) {
+    if (!authorization.startsWith('Bearer ')) {
       return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Token must be of type Bearer')
     }
-    const valid = await gateway.validateHttpToken(token)
+    const valid = await gateway.validateHttpToken(authorization.substring(7))
     if (valid) {
       logger.debug('Token valid')
-      return responseBuilder(HttpStatusCode.OK, res, null, { valid: valid })
+      return responseBuilder(HttpStatusCode.OK, res, null, 'Token valid' as string)
     } else {
       logger.debug('Token invalid')
       return responseBuilder(HttpStatusCode.FORBIDDEN, res, 'Token invalid')
