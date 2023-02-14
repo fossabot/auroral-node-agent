@@ -14,6 +14,7 @@ import { Thing } from '../../../types/wot-types'
 import { NodeType } from '../../../types/gateway-types'
 import { queries } from '../../../core/semantics'
 import { _ } from '../../../utils/is-type'
+import { addTDtoCache, getTDfromCache } from '../../../persistance/persistance'
 
 type discoveryCtrl = expressTypes.Controller<{ id?: string }, {}, {}, string[], {}>
 
@@ -207,7 +208,7 @@ type discoveryRemoteCtrl = expressTypes.Controller<{ agid: string }, string | un
       }
 }
 
-type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | undefined, { oids?: string }, Thing[], {}>
+type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | undefined, { oids?: string }, { oid: string, success: boolean, td: Thing }[], {}>
 
  export const discoveryTdRemote: discoveryTdRemoteCtrl = async (req, res) => {
     const { agid } = req.params
@@ -216,6 +217,22 @@ type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | 
         if (!oids) {
             return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing oids')
         }
+        // First check TD in local cache
+        try {
+            const response = await Promise.all(oids.split(',').map(async oid => {
+                const td = await getTDfromCache(oid) as Thing
+                if (!td) {
+                    throw new Error('TD not found')
+                }
+                return { oid, success: true, td }
+            }))
+            logger.debug('TDs found in local cache')
+            // all tds found in local cache -> return
+            return responseBuilder(HttpStatusCode.OK, res, null, response)
+        } catch (error) {
+            logger.debug('TDs not found in local cache - requesting from remote node')
+        }
+       
         const data = await gateway.discoveryRemote(agid, { sparql: undefined, oids })
         if (data.error) {
             const response: string = data.statusCodeReason
@@ -224,6 +241,13 @@ type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | 
           } else {
             try {
                 const response = data.message[0].message.wrapper
+                // Store in cache
+                await Promise.all(response.map(async (item: { oid: string, success: boolean, td: Thing }) => {
+                    if (item.success) {
+                        await addTDtoCache(item.oid, JSON.stringify(item.td))
+                    }
+                }))
+                //
                 return responseBuilder(HttpStatusCode.OK, res, null, response)
             } catch (err) {
                 const error = errorHandler(err)

@@ -12,6 +12,7 @@ import { Interaction, interactionFuncs, InteractionsType } from './models/intera
 import { registrationFuncs, Registration, RegistrationnUpdateRedis, RegistrationNonSemantic } from './models/registrations'
 import { Config } from '../config'
 import { addConfigurationInfo, removeConfigurationInfo, updateRegistrationsInfo } from './models/configurations'
+import { Thing } from '../types/wot-types'
 
 // Constants
 
@@ -365,12 +366,11 @@ export const addTDtoCache = async function(key: string, data: string) {
     }
 }
 
-export const getTDfromCache = async function(key?: string): Promise<string | string[] | null> {
+export const getTDfromCache = async function(key?: string): Promise<Thing | Thing[] | undefined > {
     try {
        if (key) {
-            logger.debug('Getting TD from cache: ' + key)
             const tdStr = await redisDb.get('td:' + key)
-            return tdStr ? JSON.parse(tdStr) : tdStr
+            return tdStr ? JSON.parse(tdStr) as Thing : undefined
        } else {
             const keys = await redisDb.smembers('thingdescriptions')
             const tds = []
@@ -380,13 +380,17 @@ export const getTDfromCache = async function(key?: string): Promise<string | str
                     tds.push(JSON.parse(td))
                 }
             }
-            return tds
+            return tds as Thing[]
        }
     } catch (err) {
         const error = errorHandler(err)
+        // TD is broken -> remove it 
+        if (key) {
+            await delTDfromCache(key)
+        }
         logger.debug('Error getting TD from cache: ' + key)
         logger.error(error.message)
-        return null
+        return undefined
     }
 }
 

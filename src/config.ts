@@ -61,6 +61,9 @@ const normalConfig = {
 		HOST: process.env.ADAPTER_HOST!,
 		PORT: process.env.ADAPTER_PORT!,
 		USE_MAPPING: process.env.USE_MAPPING === 'true',
+	},
+	HTTP_PROXY: {
+		IP_CHECK: process.env.HTTP_PROXY_IP_CHECK === 'false' ? false : true // Default is true,
 	}
 }
 
@@ -109,6 +112,9 @@ const testConfig = {
 		HOST: 'http://adapter', 
 		PORT: '3001',
 		USE_MAPPING: true
+	},
+	HTTP_PROXY: {
+		IP_CHECK: true ,
 	}
 }
 

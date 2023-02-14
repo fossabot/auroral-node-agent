@@ -10,6 +10,8 @@ import { gateway } from '../../../microservices/gateway'
 import { GatewayResponse } from '../../../types/gateway-types'
 import { useMapping } from '../../../core/mapping'
 import { Config } from '../../../config'
+import { addTDtoCache, getTDfromCache } from '../../../persistance/persistance'
+import { Thing } from '../../../types/wot-types'
 
 // ***** Consume remote resources *****
 
@@ -22,6 +24,9 @@ type getPropertyCtrl = expressTypes.Controller<{ id: string, oid: string, pid: s
     const { id, oid, pid } = req.params
     const reqParams = req.query
       try {
+        const td = await getTdForOutcomingRequest(oid)
+        logger.debug(`TD of ${oid} retrieved`)
+        // td is not used now, but later we can check how to retrieve the property
         const data = await gateway.getProperty(id, oid, pid, reqParams)
         // Parse response to get only the final payload
         if (data.error) {
@@ -54,6 +59,9 @@ export const setProperty: setPropertyCtrl = async (req, res) => {
         logger.warn('Missing body')
         return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
       }
+      const td = await getTdForOutcomingRequest(oid)
+      logger.debug(`TD of ${oid} retrieved`)
+      // td is not used now, but later we can check how to retrieve the property
       const data = await gateway.putProperty(id, oid, pid, body, reqParams)
       // Parse response to get only the final payload
       if (data.error) {
@@ -233,4 +241,21 @@ const _parse_gtw_response = (data: GatewayResponse): void => {
   }  else if (data.statusCode > 400) {
     throw new MyError(data.statusCodeReason, HttpStatusCode.INTERNAL_SERVER_ERROR)
   } 
+}
+
+const getTdForOutcomingRequest = async (oid: string): Promise<Thing> => {
+   // Retrieve TD (cache or from remote)
+   const cached_td = await getTDfromCache(oid) 
+   if (cached_td) {
+     // logger.debug('TD retrieved from cache')
+     return cached_td as Thing
+     // Use TD later for detail extraction
+   } else {
+     // get remote agid
+     const agid = (await gateway.getAgentByOid(oid)).message
+     const td = (await gateway.discoveryRemote(agid, { oids: oid })).message
+     // cache TD
+     await addTDtoCache(oid, JSON.stringify(td))
+     return td as any as Thing
+   }
 }

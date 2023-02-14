@@ -1,6 +1,6 @@
 {
   "name": "auroral_node_agent",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "description": "AURORAL agent",
   "main": "server.js",
   "dependencies": {
@@ -10,6 +10,7 @@
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
     "got": "^11.8.2",
+    "ipaddr.js": "^2.0.1",
     "mustache": "^4.2.0",
     "redis": "^4.0.6",
     "stoppable": "^1.1.0",

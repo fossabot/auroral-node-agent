@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "AURORAL Node interface - developed by bAvenir. Standard API to interact with the AURORAL platform.",
-    "version": "3.1.2",
+    "version": "3.1.3",
     "title": "Auroral Node Agent",
     "contact": {
       "name": "API Support",
@@ -59,11 +59,106 @@
       "description": "Check your partnerships and contracts"
     },
     {
+      "name": "Auth",
+      "description": "JWT validation / generation"
+    },
+    {
       "name": "Admin",
       "description": "Monitor and manage your Node"
     }
   ],
   "paths": {
+    "/api/auth/token/{id}/{oid}/{pid}": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericString"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Source oid that is requesting data",
+            "schema": {
+              "type": "string",
+              "default": "0000-0000-0000"
+            }
+          },
+          {
+            "in": "path",
+            "name": "oid",
+            "required": true,
+            "description": "OID of object where you want to request data",
+            "schema": {
+              "type": "string",
+              "default": "0000-0000-0000"
+            }
+          },
+          {
+            "in": "path",
+            "name": "pid",
+            "required": true,
+            "description": "Property ID of destination propery",
+            "schema": {
+              "type": "string",
+              "default": "0000-0000-0000"
+            }
+          }
+        ],
+        "summary": "Generating JWT token",
+        "description": "Generating JWT token for direct communication over http with remote nodes with public IP",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/validate": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericString"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "authorization",
+            "required": true,
+            "description": "Bearer authorization header containing JWT token signed in node that is sending a request",
+            "schema": {
+              "type": "string",
+              "example": "Bearer xxxxx.yyyyy.zzzzz"
+            }
+          }
+        ],
+        "summary": "Generating JWT token",
+        "description": "Generating JWT token for direct communication over http with remote nodes with public IP",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ]
+      }
+    },
     "/api/login/{id}": {
       "get": {
         "summary": "Connect an item",
