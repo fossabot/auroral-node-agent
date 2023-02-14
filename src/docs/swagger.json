@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "AURORAL Node interface - developed by bAvenir. Standard API to interact with the AURORAL platform.",
-    "version": "3.1.3",
+    "version": "3.4.0",
     "title": "Auroral Node Agent",
     "contact": {
       "name": "API Support",
@@ -27,7 +27,7 @@
   ],
   "externalDocs": {
     "description": "AURORAL platform",
-    "url": "https://auroral.dev.bavneir.eu"
+    "url": "https://auroral.dev.bavenir.eu"
   },
   "tags": [
     {
@@ -57,10 +57,6 @@
     {
       "name": "Collaboration",
       "description": "Check your partnerships and contracts"
-    },
-    {
-      "name": "Auth",
-      "description": "JWT validation / generation"
     },
     {
       "name": "Admin",
@@ -116,7 +112,7 @@
         "summary": "Generating JWT token",
         "description": "Generating JWT token for direct communication over http with remote nodes with public IP",
         "tags": [
-          "Auth"
+          "Authentication"
         ],
         "security": [
           {
@@ -147,10 +143,10 @@
             }
           }
         ],
-        "summary": "Generating JWT token",
-        "description": "Generating JWT token for direct communication over http with remote nodes with public IP",
+        "summary": "Validate JWT token",
+        "description": "Validation of JWT token sent from a remote AURORAL Node over HTTP direct connection",
         "tags": [
-          "Auth"
+          "Authentication"
         ],
         "security": [
           {
@@ -457,72 +453,6 @@
         }
       }
     },
-    "/api/registration/odrl/{oid}/{pid}": {
-      "post": {
-        "summary": "Registering ODRL policy",
-        "description": "Policy is registered in connected HELIO backend and generated url is stored in Thing description\n\n- ODRL needs to be enabled to use this feature",
-        "security": [
-          {
-            "basicAuth": []
-          }
-        ],
-        "tags": [
-          "Registry"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "required": true,
-            "name": "oid",
-            "description": "Object ID - OID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "required": true,
-            "name": "pid",
-            "description": "Property ID - PID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "text/plain": {
-              "schema": {
-                "$ref": "#/components/schemas/ODRLPolicyObject"
-              }
-            }
-          },
-          "description": "Registration info",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "$ref": "#/components/responses/Registration"
-          },
-          "400": {
-            "description": "WRONG BODY",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RegistrationSuccesArray"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "default": {
-            "$ref": "#/components/responses/DefaultError"
-          }
-        }
-      }
-    },
     "/api/discovery/nodes/organisation": {
       "get": {
         "summary": "Retrieve all nodes in my organisation",
@@ -767,10 +697,47 @@
         }
       }
     },
+    "/api/discovery/local/semantic/{query}": {
+      "get": {
+        "summary": "Predefined SPARQL query to your infrastructure",
+        "description": "Send a predefined query to retrieve rdf from your infrastructure\n\nAdd to query parameters one of the following options.\nOptions:\n\ngetDatapoints -> Retrieves all datapoints under your node\n\ngetOids -> Retrieves info of all items under your node\n",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "Local Semantic Discovery"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "query",
+            "description": "Choose a query type",
+            "schema": {
+              "type": "string",
+              "default": "getOids"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SemanticObject"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
+    },
     "/api/discovery/local/semantic": {
       "post": {
-        "summary": "SPARQL query to your infrastructure",
-        "description": "Send a discovery query to your gateway to retrieve semantic data from your infrastructure",
+        "summary": "Custom SPARQL query to your infrastructure",
+        "description": "Send a custom query to retrieve rdf from your infrastructure\n",
         "security": [
           {
             "basicAuth": []
@@ -825,6 +792,54 @@
             "schema": {
               "type": "string",
               "default": "oid1,oid2"
+            },
+            "style": "form",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SemanticObject"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/api/discovery/remote/semantic/{query}": {
+      "get": {
+        "summary": "Predefined SPARQL query to remote infrastructures",
+        "description": "Send a predefined query to retrieve rdf from remote infrastructures\n\nAdd to query parameters one of the following options.\nOptions:\n\ngetDatapoints -> Retrieves all visible datapoints under remote nodes\n\ngetOids -> Retrieves info of all visible items under remote nodes\n",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "Remote Semantic Discovery"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "query",
+            "description": "Choose a query type",
+            "schema": {
+              "type": "string",
+              "default": "getOids"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "agids",
+            "description": "Comma separated list of remote AGIDS",
+            "schema": {
+              "type": "string",
+              "default": "agid1,agid2"
             },
             "style": "form",
             "required": true
@@ -2353,12 +2368,6 @@
         "type": "string",
         "example": "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT * WHERE { ?sub ?pred ?obj . } LIMIT 10",
         "default": ""
-      },
-      "ODRLPolicyObject": {
-        "description": "Object for registering policies in ODRL",
-        "type": "string",
-        "example": "test",
-        "default": "test"
       },
       "NodeArray": {
         "description": "Array of nodes with organisation info",
