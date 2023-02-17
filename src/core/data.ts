@@ -80,17 +80,17 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
             if (!(iid && method)) {
                 return Promise.resolve({ success: false, message: 'Missing parameters' })
             }
-            
             if (Config.WOT.ENABLED && Config.ADAPTER.USE_MAPPING && interaction !== Interaction.EVENT) {
                 // property mappings
+                const adapterRes = await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams)
                 if (iid === 'getAll' || iid === 'getHistorical') {
-                    return useMappingArray(oid, iid, await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams))
+                    return useMappingArray(oid, iid, adapterRes.msg)
                 } else {
-                    return useMapping(oid, iid,  await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams))
+                    return useMapping(oid, iid, adapterRes.msg, adapterRes.ts)
                 }
             } else {
                 // event or Mapping off
-                return proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams)
+                return (await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams)).msg
             }
         }
 }

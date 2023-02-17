@@ -9,26 +9,22 @@ import { getItem } from '../persistance/persistance'
 import { RegistrationNonSemantic } from '../persistance/models/registrations'
 
 const thingMappingBase = 
-'{' + 
-'"@context": { ' + 
-'"@vocab" : "https://saref.etsi.org/core/", ' + 
-'"core" : "https://auroral.iot.linkeddata.es/def/core#", ' + 
-'"oid" : "@id", ' + 
-'"aboutProperty" : { ' + 
-'"@id" : "https://saref.etsi.org/core/aboutProperty", ' + 
-'"@type" : "@id" ' + 
-'} ' + 
-'},' + 
-'"@type": "{{{@type}}}",' + 
-'"oid": "{{{id}}}",' + 
-'"iid": "{{{iid}}}",' + 
-'"makesMeasurement": {{{measurements}}}' 
-+ '}' 
+`{ 
+"@context": [ "https://auroralh2020.github.io/auroral-ontology-contexts/adapters/context.json",
+{ "oid": { "@id": "rdfs:label" }, "iid": { "@id": "rdfs:label" } }],
+"@type": "{{{@type}}}",
+"oid": "{{{id}}}",
+"iid": "{{{iid}}}",
+"measurement": {{{measurement}}}
+}`
 
 const propertyMappingBase = 
-'{"aboutProperty": "{{{type}}}",' +
-'"hasValue": {{{value}}},' +
-'"hasTimestamp": "{{{timestamp}}}"}' 
+`{
+"property": "{{{type}}}",
+"value": {{{value}}},
+"isMeasuredIn": {{{unit}}},
+"timestamp": "{{{timestamp}}}"
+}`
 
 export const storeMapping = async (oid: string) => {
     try {
@@ -58,30 +54,14 @@ export const useMapping = async (oid: string, iid: string, value: any, timestamp
                 type: 'unknown',
                 value: value,
                 // Use timestamp if provided - else us now
-                timestamp: timestamp ? timestamp : new Date().toISOString()
+                timestamp: timestamp ? timestamp : new Date().toISOString(),
+                unit: undefined,
             }
-            return JSON.parse(Mustache.render(thingMappingBase, { id: oid, '@type': 'unknown', iid, measurements: '[' + Mustache.render(propertyMappingBase, defaultObj) + ']' }))
+            return JSON.parse(Mustache.render(thingMappingBase, { id: oid, '@type': 'unknown', iid, measurement: '[' + Mustache.render(propertyMappingBase, defaultObj) + ']' }))
         }
-        // enrich using mustache
-        // const mappingValuesNum = (mapping.match(/{{{value/g) || []).length
-        // if (mappingValuesNum > 1) {
-        //     if (!Array.isArray(value) || mappingValuesNum !== value.length) {
-        //         throw new Error('Number of provided values is different than in TD')
-        //     }
-        //     // multiple values expected
-        //     const measurementsMapping : any = {} 
-        //     let valIndex = 0
-        //     // try to parse values
-        //     value.forEach((val: any) => {
-        //         measurementsMapping['value' + valIndex++] = 
-        //             typeof value === 'object' ?  JSON.stringify(val) : '"' + val + '"'
-        //     })
-        //     return JSON.parse(Mustache.render(mapping, { ...measurementsMapping, timestamp: new Date().toISOString() }))
-        // } else {
         // expected only one value
         const parsedVal = JSON.stringify(value)
         return JSON.parse(Mustache.render(mapping, { value: parsedVal, timestamp: timestamp ? timestamp : new Date().toISOString() }))
-        // }
     } catch (err) {
         const error = errorHandler(err)
         throw new MyError('Mapping and value incompatibility: ' + error.message, HttpStatusCode.BAD_REQUEST)
@@ -144,41 +124,31 @@ export const removeMapping = async (oid: string) => {
 const generateMapping = (td: Thing): InteractionMapping[] => {
     // properties
     const propMappings = !td.properties ? [] : Object.entries(td.properties).map(prop => {
-        let measurements
-        if (!prop[1].monitors) {
-            prop[1].monitors = undefined
-            measurements =  '[' + Mustache.render(propertyMappingBase, { type: 'unknown', value: '{{{value}}}' , timestamp: '{{{timestamp}}}' }) + ']'
-        } else {
-            // If array extract value (Take only first if more than one, not supported multiple property types)
-            prop[1].monitors = Array.isArray(prop[1].monitors) ? prop[1].monitors[0] : prop[1].monitors
-            const templateObject = {
-                ...prop,
-                type: prop[1].monitors,
-                value: '{{{value}}}',
-                timestamp: '{{{timestamp}}}' 
-            }
-            measurements =  '[' + Mustache.render(propertyMappingBase, templateObject) + ']'
+        // If array extract value (Take only first if more than one, not supported multiple property types)
+        prop[1].monitors = Array.isArray(prop[1].monitors) ? prop[1].monitors[0] : prop[1].monitors
+        const templateObject = {
+            ...prop,
+            type: prop[1]['@type'] ? prop[1]['@type'] : 'unknown',
+            value: '{{{value}}}',
+            timestamp: '{{{timestamp}}}',
+            unit: prop[1].unit ? prop[1].unit : undefined
         }
-        return { oid: td.id, iid: prop[0], mapping: Mustache.render(thingMappingBase, { ...td,  measurements, iid: prop[0] }) } as InteractionMapping
+        const measurement =  '[' + Mustache.render(propertyMappingBase, templateObject) + ']'
+        return { oid: td.id, iid: prop[0], mapping: Mustache.render(thingMappingBase, { ...td,  measurement, iid: prop[0] }) } as InteractionMapping
     })
     // events
     const eventMappings = !td.events ?  [] : Object.entries(td.events).map(event => {
-        let measurements
-        if (!event[1].monitors) {
-            event[1].monitors = undefined
-            measurements =  '[' + Mustache.render(propertyMappingBase, { type: 'unknown', value: '{{{value}}}' , timestamp: '{{{timestamp}}}' }) + ']'
-        } else {
-            // If array extract value (Take only first if more than one, not supported multiple property types)
-            event[1].monitors = Array.isArray(event[1].monitors) ? event[1].monitors[0] : event[1].monitors
-            const templateObject = {
-                ...event,
-                type: event[1].monitors,
-                value: '{{{value}}}',
-                timestamp: '{{{timestamp}}}' 
-            }
-            measurements = '[' + Mustache.render(propertyMappingBase, templateObject) + ']'
+        // If array extract value (Take only first if more than one, not supported multiple property types)
+        event[1].monitors = Array.isArray(event[1].monitors) ? event[1].monitors[0] : event[1].monitors
+        const templateObject = {
+            ...event,
+            type: event[1]['@type'] ? event[1]['@type'] : 'unknown',
+            value: '{{{value}}}',
+            timestamp: '{{{timestamp}}}',
+            unit: event[1].unit ? event[1].unit : 'unknown'
         }
-        return { oid: td.id, iid: event[0], mapping: Mustache.render(thingMappingBase, { ...td,  measurements, iid: event[0] }) } as InteractionMapping
+        const measurement = '[' + Mustache.render(propertyMappingBase, templateObject) + ']'
+        return { oid: td.id, iid: event[0], mapping: Mustache.render(thingMappingBase, { ...td,  measurement, iid: event[0] }) } as InteractionMapping
     })
     // actions
     // @TBD
