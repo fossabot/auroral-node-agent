@@ -22,7 +22,7 @@ const propertyMappingBase =
 `{
 "property": "{{{type}}}",
 "value": {{{value}}},
-"isMeasuredIn": {{{unit}}},
+"isMeasuredIn": "{{{unit}}}",
 "timestamp": "{{{timestamp}}}"
 }`
 
@@ -52,10 +52,10 @@ export const useMapping = async (oid: string, iid: string, value: any, timestamp
             logger.warn('Mapping not found')
             const defaultObj =  {
                 type: 'unknown',
-                value: value,
+                value,
                 // Use timestamp if provided - else us now
                 timestamp: timestamp ? timestamp : new Date().toISOString(),
-                unit: undefined,
+                unit: 'unknown',
             }
             return JSON.parse(Mustache.render(thingMappingBase, { id: oid, '@type': 'unknown', iid, measurement: '[' + Mustache.render(propertyMappingBase, defaultObj) + ']' }))
         }
@@ -131,7 +131,7 @@ const generateMapping = (td: Thing): InteractionMapping[] => {
             type: prop[1]['@type'] ? prop[1]['@type'] : 'unknown',
             value: '{{{value}}}',
             timestamp: '{{{timestamp}}}',
-            unit: prop[1].unit ? prop[1].unit : undefined
+            unit: prop[1].unit ? prop[1].unit : 'unknown'
         }
         const measurement =  '[' + Mustache.render(propertyMappingBase, templateObject) + ']'
         return { oid: td.id, iid: prop[0], mapping: Mustache.render(thingMappingBase, { ...td,  measurement, iid: prop[0] }) } as InteractionMapping
