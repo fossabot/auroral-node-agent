@@ -19,7 +19,7 @@ export const tryHttpProxy  = async (req: Request, res: Response, next: NextFunct
         return res.status(400).send('Missing parameters')
       }
       // Retrieve remote TD
-      const td = await getRemoteTd(req.params.oid)
+      const td = await getTd(req.params.oid)
       // Proxy URL from TD
       const proxyUrl = getUrlFromTd(td, req.params.pid)
       // Get test JWT from gateway
@@ -98,10 +98,11 @@ export const validateToken: validateTokenCtrl = async (req, res) => {
 }
 
 // Helper functions
-const getRemoteTd = async (oid: string): Promise<Thing> => {
+const getTd = async (oid: string): Promise<Thing> => {
   try {
      // Retrieve TD (cache or from remote)
      const cached_td = await getTDfromCache(oid) 
+     // Don't neeed to check if TD is local -> if it is local it is already in the cache
      if (cached_td) {
        logger.debug('TD retrieved from cache')
        return cached_td as Thing
@@ -110,7 +111,7 @@ const getRemoteTd = async (oid: string): Promise<Thing> => {
        // get remote agid
        logger.debug('TD cache miss - retrieving TD from remote agent')
        const agid = (await gateway.getAgentByOid(oid)).message
-       const td = (await gateway.discoveryRemote(agid, { oids: oid })).message
+       const td = (await gateway.discoveryRemote(agid, { oids: oid })).message[0].message.wrapper[0].td
        // cache TD
        await addTDtoCache(oid, JSON.stringify(td))
        return td as any as Thing
