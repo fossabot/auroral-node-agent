@@ -64,7 +64,7 @@ describe('Data core', () => {
     })
     it('Do readProperty proxy mode', async () => {
         myConfig.ADAPTER = { MODE: 'proxy', PORT: '', HOST: '', USE_MAPPING: false }
-        myProxy.sendMessageViaProxy.mockResolvedValue({ 'test': true })
+        myProxy.sendMessageViaProxy.mockResolvedValue({ msg: { 'test': true } })
         const spy = jest.spyOn(Data, 'readProperty')
         const response = await Data.readProperty('oid1','pid1', 'sourceoid', {})
         expect(response.test).toBe(true)
@@ -72,10 +72,10 @@ describe('Data core', () => {
     })
     it('Do readProperty semantic mode', async () => {
         myConfig.ADAPTER = { MODE: 'semantic', PORT: '', HOST: '', USE_MAPPING: false }
-        myProxy.sendMessageViaWot.mockResolvedValue({ 'test': true })
+        myProxy.sendMessageViaWot.mockResolvedValue({ msg: { 'test': true } })
         const spy = jest.spyOn(Data, 'readProperty')
         const response = await Data.readProperty('oid1','pid1', 'sourceoid', {})
-        expect(response.test).toBe(true)
+        expect(response.msg.test).toBe(true)
         expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Do sparqlDiscovery semantic mode', async () => {

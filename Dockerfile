@@ -5,7 +5,7 @@ ARG BASE_IMAGE=node:16-slim
 
 # BUILD PHASE
 # run only on native platform
-FROM --platform=$BUILDPLATFORM $BASE_IMAGE AS build-env
+FROM $BASE_IMAGE AS build-env
 RUN mkdir /app && chown -R node:node /app
 WORKDIR /app
 USER node
