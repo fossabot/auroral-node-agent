@@ -17,10 +17,27 @@
 /* eslint-disable no-use-before-define */
 
 import { JsonType, CONTENT_TYPE_ENUM } from './misc-types'
+import { SecurityType, NoSecurityScheme } from './wot-security-types'
+import { GeoType } from './wot-geo-type'
 
-export const DEFAULT_CONTEXT = 'https://www.w3.org/2019/wot/td/v1'
-export const DEFAULT_CONTEXT_LANGUAGE = 'en'
-export const DEFAULT_THING_TYPE = 'Thing'
+const DEFAULT_CONTEXT = [
+    'https://www.w3.org/2019/wot/td/v1',
+    { 
+     'adp': 'https://auroral.iot.linkeddata.es/def/adapters#',
+     'om': 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
+     'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#'
+    }
+  ]
+const DEFAULT_CONTEXT_LANGUAGE = 'en'
+const DEFAULT_THING_TYPE = 'Thing'
+const DEFAULT_SECURITY = [
+    'nosec_sc'
+  ]
+const DEFAULT_SECURITY_DEFS = {
+        'nosec_sc': { 
+            scheme: 'nosec' 
+        } as NoSecurityScheme
+}
 
 /* TODOs / Questions
  ~ In Thing index structure could be read-only (sanitizing needs write access)
@@ -31,8 +48,8 @@ export declare type MultiLanguage = Record<string, unknown> // object?
 /** Implements the Thing Description as software object */
 export class Thing {
     id?: string // AURORAL Extension --> Added by Agent on Registration == OID
-    '@context': string // AURORAL Extension
-    '@type': string | string[] // AURORAL Extension
+    '@context': any
+    '@type': string | string[]
     title: string
     titles?: MultiLanguage
     description?: string
@@ -42,19 +59,12 @@ export class Thing {
     modified?: string
     created?: string
     version?: VersionInfo
-    securityDefinitions?: {
+    securityDefinitions: {
         [key: string]: SecurityType
     }
 
     security: Array<string>
     base?: string
-
-    // AURORAL extension for static location
-    located_in?: {
-        location_type: string, // Annotation with some building/location/place ontology
-        location_id?: string, // IRI that uniquely identifies the location, i.e. http://dbpedia.org/Greece
-        label?: string // Human readable description
-    }
 
     properties: JsonType<ThingProperty>
 
@@ -62,31 +72,41 @@ export class Thing {
 
     events: JsonType<ThingEvent>
 
-    links: Array<Link>
+    links?: Array<Link>
     forms?: Array<Form>
+
+    // From geo ontology
+    'geo:location'?: GeoType
 
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     [key: string]: any
 
-    constructor(title: string, adapterId: string) {
+    constructor(data: Thing) {
+        Object.assign(this, data)
         this['@context'] = DEFAULT_CONTEXT
-        this['@type'] = DEFAULT_THING_TYPE
-        this.title = title
-        this.adapterId = adapterId
-        this.security = []
-        this.properties = {}
-        this.actions = {}
-        this.events = {}
-        this.links = []
+        // Give priority to @type
+        const tempType = data['@type'] || data.type
+        this['@type'] = tempType ? tempType : DEFAULT_THING_TYPE
+        this.title = data.title
+        this.id = data.id!
+        this.adapterId = data.adapterId ? data.adapterId : data.id!
+        this.security = data.security ? data.security : DEFAULT_SECURITY
+        this.securityDefinitions = data.securityDefinitions ? data.securityDefinitions : DEFAULT_SECURITY_DEFS
+        this.description = data.description ? data.description : undefined
+        this.properties = data.properties ? data.properties : {}
+        this.actions = data.actions ? data.actions : {}
+        this.events = data.events ? data.events : {}
+        this.links = data.links ? data.links : undefined
+        this.forms = data.forms ? data.forms : undefined
     }
 
-    public setId = (id: string): void => {
-        this.id = id
-    }
+    // public setId = (id: string): void => {
+    //     this.id = id
+    // }
 
-    public buildThing = (data: Thing): void => {
-        Object.assign(this, { ...data, setId: this.setId, buildThing: this.buildThing })
-    }
+    // public buildThing = (data: Thing): void => {
+    //     Object.assign(this, { ...data, setId: this.setId, buildThing: this.buildThing })
+    // }
 }
 
 /** Basis from implementing the Thing Interaction descriptions for Property, Action, and Event */
@@ -208,89 +228,6 @@ export interface NullSchema extends BaseSchema {
     type: 'null'
 }
 
-export type SecurityType =
-    | NoSecurityScheme
-    | BasicSecurityScheme
-    | DigestSecurityScheme
-    | BearerSecurityScheme
-    | CertSecurityScheme
-    | PoPSecurityScheme
-    | APIKeySecurityScheme
-    | OAuth2SecurityScheme
-    | PSKSecurityScheme
-    | PublicSecurityScheme
-
-export interface SecurityScheme {
-    scheme: string
-    description?: string
-    proxy?: string
-}
-
-export interface NoSecurityScheme extends SecurityScheme {
-    scheme: 'nosec'
-}
-
-export interface BasicSecurityScheme extends SecurityScheme {
-    scheme: 'basic'
-    in?: string
-    name?: string
-}
-
-export interface DigestSecurityScheme extends SecurityScheme {
-    scheme: 'digest'
-    name?: string
-    in?: string
-    qop?: string
-}
-
-export interface APIKeySecurityScheme extends SecurityScheme {
-    scheme: 'apikey'
-    in?: string
-    name?: string
-}
-
-export interface BearerSecurityScheme extends SecurityScheme {
-    scheme: 'bearer'
-    in?: string
-    alg?: string
-    format?: string
-    name?: string
-    authorization?: string
-}
-
-export interface CertSecurityScheme extends SecurityScheme {
-    scheme: 'cert'
-    identity?: string
-}
-
-export interface PSKSecurityScheme extends SecurityScheme {
-    scheme: 'psk'
-    identity?: string
-}
-
-export interface PublicSecurityScheme extends SecurityScheme {
-    scheme: 'public'
-    identity?: string
-}
-
-export interface PoPSecurityScheme extends SecurityScheme {
-    scheme: 'pop'
-    format?: string
-    authorization?: string
-    alg?: string
-    name?: string
-    in?: string
-}
-
-export interface OAuth2SecurityScheme extends SecurityScheme {
-    scheme: 'oauth2'
-    authorization?: string
-    flow?: string // one of implicit, password, client, or code
-    token?: string
-    refresh?: string
-    scopes?: Array<string>
-}
-
 /** Implements the Thing Property description */
 export abstract class ThingProperty extends BaseSchema implements ThingInteraction {
     // writable: boolean
@@ -362,45 +299,3 @@ export abstract class ThingEvent implements ThingInteraction {
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     [key: string]: any
 }
-
-// WoT Thing Example
-
-// {
-//     "@context": [
-//         "https://www.w3.org/2019/wot/td/v1",
-//         { "saref": "https://w3id.org/saref#" }
-//     ],
-//     "title": "MyLampThing",
-//     "id" : "bb2b1770-3308-4d74-be2e-aaa6faccf018",
-//     "@type": "saref:LightSwitch",
-//     "securityDefinitions": {"basic_sc": {
-//         "scheme": "basic",
-//         "in": "header"
-//     }},
-//     "security": ["basic_sc"],
-//     "properties": {
-//         "status": {
-//             "@type": "saref:OnOffState",
-//             "type": "string",
-//             "forms": [{
-//                 "href": "https://mylamp.example.com/status"
-//             }]
-//         }
-//     },
-//     "actions": {
-//         "toggle": {
-//             "@type": "saref:ToggleCommand",
-//             "forms": [{
-//                 "href": "https://mylamp.example.com/toggle"
-//             }]
-//         }
-//     },
-//     "events": {
-//         "overheating": {
-//             "data": {"type": "string"},
-//             "forms": [{
-//                 "href": "https://mylamp.example.com/oh"
-//             }]
-//         }
-//     }
-// }

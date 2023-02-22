@@ -11,6 +11,7 @@ import { RegistrationNonSemantic } from '../persistance/models/registrations'
 const thingMappingBase = 
 `{ 
 "@context": [ "https://auroralh2020.github.io/auroral-ontology-contexts/adapters/context.json",
+{ "om": "http://www.ontology-of-units-of-measure.org/resource/om-2/" },
 { "oid": { "@id": "rdfs:label" }, "iid": { "@id": "rdfs:label" } }],
 "@type": "{{{@type}}}",
 "oid": "{{{id}}}",

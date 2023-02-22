@@ -215,7 +215,16 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
         throw new MyError('Error reaching WoT server -- status code 500', HttpStatusCode.INTERNAL_SERVER_ERROR)
     }
     if (response.statusCode === 400) {
-        throw new MyError('Invalid serialization or TD', HttpStatusCode.BAD_REQUEST)
+        const res: any = response.body
+        if (res) {
+            if (res.detail) {
+                logger.error(res.detail)
+            } 
+            if (res.validationErrors) {
+                logger.error(res.validationErrors)
+            } 
+        }
+        throw new MyError('Invalid serialization or TD, see logs for more info', HttpStatusCode.BAD_REQUEST)
     }
     if (response.statusCode === 404) {
         throw new MyError('TD with the given id not found', HttpStatusCode.NOT_FOUND)

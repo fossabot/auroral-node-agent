@@ -58,35 +58,29 @@ export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Pr
 export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD[]): Promise<RegistrationRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     await _checkNumberOfRegistrations(itemsArray.length)
-    itemsArray.forEach(it => {
-        if (!it.td) {
-            throw new Error('Please include td')
-        }
-    })
     // Collect all adapterIDs
     const adapterIDs = itemsArray.map(it => it.td.adapterId).filter(it => it) 
     const registrations: RegistrationBody[] = []
     const errors: RegistrationResultPost[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         try {
+            const it = itemsArray[i]
+            // Early WoT Validation
+            _wot_validate(it)
             // Verify interactions are not duplicated, URIencode and standardize some attributes as []
-            itemsArray[i].td = _standardize_td(itemsArray[i].td)
+            it.td = _standardize_td(it.td)
             // Check conflicts with adapterIDs
-            await _lookForAdapterIdConflicts(itemsArray[i].td.adapterId, adapterIDs)
+            await _lookForAdapterIdConflicts(it.td.adapterId, adapterIDs)
             const oid = uuidv4()
             // enrich TD if PROXY mode
             if (Config.ADAPTER.MODE === AdapterMode.PROXY) {
-                itemsArray[i].td = tdProxyEnrichment({ 'id': oid, ...itemsArray[i].td })
+                it.td = tdProxyEnrichment({ 'id': oid, ...it.td })
             }
-            // If adapterID is not provided - use OID
-            if (!itemsArray[i].td.adapterId) {
-                itemsArray[i].td.adapterId = oid
-            }
-            // If type is missing, assign Device
-            itemsArray[i].td['@type'] = Array.isArray(itemsArray[i].td['@type']) ? itemsArray[i].td['@type'][0] : itemsArray[i].td['@type']
-            itemsArray[i].td['@type'] = itemsArray[i].td['@type'] ? itemsArray[i].td['@type'] : 'Device'
-            await wot.upsertTD(oid, { 'id': oid, ...itemsArray[i].td }) // WoT Validation
-            registrations.push(_buildTDWoT(oid, itemsArray[i]))
+            // Create thingDesc
+            const thing = new Thing({ 'id': oid, ...it.td })
+            // Register ThingDesc
+            await wot.upsertTD(oid, thing) // WoT Validation
+            registrations.push(_buildTDWoT(oid, it))
         } catch (err) {
             const error = errorHandler(err)
             logger.error(error.message)
@@ -129,23 +123,13 @@ export const tdParserUpdate = async (body : UpdateJSON | UpdateJSON[]): Promise<
 export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): Promise<UpdateRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     const registrations = await getItem('registrations') as string[]
-    // test if registered 
-    itemsArray.forEach((item) => {
-        if (!item.td) {
-            throw new Error('Please provide td')
-        }
-        if (!item.td.id) {
-            throw new Error('Some objects do not have OIDs')
-        }
-        if (!registrations.includes(item.td.id)) {
-            throw new Error('Some objects are not registered [' + item.td.id + ']')
-        }
-    })
     const updates: UpdateBody[] = []
     const errors: UpdateResult[] = []
     for (let i = 0, l = itemsArray.length; i < l; i++) {
         const it = itemsArray[i]
         try {
+            // Early validation
+            _wot_validate_update(it, registrations)
             const oldTD = await (await wot.retrieveTD(it.td.id!)).message
             if (!oldTD) {
                 throw new MyError('Old TD not found')
@@ -160,8 +144,11 @@ export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): P
              if (Config.ADAPTER.MODE === AdapterMode.PROXY) {
                 it.td = tdProxyEnrichment(it.td)
             }
+            // Create thing
+            const thing = new Thing(it.td)
+            console.log(thing)
             // Get proper thing description
-            await wot.upsertTD(it.td.id!, it.td) // WoT Validation
+            await wot.upsertTD(it.td.id!, thing) // WoT Validation
             updates.push(_buildTDWoTUpdate(it.td.id!, it))
         } catch (err) {
             const error = errorHandler(err)
@@ -192,7 +179,10 @@ const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
 
 const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody => {
     // get iids  
-    const type: string = Array.isArray(data.td['@type']) ? data.td['@type'][0] : data.td['@type']
+    let type: string = Array.isArray(data.td['@type']) ? data.td['@type'][0] : data.td['@type']
+    if (!type) {
+        type = 'Device'
+    }
     return {
         oid,
         properties: data.td.properties ? Object.keys(data.td.properties).toString() : undefined,
@@ -238,6 +228,33 @@ const _buildTDWoTUpdate = (oid: string, data: UpdateJSONTD): UpdateBody => {
     }
 }
 
+const _wot_validate = (it: RegistrationJSONTD) => {
+        if (!it.td) {
+            throw new Error('Item does not have td')
+        }
+        if (!it.td.title) {
+            throw new Error('Item does not have title')
+        }
+        if (it.td.oid) {
+            throw new Error('OID property is not allowed during registration')
+        }
+        if (it.td.id) {
+            throw new Error('ID property is not allowed during registration')
+        }
+}
+
+const _wot_validate_update = (item: RegistrationJSONTD, registrations: string[]) => {
+        if (!item.td) {
+            throw new Error('Please provide td')
+        }
+        if (!item.td.id) {
+            throw new Error('Some objects do not have ID property')
+        }
+        if (!registrations.includes(item.td.id)) {
+            throw new Error('Item not registered [' + item.td.id + ']')
+        }
+}
+
 /**
  * Check if all required parameters for registration are included
  * @param {object} data 
@@ -280,45 +297,42 @@ const _checkNumberOfRegistrations = async (newRegistrationsCount: number) => {
             // URI encode prop names
             td.properties[encodeURI(key)] = value
             // standardize parameters (as array)
-            if (td.properties[encodeURI(key)].monitors && !Array.isArray(td.properties[encodeURI(key)].monitors)) {
-                td.properties[encodeURI(key)].monitors = [td.properties[encodeURI(key)].monitors! as string]
-            }
-            if (td.properties[encodeURI(key)].parameters && !Array.isArray(td.properties[encodeURI(key)].parameters)) {
-                td.properties[encodeURI(key)].parameters = [td.properties[encodeURI(key)].parameters! as string]
-            }
-            if (td.properties[encodeURI(key)].measures && !Array.isArray(td.properties[encodeURI(key)].measures)) {
-                td.properties[encodeURI(key)].measures = [td.properties[encodeURI(key)].measures! as string]
-            }
+            // if (td.properties[encodeURI(key)].monitors && !Array.isArray(td.properties[encodeURI(key)].monitors)) {
+            //     td.properties[encodeURI(key)].monitors = [td.properties[encodeURI(key)].monitors! as string]
+            // }
+            // if (td.properties[encodeURI(key)].parameters && !Array.isArray(td.properties[encodeURI(key)].parameters)) {
+            //     td.properties[encodeURI(key)].parameters = [td.properties[encodeURI(key)].parameters! as string]
+            // }
+            // if (td.properties[encodeURI(key)].measures && !Array.isArray(td.properties[encodeURI(key)].measures)) {
+            //     td.properties[encodeURI(key)].measures = [td.properties[encodeURI(key)].measures! as string]
+            // }
         }
     }
     if (events) {
         for (const [key, value] of Object.entries(events)) {
             // URI encode event names
             td.events[encodeURI(key)] = value
-            if (td.events[encodeURI(key)].monitors && !Array.isArray(td.events[encodeURI(key)].monitors)) {
-                td.events[encodeURI(key)].monitors = [td.events[encodeURI(key)].monitors! as string]
-            }
-            if (td.events[encodeURI(key)].measures && !Array.isArray(td.events[encodeURI(key)].measures)) {
-                td.events[encodeURI(key)].measures = [td.events[encodeURI(key)].measures! as string]
-            }
+            // if (td.events[encodeURI(key)].monitors && !Array.isArray(td.events[encodeURI(key)].monitors)) {
+            //     td.events[encodeURI(key)].monitors = [td.events[encodeURI(key)].monitors! as string]
+            // }
+            // if (td.events[encodeURI(key)].measures && !Array.isArray(td.events[encodeURI(key)].measures)) {
+            //     td.events[encodeURI(key)].measures = [td.events[encodeURI(key)].measures! as string]
+            // }
         }
     }
     if (actions) {
         for (const [key, value] of Object.entries(actions)) {
             // URI encode action names
             td.actions[encodeURI(key)] = value
-            if (td.actions[encodeURI(key)].monitors && !Array.isArray(td.actions[encodeURI(key)].monitors)) {
-                td.actions[encodeURI(key)].monitors = [td.actions[encodeURI(key)].monitors! as string]
-            }
-            if (td.actions[encodeURI(key)].measures && !Array.isArray(td.actions[encodeURI(key)].measures)) {
-                td.actions[encodeURI(key)].measures = [td.actions[encodeURI(key)].measures! as string]
-            }
+            // if (td.actions[encodeURI(key)].monitors && !Array.isArray(td.actions[encodeURI(key)].monitors)) {
+            //     td.actions[encodeURI(key)].monitors = [td.actions[encodeURI(key)].monitors! as string]
+            // }
+            // if (td.actions[encodeURI(key)].measures && !Array.isArray(td.actions[encodeURI(key)].measures)) {
+            //     td.actions[encodeURI(key)].measures = [td.actions[encodeURI(key)].measures! as string]
+            // }
         }
     }
 
-    if (td['@type'] && !Array.isArray(td['@type'])) {
-        td['@type'] = [td['@type']]
-    }
     // test for uniqness
     _unique_iids(td)
     return td
