@@ -6,7 +6,7 @@ import { RegistrationBody, UpdateBody, RegistrationJSON, UpdateJSONTD, UpdateJSO
 import { getCountOfItems, getItem, existsAdapterId, sameAdapterId } from '../persistance/persistance'
 import { wot } from '../microservices/wot'
 import { errorHandler, MyError } from '../utils/error-handler'
-import { logger } from '../utils'
+import { HttpStatusCode, logger } from '../utils'
 import { RegistrationResultPost } from '../types/gateway-types'
 import { AdapterMode, UpdateResult } from '../types/misc-types'
 import { Thing } from '../types/wot-types'
@@ -58,6 +58,12 @@ export const tdParser = async (body : RegistrationJSON | RegistrationJSON[]): Pr
 export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD[]): Promise<RegistrationRet> => {
     const itemsArray = Array.isArray(body) ? body : [body]
     await _checkNumberOfRegistrations(itemsArray.length)
+    // check if all TDs are present
+    itemsArray.forEach(it => {
+        if (it.td === undefined) {
+            throw new MyError('Please include td for all objects', HttpStatusCode.BAD_REQUEST)
+        } 
+    })
     // Collect all adapterIDs
     const adapterIDs = itemsArray.map(it => it.td.adapterId).filter(it => it) 
     const registrations: RegistrationBody[] = []
