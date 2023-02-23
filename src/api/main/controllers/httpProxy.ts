@@ -38,7 +38,7 @@ export const tryHttpProxy  = async (req: Request, res: Response, next: NextFunct
               // remove host header to avoid ssl issues
               delete options.headers.host
               // Add JWT token to header
-              options.headers.Authorization = 'Bearer: ' + jwtToken 
+              options.headers.Authorization = 'Bearer ' + jwtToken 
               options.headers['user-agent'] = req.headers['user-agent'] ? req.headers['user-agent'] : 'Auroral node'
               // If POST/PUT add body from request
               if (req.method === 'POST' || req.method === 'PUT') {
