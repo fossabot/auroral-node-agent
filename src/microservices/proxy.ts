@@ -89,7 +89,7 @@ export const proxy = {
 const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType): Promise<any> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     try {
-        const ts = response.headers['X-TIMESTAMP']
+        const ts = response.headers['x-timestamp']
         return { msg: JSON.parse(response.body), ts }
     } catch (err: unknown) {
         logger.warn('Body is not in JSON format')
