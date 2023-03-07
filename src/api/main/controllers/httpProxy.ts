@@ -1,5 +1,5 @@
 // Controller common imports
-import { NextFunction, Request, Response } from 'express'
+import { NextFunction, query, Request, Response } from 'express'
 import got, { Method } from 'got'
 import dns from 'dns'
 import ipaddr from 'ipaddr.js'
@@ -29,9 +29,19 @@ export const tryHttpProxy  = async (req: Request, res: Response, next: NextFunct
         logger.info('direct HTTP communication not possible - skipping to XMPP request')
         return next()
       }
+      // transform query to searchParams
+      const searchParams = new URLSearchParams()
+      for (const key in req.query) {
+        if (Object.prototype.hasOwnProperty.call(req.query, key)) {
+          const element = req.query[key] as string
+          searchParams.append(key, element)
+        }
+      }
       const stream = got(proxyUrl, { 
         isStream: true,
         method: req.method as Method,
+        // Add req.query to url
+        searchParams: searchParams,
         hooks: {
           beforeRequest: [
             options => {
