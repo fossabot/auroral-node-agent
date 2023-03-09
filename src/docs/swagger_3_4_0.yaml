@@ -475,7 +475,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         default:
           $ref: '#/components/responses/DefaultError'
-  /api/discovery/local/semantic/{query}:
+  /api/discovery/local/semantic/predefined/{query}:
     get:
       summary: Predefined SPARQL query to your infrastructure
       description: |
@@ -558,7 +558,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         default:
           $ref: '#/components/responses/DefaultError'
-  /api/discovery/remote/semantic/{query}:
+  /api/discovery/remote/semantic/predefined/{query}:
     get:
       summary: Predefined SPARQL query to remote infrastructures
       description: |

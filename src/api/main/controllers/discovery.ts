@@ -264,7 +264,7 @@ type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | 
 
 type federativeDiscoveryRemoteCtrl = expressTypes.Controller<{ query?: string }, string | undefined, { agids: string }, JsonType, {}>
 
-export const discoveryFederative: federativeDiscoveryRemoteCtrl = async (req, res) => {
+export const discoveryFederative: federativeDiscoveryRemoteCtrl = async (req, res) =>  {   
     const sparql = req.params.query ? queries.getByName(req.params.query) : req.body
     const agids = req.query.agids
     try {

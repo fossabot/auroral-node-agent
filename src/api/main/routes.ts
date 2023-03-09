@@ -59,7 +59,7 @@ MainRouter
   // REMOTE Semantic
   .get('/discovery/remote/td/:agid', json(), isLocal(SemanticType.TD), discovery.discoveryTdRemote)
   .post('/discovery/remote/semantic', text(), discovery.discoveryFederative)
-  .get('/discovery/remote/semantic/:query', discovery.discoveryFederative)
+  .get('/discovery/remote/semantic/predefined/:query', discovery.discoveryFederative)
   .post('/discovery/remote/semantic/community/:commid', text(), discovery.discoveryCommunityFederative)
   .post('/discovery/remote/semantic/myorganisation', text(), discovery.discoveryOrganisationFederative)
   // WOT internal use for federated queries 

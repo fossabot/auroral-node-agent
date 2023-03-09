@@ -697,7 +697,7 @@
         }
       }
     },
-    "/api/discovery/local/semantic/{query}": {
+    "/api/discovery/local/semantic/predefined/{query}": {
       "get": {
         "summary": "Predefined SPARQL query to your infrastructure",
         "description": "Send a predefined query to retrieve rdf from your infrastructure\n\nAdd to query parameters one of the following options.\nOptions:\n\ngetDatapoints -> Retrieves all datapoints under your node\n\ngetOids -> Retrieves info of all items under your node\n",
@@ -810,7 +810,7 @@
         }
       }
     },
-    "/api/discovery/remote/semantic/{query}": {
+    "/api/discovery/remote/semantic/predefined/{query}": {
       "get": {
         "summary": "Predefined SPARQL query to remote infrastructures",
         "description": "Send a predefined query to retrieve rdf from remote infrastructures\n\nAdd to query parameters one of the following options.\nOptions:\n\ngetDatapoints -> Retrieves all visible datapoints under remote nodes\n\ngetOids -> Retrieves info of all visible items under remote nodes\n",
