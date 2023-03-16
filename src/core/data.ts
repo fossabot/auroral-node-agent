@@ -80,17 +80,28 @@ const reachAdapter = async (oid: string, iid: string, method: Method, interactio
             if (!(iid && method)) {
                 return Promise.resolve({ success: false, message: 'Missing parameters' })
             }
-            if (Config.WOT.ENABLED && Config.ADAPTER.USE_MAPPING && interaction !== Interaction.EVENT) {
+            const adapterRes = await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams)
+            let mappingEnabled = Config.ADAPTER.USE_MAPPING // from .env
+            // Can by overwritten by adapter response
+            if (adapterRes.mappingEnabled !== undefined) {
+                mappingEnabled = adapterRes.mappingEnabled
+            }
+            // If WOT is disabled, or event, mapping is not used
+            if (!Config.WOT.ENABLED || interaction === Interaction.EVENT) {
+                mappingEnabled = false
+            }
+            if (mappingEnabled) {
+                // logger.debug('Mapping enabled')
                 // property mappings
-                const adapterRes = await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams)
                 if (iid === 'getAll' || iid === 'getHistorical') {
                     return useMappingArray(oid, iid, adapterRes.msg)
                 } else {
                     return useMapping(oid, iid, adapterRes.msg, adapterRes.ts)
                 }
             } else {
-                // event or Mapping off
-                return (await proxy.sendMessageViaProxy(oid, iid, method, interaction, sourceoid, body, reqParams)).msg
+                // logger.debug('Mapping disabled')
+                // Mapping off
+                return adapterRes.msg
             }
         }
 }

@@ -52,7 +52,7 @@ export const proxy = {
      * @param method 
      * @returns 
      */ 
-    sendMessageViaProxy: async function(oid: string, iid: string, method: Method, interaction: Interaction, sourceoid: string, body?: JsonType, reqParams?: JsonType): Promise<JsonType> {
+    sendMessageViaProxy: async function(oid: string, iid: string, method: Method, interaction: Interaction, sourceoid: string, body?: JsonType, reqParams?: JsonType): Promise<{ts: string | undefined, mappingEnabled: boolean | undefined, msg: JsonType}> {
         logger.debug('Calling: ' + method + ' ' + Config.ADAPTER.HOST + ':' + Config.ADAPTER.PORT + 'api/' + interaction + '/' + oid + '/' + iid)
         return request('api/' + interaction + '/' + oid + '/' + iid , method, body, { ...ApiHeader, Authorization, sourceoid }, reqParams)
     },
@@ -86,13 +86,20 @@ export const proxy = {
 
 // PRIVATE FUNCTIONS
 
-const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType): Promise<any> => {
+const request = async (endpoint: string, method: Method, json?: JsonType, headers?: Headers, searchParams?: JsonType): Promise<{ts: string | undefined, msg: any, mappingEnabled: boolean | undefined}> => {
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     try {
         const ts = response.headers['x-timestamp']
-        return { msg: JSON.parse(response.body), ts }
+        const mappingString = response.headers['x-mapping'].toLowerCase()
+        let mappingEnabled: boolean | undefined
+        if (mappingString === 'true') {
+            mappingEnabled = true
+        } else if (mappingString === 'false') {
+            mappingEnabled = false
+        }
+        return { msg: JSON.parse(response.body), ts, mappingEnabled }
     } catch (err: unknown) {
-        logger.warn('Body is not in JSON format')
+        logger.warn('Body is not in JSON format: ' + response.body)
         return response.body
     }
 }

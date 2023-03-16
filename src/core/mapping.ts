@@ -49,20 +49,21 @@ export const useMapping = async (oid: string, iid: string, value: any, timestamp
     try {
         logger.debug('Getting mapping for: ' + oid + ' ' + iid)
         const mapping = await redisDb.hget(oid, 'mapping:' + iid) 
+        const processedTimestamp = timestamp && timestamp !== 'undefined' ? timestamp : new Date().toISOString()
         if (!mapping) {
             logger.warn('Mapping not found')
             const defaultObj =  {
                 type: 'unknown',
                 value,
                 // Use timestamp if provided - else us now
-                timestamp: timestamp ? timestamp : new Date().toISOString(),
+                timestamp: processedTimestamp,
                 unit: 'unknown',
             }
             return JSON.parse(Mustache.render(thingMappingBase, { id: oid, '@type': 'unknown', iid, measurement: '[' + Mustache.render(propertyMappingBase, defaultObj) + ']' }))
         }
         // expected only one value
         const parsedVal = JSON.stringify(value)
-        return JSON.parse(Mustache.render(mapping, { value: parsedVal, timestamp: timestamp ? timestamp : new Date().toISOString() }))
+        return JSON.parse(Mustache.render(mapping, { value: parsedVal, timestamp: processedTimestamp }))
     } catch (err) {
         const error = errorHandler(err)
         throw new MyError('Mapping and value incompatibility: ' + error.message, HttpStatusCode.BAD_REQUEST)

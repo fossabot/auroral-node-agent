@@ -126,20 +126,30 @@ type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, str
     export const publishEvent: publishEventCtrl = async (req, res) => {
     const { id, eid } = req.params
     const body = req.body
+    const ts = String(req.headers['x-timestamp'])
+    const mappingString = String(req.headers['x-mapping']).toLowerCase()
     try {
         if (!body) {
           logger.warn('Missing body')
           return responseBuilder(HttpStatusCode.BAD_REQUEST, res, null)
         } 
         // JSON parse 
-        let parsedBody 
+        let parsedBody
         try {
           parsedBody = JSON.parse(body)
         } catch (error) {
           parsedBody = body
         }
         // do mappings if enabled
-        const toSend = Config.WOT.ENABLED && Config.ADAPTER.USE_MAPPING ? await useMapping(id, eid, parsedBody) : parsedBody
+        let mappingEnabled = Config.ADAPTER.USE_MAPPING
+        // Override mapping if header is present
+        if (mappingString === 'true') {
+            mappingEnabled = true
+        } else if (mappingString === 'false') {
+            mappingEnabled = false
+        }
+        // check if wot is enabled and mapping is enabled
+        const toSend = Config.WOT.ENABLED && mappingEnabled ? await useMapping(id, eid, parsedBody, ts) : parsedBody
         const data = await  gateway.publishEvent(id, eid, { wrapper: toSend })
         _parse_gtw_response(data)
         logger.info(`Message sent to channel ${eid} of ${id}`)
