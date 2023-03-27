@@ -247,6 +247,11 @@ const _wot_validate = (it: RegistrationJSONTD) => {
         if (it.td.id) {
             throw new Error('ID property is not allowed during registration')
         }
+        // AdapterID regex check
+        // Allow only alphanumeric and  hyphen
+        if (it.td.adapterId && !it.td.adapterId.match(/^[a-zA-Z0-9-]+$/)) {
+            throw new Error('AdapterID can only contain alphanumeric characters and hyphen')
+        }
 }
 
 const _wot_validate_update = (item: RegistrationJSONTD, registrations: string[]) => {

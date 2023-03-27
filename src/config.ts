@@ -62,8 +62,11 @@ const normalConfig = {
 		PORT: process.env.ADAPTER_PORT!,
 		USE_MAPPING: process.env.USE_MAPPING === 'true',
 	},
+	// Enables the HTTP interface for direct requests through HTTP (not xmpp)
+	// ENABLED is used from both sides
 	HTTP_PROXY: {
-		IP_CHECK: process.env.HTTP_PROXY_IP_CHECK === 'false' ? false : true // Default is true,
+		IP_CHECK: process.env.HTTP_PROXY_IP_CHECK === 'false' ? false : true, // Default is true,
+		ENABLED: process.env.HTTP_PROXY_ENABLED === 'true' ? true : false, // Default is false
 	}
 }
 
@@ -114,7 +117,8 @@ const testConfig = {
 		USE_MAPPING: true
 	},
 	HTTP_PROXY: {
-		IP_CHECK: true ,
+		IP_CHECK: true,
+		ENABLED: false
 	}
 }
 
