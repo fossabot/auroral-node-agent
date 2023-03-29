@@ -30,7 +30,7 @@ export const getProperty: PropertyCtrl = async (req, res) => {
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
-    logger.error(error.message)
+    logger.error('Get property error: ' + error.message)
     return responseBuilder(error.status, res, error.message)
 	}
 }
@@ -48,7 +48,7 @@ export const setProperty: PropertyCtrl = async (req, res) => {
     return responseBuilder(HttpStatusCode.OK, res, null, { wrapper: data })
 	} catch (err) {
     const error = errorHandler(err)
-		logger.error(error.message)
+    logger.error('Put property error: ' + error.message)
 		return responseBuilder(error.status, res, error.message)
 	}
 }
@@ -65,7 +65,7 @@ export const receiveEvent: EventCtrl = async (req, res) => {
         return responseBuilder(HttpStatusCode.OK, res, null, {})
       } catch (err) {
         const error = errorHandler(err)
-        logger.error(error.message)
+        logger.error('Receive event error: ' + error.message)
         return responseBuilder(error.status, res, error.message)
       }
   }

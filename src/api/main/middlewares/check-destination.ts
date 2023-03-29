@@ -35,8 +35,9 @@ export const checkDestination = (method: Method) => {
                     return responseBuilder(HttpStatusCode.OK, res, null, response)
                 })
                 .catch((err: unknown) => {
-                    const message = errorCallback(err)
-                    return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, message)
+                    const error = errorCallback(err)
+                    
+                    return responseBuilder(error.status, res, error.message)
                 })
             } else {
                 logger.debug('Remote consumption request')
@@ -44,8 +45,8 @@ export const checkDestination = (method: Method) => {
             }
         })
         .catch((err: unknown) => {
-            const message = errorCallback(err)
-            return responseBuilder(HttpStatusCode.INTERNAL_SERVER_ERROR, res, message)
+            const error = errorCallback(err)
+            return responseBuilder(error.status, res, error.message)
         })
     } as checkDestinationController
 } 
@@ -63,5 +64,5 @@ const getLocalData = async (oid: string, pid: string, sourceoid: string, body: J
 const errorCallback = (err: unknown) => {
     const error = errorHandler(err)
     logger.error(error.message)
-    return error.message
+    return { message: error.message, status: error.status }
 }

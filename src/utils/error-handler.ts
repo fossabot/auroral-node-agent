@@ -38,10 +38,29 @@ export const errorHandler = (err: unknown): MyError => {
         if (err instanceof MyError) {
             return err
         } else if (err instanceof HTTPError) {
-            return {
-                message: (err.response.body as { statusCodeReason: string }).statusCodeReason,
-                status: err.response.statusCode,
-            } 
+           if (err.response) {
+            try {
+                // Simple string in body
+                return {
+                    message: JSON.parse(err.response.body as string),
+                    status: err.response.statusCode,
+                }
+            } catch {
+                // Advanced body with statusCode and statusCodeReason
+                logger.warn('Caught HTTPError without JSON response...')
+                const body = err.response.body as { statusCode: HttpStatusCode, statusCodeReason: string }
+                return {
+                    message: body.statusCodeReason,
+                    status: body.statusCode,
+                } 
+            }
+            } else {
+                logger.warn('Caught HTTPError without response...')
+                return {
+                    message: err.message,
+                    status: HttpStatusCode.INTERNAL_SERVER_ERROR,
+            }
+           }
         } else if (err instanceof Error) {
              return {
                 ...err, // Workaround for ErrnoException type (code, path, syscall, stack, ...)

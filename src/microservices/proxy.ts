@@ -90,7 +90,7 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
     const response = await callApi(endpoint, { method, json, headers, searchParams }) as JsonType
     try {
         const ts = response.headers['x-timestamp']
-        const mappingString = response.headers['x-mapping'].toLowerCase()
+        const mappingString = response.headers['x-mapping'] ?  response.headers['x-mapping'].toLowerCase() : undefined
         let mappingEnabled: boolean | undefined
         if (mappingString === 'true') {
             mappingEnabled = true
@@ -99,7 +99,7 @@ const request = async (endpoint: string, method: Method, json?: JsonType, header
         }
         return { msg: JSON.parse(response.body), ts, mappingEnabled }
     } catch (err: unknown) {
-        logger.warn('Body is not in JSON format: ' + response.body)
+        logger.warn('Body is not in JSON format: ' + { msg: response.body })
         return response.body
     }
 }

@@ -16,7 +16,7 @@ import { gateway } from '../../../microservices/gateway'
 export const tryHttpProxy  = async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (Config.HTTP_PROXY.ENABLED === false) {
-        logger.debug('DIrect HTTP requests are disabled')
+        logger.debug('Direct HTTP requests are disabled')
         return next()
       }
       if (!req.params || !req.params.oid || !req.params.pid || !req.params.id) {
