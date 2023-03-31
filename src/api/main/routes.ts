@@ -55,7 +55,8 @@ MainRouter
   // LOCAL Semantic
   .get('/discovery/local/td/:oid', json(), discovery.discoverLocalTd)
   .post('/discovery/local/semantic', text(), discovery.discoverLocalSemantic) // Expects plain text
-  .get('/discovery/local/semantic/:query', discovery.discoverLocalSemantic)
+  .get('/discovery/local/semantic/predefined/:query', discovery.discoverLocalSemantic)
+
   // REMOTE Semantic
   .get('/discovery/remote/td/:agid', json(), isLocal(SemanticType.TD), discovery.discoveryTdRemote)
   .post('/discovery/remote/semantic', text(), discovery.discoveryFederative)

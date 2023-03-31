@@ -10,6 +10,7 @@
  import { isRegistered } from '../../../persistance/persistance'
  import { wot } from '../../../microservices/wot'
  import { JsonType } from '../../../types/misc-types'
+import { _ } from '../../../utils/is-type'
 import { Config } from '../../../config'
  
  // Types
@@ -33,8 +34,12 @@ import { Config } from '../../../config'
                 if (!req.query || !req.query.query) {
                     return responseBuilder(HttpStatusCode.BAD_REQUEST, res, 'Missing SPARQL')
                 }
-                const response = (await wot.searchSPARQL(req.query.query)).message
-                return responseBuilder(HttpStatusCode.OK, res, null, response)
+                const response = await wot.searchSPARQL(req.query.query)
+                if (_.isJSON(response.message)) {
+                    return res.status(200).json(response.message)
+                } else {
+                    return res.status(200).send(response.message)
+                }
             } else {
                 logger.debug('Local TD request')
                 // TD
