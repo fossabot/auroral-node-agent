@@ -361,8 +361,6 @@ paths:
       description: >-
         Policy is registered in connected HELIO backend and generated url is
         stored in Thing description
-
-
         - ODRL needs to be enabled to use this feature
       security:
         - basicAuth: []

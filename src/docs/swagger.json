@@ -552,6 +552,72 @@
         }
       }
     },
+    "/api/registration/odrl/{oid}/{pid}": {
+      "post": {
+        "summary": "Registering ODRL policy",
+        "description": "Policy is registered in connected HELIO backend and generated url is stored in Thing description\n\n- ODRL needs to be enabled to use this feature",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "tags": [
+          "Registry"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "oid",
+            "description": "Object ID - OID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "required": true,
+            "name": "pid",
+            "description": "Property ID - PID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "$ref": "#/components/schemas/ODRLPolicyObject"
+              }
+            }
+          },
+          "description": "Registration info",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/Registration"
+          },
+          "400": {
+            "description": "WRONG BODY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationSuccesArray"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
+    },
     "/api/discovery/items/organisation": {
       "get": {
         "summary": "Retrieve all my organisation items",
@@ -2368,6 +2434,12 @@
         "type": "string",
         "example": "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT * WHERE { ?sub ?pred ?obj . } LIMIT 10",
         "default": ""
+      },
+      "ODRLPolicyObject": {
+        "description": "Object for registering policies in ODRL",
+        "type": "string",
+        "example": "test",
+        "default": "test"
       },
       "NodeArray": {
         "description": "Array of nodes with organisation info",
