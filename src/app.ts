@@ -30,6 +30,7 @@ const swagger_options = {
 // app.use(cors())
 
 app.use((req, res, next) => {
+  res.setHeader('X-Powered-By', 'AURORAL server')
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Access-Token')
