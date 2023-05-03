@@ -334,3 +334,18 @@ export const discoveryOrganisationFederative: federativeOrganisationDiscoveryCtr
         return responseBuilder(error.status, res, error.message)
       }
 }
+
+type getRemoteAgidCtrl = expressTypes.Controller<{ oid: string }, { }, { }, string, {}>
+
+export const getRemoteAgid: getRemoteAgidCtrl = async (req, res) => {
+    const { oid } = req.params
+    try {
+        const agid = (await gateway.getAgentByOid(oid)).message
+        return responseBuilder(HttpStatusCode.OK, res, null, agid)
+      } catch (err) {
+        const error = errorHandler(err)
+        logger.error(error.message)
+        return responseBuilder(error.status, res, error.message)
+      }
+}
+

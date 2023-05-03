@@ -65,7 +65,8 @@ MainRouter
   .post('/discovery/remote/semantic/myorganisation', text(), discovery.discoveryOrganisationFederative)
   // WOT internal use for federated queries 
   .get('/discovery/remote/semantic/:agid', text(), isLocal(SemanticType.SPARQL), discovery.discoveryRemote)
-  // TBD .post('/discovery/semantic/:agid', ctrl.discoveryRemote)
+  .get('/discovery/remote/agid/:oid', json(), discovery.getRemoteAgid)
+  // TBD .post('/discovery/semantic/:agid', ctrl.discoveryRemote)b
   // TBD discover neighbours from specific CID or CTID
 
   // ***** CONSUME remote resources *****
