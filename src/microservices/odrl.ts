@@ -53,7 +53,12 @@ export const odrl = {
             if (response.statusCode !== HttpStatusCode.OK) {
                 return false
             } else {
-                return true
+                console.log(response)
+                if (Object.entries(response).length === 0) {
+                    return false
+                } else {
+                    return true
+                }
             }
         } catch (err) {
             const error = errorHandler(err)
