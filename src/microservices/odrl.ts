@@ -53,10 +53,11 @@ export const odrl = {
             if (response.statusCode !== HttpStatusCode.OK) {
                 return false
             } else {
-                console.log(response)
-                if (Object.entries(response).length === 0) {
+                if (Object.entries(response.body).length === 0) {
+                    // ODRL returns 200 + empty body on policy failure
                     return false
                 } else {
+                    // ODRL returns 200 + URL: access rights on success
                     return true
                 }
             }
