@@ -1,6 +1,7 @@
 import path from 'path'
 import { createLogger, format, transports } from 'winston'
 import dotenv from 'dotenv'
+import { CustomTransport } from './winston-kfkTransport'
 
 const { combine, timestamp, label, json, colorize, simple } = format
 const LOG_FILE_PATH_INFO = path.join(__dirname, '../../../logs/combined.log')
@@ -51,6 +52,16 @@ const options = {
       logFormat
     )
   },
+  kfk: {
+    level: 'error',
+    handleExceptions: true,
+    timestamp: true,
+    format: combine(
+      label({ label: process.env.LOGGER_LABEL }),
+      timestamp(),
+      json()
+    ),
+  }
 }
  
 // instantiate a new Winston Logger with the settings defined above
@@ -59,6 +70,7 @@ export const logger = createLogger({
     new transports.File(options.file),
     new transports.File(options.errorfile),
     new transports.Console(options.console),
+    new CustomTransport(options.kfk)
   ],
   exitOnError: false, // do not exit on handled exceptions
 })

@@ -1,19 +1,18 @@
 import dotenv from 'dotenv'
-import { logger } from './utils/logger'
 import { AdapterMode } from './types/misc-types'
 
 dotenv.config()
 
 if (process.env.NODE_ENV === 'test') {
-	logger.debug('Using test configuration...')
+	console.log('Using test configuration...')
 } else if (
 	!process.env.NODE_ENV || !process.env.IP
 	|| !process.env.PORT
 ) {
-	logger.error('Please provide valid .env configuration')
+	console.log('Please provide valid .env configuration')
 	process.exit()
 } else {
-	logger.debug('Using normal configuration...')
+	console.log('Using normal configuration...')
 }
 
 const normalConfig = {

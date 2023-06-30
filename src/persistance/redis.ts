@@ -4,12 +4,12 @@
  * @interface
  */
  import { createClient } from 'redis'
-import { Request, Response, NextFunction } from 'express'
+import dotenv from 'dotenv'
 import { Config } from '../config'
-import { logger } from '../utils/logger'
 import { JsonType } from '../types/misc-types'
 import { errorHandler } from '../utils/error-handler'
 
+dotenv.config()
  // Workaround to solve Redis issue with types
  type RedisClientType = ReturnType<typeof createClient>
  type RedisClientOptions = Parameters<typeof createClient>[0]
@@ -40,8 +40,8 @@ export class RedisFactory {
           await this.client.connect()
       } catch (err) {
           const error = errorHandler(err)
-          logger.error(error.message)
-          logger.error('Could not connect to Redis...')
+          // logger.error(error.message)
+          // logger.error('Could not connect to Redis...')
       }
   }
 
@@ -266,4 +266,4 @@ export class RedisFactory {
 
  export const redisDb = new RedisFactory(redisOptions)
  redisDb.start()
- logger.info('Connected successfully Redis for CommServer!!')
+ console.log('Connected successfully Redis for CommServer!!')

@@ -6,7 +6,7 @@
 */ 
 
 import got, { Method, Headers } from 'got'
-import { JsonType, IItemPrivacy, WholeContractType, CommunityType, ContractItemType, DLTContractType } from '../types/misc-types'
+import { JsonType, IItemPrivacy, WholeContractType, CommunityType, ContractItemType, DLTContractType, ErrorLogType } from '../types/misc-types'
 import { Config } from '../config'
 import { logger, errorHandler, MyError, HttpStatusCode } from '../utils'
 import { GtwDeleteResponse, GatewayResponse, RemovalBody, GtwRegistrationResponse, GtwUpdateResponse, IdDiscoveryType, BasicResponse, GtwGetRegistrationsResponse, NodeType } from '../types/gateway-types'
@@ -602,6 +602,15 @@ export const gateway = {
             return true
         } catch (err) {
             return false
+        }
+    },
+    kfkPushError: async function (errorMsg: ErrorLogType): Promise<BasicResponse<string>> {
+        try {
+            const Authorization = await getAuthorization()
+            return request('kfk/pushError', 'POST', { errorMsg }, { ...ApiHeader, Authorization }) as unknown as BasicResponse<string>
+        } catch (err) {
+            const error = errorHandler(err)
+            throw new MyError(error.message, error.status)
         }
     }
 

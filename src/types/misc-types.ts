@@ -117,3 +117,10 @@ export type InteractionMapping = {
     mapping: string
 }
 
+export type ErrorLogType = {
+    level: string,
+    message: string,
+    agid: string,
+    timestamp: string,
+    service: string
+}
