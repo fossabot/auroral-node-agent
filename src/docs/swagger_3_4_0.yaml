@@ -67,9 +67,7 @@ paths:
             type: string
             default: 0000-0000-0000
       summary: Generating JWT token
-      description: >-
-        Generating JWT token for direct communication over http with remote
-        nodes with public IP
+      description: Generating JWT token for direct communication over http with remote nodes with public IP
       tags:
         - Authentication
       security:
@@ -85,15 +83,12 @@ paths:
         - in: query
           name: authorization
           required: true
-          description: >-
-            Bearer authorization header containing JWT token signed in node that
-            is sending a request
+          description: Bearer authorization header containing JWT token signed in node that is sending a request
           schema:
             type: string
             example: Bearer xxxxx.yyyyy.zzzzz
       summary: Validate JWT token
-      description: >-
-        Validation of JWT token sent from a remote AURORAL Node over HTTP direct connection
+      description: Validation of JWT token sent from a remote AURORAL Node over HTTP direct connection
       tags:
         - Authentication
       security:
@@ -379,10 +374,8 @@ paths:
   /api/registration/odrl/{oid}/{pid}:
     post:
       summary: Registering ODRL policy
-      description: >-
-        Policy is registered in connected HELIO backend and generated url is
-        stored in Thing description
-
+      description: |-
+        Policy is registered in connected HELIO backend and generated url is stored in Thing description
 
         - ODRL needs to be enabled to use this feature
       security:
@@ -881,8 +874,8 @@ paths:
           required: true
           description: Event of the remote object - EID
           schema:
-              type: string
-              default: event_id
+            type: string
+            default: event_id
       responses:
         '200':
           $ref: '#/components/responses/GenericString'
@@ -1021,6 +1014,9 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              type: string
+          text/plain:
             schema:
               type: string
         description: Body of the message

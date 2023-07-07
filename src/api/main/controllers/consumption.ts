@@ -148,8 +148,9 @@ type publishEventCtrl = expressTypes.Controller<{ id: string, eid: string }, str
         } else if (mappingString === 'false') {
             mappingEnabled = false
         }
-        // check if wot is enabled and mapping is enabled
-        const toSend = Config.WOT.ENABLED && mappingEnabled ? await useMapping(id, eid, parsedBody, ts) : parsedBody
+        // check if wot is enabled and mapping is enabled - MAPPING IS DISABLED FOR NOW
+        // const toSend = Config.WOT.ENABLED && mappingEnabled ? await useMapping(id, eid, parsedBody, ts) : parsedBody
+        const toSend = parsedBody
         const data = await  gateway.publishEvent(id, eid, { wrapper: toSend })
         _parse_gtw_response(data)
         logger.info(`Message sent to channel ${eid} of ${id}`)

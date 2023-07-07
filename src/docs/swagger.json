@@ -1512,6 +1512,11 @@
               "schema": {
                 "type": "string"
               }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
             }
           },
           "description": "Body of the message",
