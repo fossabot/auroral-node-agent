@@ -5,6 +5,7 @@ import { Config } from './config'
 import { logger } from './utils'
 import { initialize } from './core/main'
 import { gtwServices } from './core/gateway'
+import { fillShacl } from './core/shacl'
 
 /**
  * Error Handler. Provides full stack - only in dev
@@ -18,6 +19,8 @@ function bootstrap() {
   try {
     // Run other services here
     initialize()
+    // SHACL service
+    fillShacl()
   } catch (err) {
     logger.error(' ##### There were errors initializing the server...')
   }

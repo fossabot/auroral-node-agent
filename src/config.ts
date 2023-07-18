@@ -61,6 +61,9 @@ const normalConfig = {
 		PORT: process.env.ADAPTER_PORT!,
 		USE_MAPPING: process.env.USE_MAPPING === 'true',
 	},
+	VALIDATOR: {
+		ONTOLOGIES_HOST: process.env.ONTOLOGIES_HOST || 'https://ontology.watchdog.bavenir.eu'
+	},
 	// Enables the HTTP interface for direct requests through HTTP (not xmpp)
 	// ENABLED is used from both sides
 	HTTP_PROXY: {
@@ -114,6 +117,9 @@ const testConfig = {
 		HOST: 'http://adapter', 
 		PORT: '3001',
 		USE_MAPPING: true
+	},
+	VALIDATOR: {
+		ONTOLOGIES_HOST: process.env.ONTOLOGIES_HOST || 'https://ontology.watchdog.bavenir.eu'
 	},
 	HTTP_PROXY: {
 		IP_CHECK: true,

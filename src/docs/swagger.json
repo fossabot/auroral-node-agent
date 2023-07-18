@@ -55,6 +55,10 @@
       "description": "Resource consumption calls, request properties or publish events among others among others"
     },
     {
+      "name": "Validation",
+      "description": "Validation endpoints"
+    },
+    {
       "name": "Collaboration",
       "description": "Check your partnerships and contracts"
     },
@@ -1584,6 +1588,42 @@
           },
           "default": {
             "$ref": "#/components/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/api/validation/body": {
+      "post": {
+        "summary": "Validate your msg body",
+        "description": "Validate given body in connected SHACL instance. Your body needs to be in JSON-LD format and contains context field that is used to match correct shape for validation.",
+        "tags": [
+          "Validation"
+        ],
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "description": "Registration info",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GenericString"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/BadRequest"
           }
         }
       }

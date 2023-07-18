@@ -10,7 +10,7 @@
 // Express router
 import { Router, json, text } from 'express'
 // Controllers
-import { auth, registry, collaborate, discovery, consume, admin, httpProxy } from './controllers' 
+import { auth, registry, collaborate, discovery, consume, admin, httpProxy, validate } from './controllers' 
 // Middlewares
 import { checkDestination, isLocal } from './middlewares'
 
@@ -85,6 +85,10 @@ MainRouter
   .delete('/events/remote/:id/:oid/:eid', json(), consume.unsubscribeRemoteEventChannel) // Unsubscribe to remote event channel
   // .get('/events/subscribe', ctrl.eventsSubscribeAll)
   // .delete('/events/subscribe',ctrl.eventsUnsubscribeAll)
+
+  // ***** VALIDATE endpoints *****
+  .get('/validate/:id/:oid/:pid', json(), validate.validateBody) 
+  // .put('/validate/:id/:oid/:pid', httpProxy.tryHttpProxy, json(), checkDestination(Method.GET), validate.validateSetProperty) 
 
   // ***** COLLABORATION endpoints *****
   .get('/collaboration/partners/', json(), collaborate.getPartners)
