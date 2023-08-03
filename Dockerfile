@@ -29,4 +29,4 @@ LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.opencontainers.image.version=$BUILD_VERSION
 LABEL org.opencontainers.image.source=https://github.com/AuroralH2020/auroral-node-agent
 # START
-CMD ["./dist/src/server.js"]
+CMD ["node", "/app/dist/src/server.js"]
