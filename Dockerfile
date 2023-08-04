@@ -14,10 +14,18 @@ COPY --chown=node:node package*.json tsconfig.json ./
 # RUN npm ci --only=production && npm cache clean --force
 RUN npm ci && npm cache clean --force
 
+FROM alpine/git as ui-download
+# RUN apk add --no-cache git
+RUN mkdir /ui
+WORKDIR /ui
+RUN git clone https://github.com/AuroralH2020/agent-ui
+
 # RUN PHASE
 FROM node:16-slim
-# FROM gcr.io/distroless/nodejs:12-debug
+# Copy source code
 COPY --from=build-env /app /app
+# Copy UI
+COPY --from=ui-download /ui/agent-ui/dist/ /app/ui/
 COPY healthcheck.js /app/healthcheck.js
 WORKDIR /app
 # COPY SOURCES
