@@ -42,7 +42,7 @@ const options = {
     )
 },
   console: {
-    level: 'debug',
+    level:  process.env.LOGGER_LEVEL! ? process.env.LOGGER_LEVEL : 'debug',
     handleExceptions: true,
     timestamp: true,
     format: combine(
