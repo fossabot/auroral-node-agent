@@ -84,6 +84,8 @@ export const tdParserWoT = async (body : RegistrationJSONTD | RegistrationJSONTD
             }
             // Create thingDesc
             const thing = new Thing({ 'id': oid, ...it.td })
+            // Validate if all fields mandatory are included, depending on the type
+            validateTypeConstraints(thing)
             // Register ThingDesc
             await wot.upsertTD(oid, thing) // WoT Validation
             registrations.push(_buildTDWoT(oid, it))
@@ -152,7 +154,8 @@ export const tdParserUpdateWot = async (body : UpdateJSONTD | UpdateJSONTD[]): P
             }
             // Create thing
             const thing = new Thing(it.td)
-            console.log(thing)
+            // Validate if all fields mandatory are included, depending on the type
+            validateTypeConstraints(thing)
             // Get proper thing description
             await wot.upsertTD(it.td.id!, thing) // WoT Validation
             updates.push(_buildTDWoTUpdate(it.td.id!, it))
@@ -184,6 +187,8 @@ const _buildTD = (oid: string, data: RegistrationJSON): RegistrationBody => {
 }
 
 const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody => {
+    // valid types 
+    const validTypes = ['device', 'service'] //, 'dataset']
     // get iids  
     let type: string = Array.isArray(data.td['@type']) ? data.td['@type'][0] : data.td['@type']
     if (!type) {
@@ -199,7 +204,7 @@ const _buildTDWoT = (oid: string, data: RegistrationJSONTD): RegistrationBody =>
         avatar: data.avatar,
         groups: data.groups,
         description: data.td.description,
-        type: type.toLowerCase() === 'service' ? 'Service' : 'Device', // TBD: Everything Device for now (except service)
+        type: validTypes.indexOf(type.toLowerCase()) !== -1 ? type : 'Device', // Check if valid type, otherwise Device
         adapterId: data.td.adapterId ? data.td.adapterId : oid // TBD: Update this and add groupId or other props when ready
     } as RegistrationBody
 }
@@ -380,6 +385,42 @@ const _checkNumberOfRegistrations = async (newRegistrationsCount: number) => {
         // Test is same AdapterId already exists in the agent
         if (await existsAdapterId(adapterId)) {
             throw new Error('REGISTRATION ERROR: Adapter ID cannot be duplicated')
+        }
+    }
+}
+
+/**
+ * Validate that all the constraints for a given type appear in the document
+ * @param thing 
+ */
+const validateTypeConstraints = (thing: Thing): void => {
+    const validDomains = ['energy', 'health', 'farming', 'mobility', 'dairy farming', 'tourism', 'weather', 'indoor quality', 'circular economy']
+    const type: string[] = Array.isArray(thing['@type']) ? thing['@type'] : [thing['@type']]
+    // Contraints for dataset
+    const isdataset = type.map(it => it.toLowerCase() === 'dataset').reduce((acc,it) => acc + Number(it), 0)
+    if (isdataset >= 1) {
+        if (!thing.title) { 
+            throw new MyError('Missing title in type dataset', HttpStatusCode.BAD_REQUEST)
+        }
+        if (!thing.description && !thing.descriptions) { 
+            throw new MyError('Missing description in type dataset', HttpStatusCode.BAD_REQUEST)
+        }
+        if (!thing.domain) { 
+            throw new MyError('Missing domain in type dataset')
+        } else {
+            if (validDomains.indexOf(thing.domain.toLowerCase()) === -1) {
+                throw new MyError('Invalid domain in type dataset, valid domains are ' + validDomains, HttpStatusCode.BAD_REQUEST)
+            }
+        }
+        if (!thing.url) { 
+            throw new MyError('Missing url in type dataset', HttpStatusCode.BAD_REQUEST)
+        } else {
+            // throws error to upper try catch if not valid URL
+            try {
+                const validUrl = new URL(thing.url)
+            } catch (err: unknown) {
+                throw new MyError('Invalid URL for TD of type dataset', HttpStatusCode.BAD_REQUEST)
+            }
         }
     }
 }

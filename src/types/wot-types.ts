@@ -83,9 +83,9 @@ export class Thing {
 
     constructor(data: Thing) {
         Object.assign(this, data)
-        this['@context'] = DEFAULT_CONTEXT
+        this['@context'] = data['@context'] ? data['@context'] : DEFAULT_CONTEXT
         // Give priority to @type
-        const tempType = data['@type'] || data.type
+        const tempType = data['@type'] ? data['@type'] : data.type
         this['@type'] = tempType ? tempType : DEFAULT_THING_TYPE
         this.title = data.title
         this.id = data.id!
