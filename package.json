@@ -1,6 +1,6 @@
 {
   "name": "auroral_node_agent",
-  "version": "3.4.1",
+  "version": "3.5.2",
   "description": "AURORAL agent",
   "main": "server.js",
   "dependencies": {

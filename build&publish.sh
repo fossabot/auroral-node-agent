@@ -80,6 +80,7 @@ then
                         --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:latest \
                         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg BUILD_VERSION=${VERSION} \
+                        --no-cache-filter ui-download \
                         -f Dockerfile . --push
     # Pull local arch version
     docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}
@@ -93,6 +94,7 @@ else
                     --tag ${GIT_REGISTRY}/${GIT_IMAGE_NAME}:${GIT_ENV} \
                     --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                     --build-arg BUILD_VERSION=${VERSION} \
+                    --no-cache-filter ui-download \
                     -f Dockerfile . --push
      # Pull local arch version
     docker pull ${REGISTRY}/${IMAGE_NAME}:${ENV}

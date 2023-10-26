@@ -18,6 +18,8 @@ if (process.env.NODE_ENV === 'test') {
 const normalConfig = {
 	HOME_PATH: process.cwd(),
 	NODE_ENV: process.env.NODE_ENV!,
+	// This one is not used. Logger.ts uses directly the env variable
+	LOGGER_LEVEL: process.env.LOGGER_LEVEL! ? process.env.LOGGER_LEVEL : 'debug',
 	IP: process.env.IP!,
 	EXTERNAL_PORT: process.env.EXTERNAL_PORT!,
 	PORT: process.env.PORT!,
@@ -74,6 +76,7 @@ const normalConfig = {
 
 const testConfig = {
 	HOME_PATH: process.cwd(),
+	LOGGER_LEVEL: 'debug',
 	NODE_ENV: 'test',
 	IP: '0.0.0.0',
 	EXTERNAL_PORT: '81',
