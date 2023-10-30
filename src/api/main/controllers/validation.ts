@@ -3,10 +3,12 @@ import got from 'got'
 import { expressTypes } from '../../../types/index'
 import { HttpStatusCode } from '../../../utils/http-status-codes'
 import { responseBuilder } from '../../../utils/response-builder'
-
+import { shacl } from '../../../microservices/shacl'
+import { errorHandler, logger } from '../../../utils'
 // Other imports
 import { JsonType, ValidationResponseType } from '../../../types/misc-types'
-// import { useMapping } from '../../../core/mapping'
+import { Config } from '../../../config'
+
 
 // ***** Consume remote resources *****
 
@@ -35,12 +37,18 @@ export const validateBody: validateBodyCtrl = async (req, res) => {
     return responseBuilder(HttpStatusCode.BAD_REQUEST, res, response.errorMessage)
   }
   const base64context = Buffer.from(contextUrl.toString()).toString('base64')
+  if(!Config.SHACL.ENABLED) {
+    response.errorMessage = 'SHACL integration is not enabled'
+    return responseBuilder(HttpStatusCode.SERVICE_UNAVAILABLE, res, response.errorMessage)
+  }
   try {
-    // download context from url
-    const shape =  await got.get(contextUrl)
-    console.log(shape.body)
+    const context = await shacl.getShape(base64context)
+    response.validContext = true
+    response.validPayload = await shacl.validateMessage(base64context, body)
+    logger.debug('Validation result: JSON: '+ response.jsonLd + ' Context: ' + response.validContext + ' Payload: ' + response.validPayload)
   } catch (err) {
-    response.errorMessage = 'Error downloading context'
+    const error = errorHandler(err)
+    response.errorMessage = 'Validation error: ' + error.message
     return responseBuilder(HttpStatusCode.BAD_REQUEST, res, response.errorMessage)
   }
  return responseBuilder(HttpStatusCode.OK, res, null, response)

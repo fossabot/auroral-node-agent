@@ -8,6 +8,7 @@ import { shacl } from '../microservices/shacl'
 
 export const fillShacl = async () : Promise<any> => {
     try {
+        logger.debug('Filling SHACL with ontologies')
         if (!await shacl.healthCheck()) {
             // SHACL is not enabled
             logger.debug('SHACL disabled -> skipping filling SHACL')
@@ -32,7 +33,7 @@ export const fillShacl = async () : Promise<any> => {
         })
     } catch (err) {
         const error = errorHandler(err)
-        logger.error('SHACL validation error: ' + error.message)
+        logger.error('SHACL error downloading ontologies: ' + error.message)
     }
 }
 
@@ -40,8 +41,11 @@ export const checkSHACL = async (oid: string, pid: string, data: any) : Promise<
     try {
         if (!Config.SHACL.ENABLED) {
             // SHACL is not enabled
+            logger.debug('SHACL disabled -> skipping checking SHACL')
             return
         }
+        logger.debug('Checking SHACL')
+
         // SHACL is enabled
         logger.debug('SHACL enabled -> checking response')
         // retrieve url from WoT

@@ -87,7 +87,7 @@ MainRouter
   // .delete('/events/subscribe',ctrl.eventsUnsubscribeAll)
 
   // ***** VALIDATION endpoints *****
-  .get('/validation/body', json(), validate.validateBody) 
+  .post('/validation/body', json(), validate.validateBody) 
   // .put('/validate/:id/:oid/:pid', httpProxy.tryHttpProxy, json(), checkDestination(Method.GET), validate.validateSetProperty) 
 
   // ***** COLLABORATION endpoints *****
