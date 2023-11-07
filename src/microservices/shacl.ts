@@ -32,7 +32,11 @@ export const shacl = {
         try {
             const response = await request(`api/${context}?format=json-ld 1.1`, 'POST', JSON.stringify(body), ApiHeader)
             if(response.statusCode === HttpStatusCode.OK) {
-                return true 
+                // extract response from body
+                // look for sh:conforms true
+                const regex = 'sh:conforms +true'
+                const result = response.body.match(regex) == null ? false : true
+                return result
             } else {
                 return false
             }
