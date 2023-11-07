@@ -8,7 +8,7 @@ import { responseBuilder } from '../../../utils/response-builder'
 import { JsonType } from '../../../types/misc-types'
 import { gateway } from '../../../microservices/gateway'
 import { GatewayResponse } from '../../../types/gateway-types'
-import { useMapping } from '../../../core/mapping'
+// import { useMapping } from '../../../core/mapping'
 import { Config } from '../../../config'
 import { addTDtoCache, getTDfromCache } from '../../../persistance/persistance'
 import { Thing } from '../../../types/wot-types'
@@ -254,7 +254,7 @@ const _parse_gtw_response = (data: GatewayResponse): void => {
   } 
 }
 
-const getTdForOutcomingRequest = async (oid: string): Promise<Thing> => {
+export const getTdForOutcomingRequest = async (oid: string): Promise<Thing> => {
    // Retrieve TD (cache or from remote)
    const cached_td = await getTDfromCache(oid) 
    if (cached_td) {

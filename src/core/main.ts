@@ -7,13 +7,14 @@
 import { Config } from '../config'
 import { gateway } from '../microservices/gateway'
 import { gtwServices } from './gateway'
-import { logger } from '../utils'
+import { errorHandler, logger } from '../utils'
 import  { getItem, reloadConfigInfo } from '../persistance/persistance'
 import { security } from './security'
 import { discovery } from './collaboration'
 import { scheduledJobs } from './scheduler'
 import { storeMapping } from './mapping'
 import { sendInfoToNM } from './info'
+import { fillShacl } from './shacl'
  
  /**
   * Initialization process of the agent module;
@@ -53,9 +54,23 @@ export const initialize = async function() {
 
     // Initialize DLT
     if (Config.DLT.ENABLED) {
-        logger.info('DLT connection is active')
+        logger.info('--- DLT connection is active')
     } else {
-        logger.info('DLT connection is not active')
+        logger.info('--- DLT connection is not active')
+    }
+    // SHACL
+    if (Config.SHACL.ENABLED) {
+        logger.info('--- SHACL downloading new ontologies')
+        try {
+            await fillShacl()
+            logger.info('--- SHACL validation is up and running')
+        } catch (err) {
+            var error = errorHandler(err)
+            logger.error('--- SHACL validation error: ' + error.message)
+        }
+
+    } else {
+        logger.info('--- SHACL validation is not active')
     }
 
     // Check if chache is active -- Cache removed from agent

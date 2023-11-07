@@ -124,3 +124,31 @@ export type ErrorLogType = {
     timestamp: string,
     service: string
 }
+
+export type ValidationResponseType = {
+    jsonLd: boolean,
+    validContext: boolean,
+    validPayload: boolean,
+    errorMessage?: string
+}
+
+export type OntologyType = {
+    id: string // base64 of the context url
+    name: string
+    description: string
+    updated: number 
+    shape: { // Shape for doing validation
+        link: string,
+        checksum: string | null,
+        payload: string | null
+    } 
+    context: { // context for mapping payloads
+        link: string,
+        checksum: string | null,
+        payload: string | null
+    } 
+    payload: {
+        jsonld: string, // url with example
+        turtle: string  // url with example
+    }
+}
