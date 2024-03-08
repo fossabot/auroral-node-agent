@@ -266,7 +266,7 @@ export const getTdForOutcomingRequest = async (oid: string): Promise<Thing> => {
      const agid = (await gateway.getAgentByOid(oid)).message
      const td = (await gateway.discoveryRemote(agid, { oids: oid })).message
      // cache TD
-     await addTDtoCache(oid, JSON.stringify(td))
+     await addTDtoCache(oid, JSON.stringify(td), true)
      return td as any as Thing
    }
 }

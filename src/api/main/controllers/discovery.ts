@@ -244,7 +244,7 @@ type discoveryTdRemoteCtrl = expressTypes.Controller<{ agid: string }, string | 
                 // Store in cache
                 await Promise.all(response.map(async (item: { oid: string, success: boolean, td: Thing }) => {
                     if (item.success) {
-                        await addTDtoCache(item.oid, JSON.stringify(item.td))
+                        await addTDtoCache(item.oid, JSON.stringify(item.td), true)
                     }
                 }))
                 //

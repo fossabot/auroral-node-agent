@@ -48,7 +48,9 @@ const normalConfig = {
 		PORT: process.env.DB_PORT!,
 		PASSWORD: process.env.DB_PASSWORD!,
 		CACHE: process.env.DB_CACHE_ENABLED === 'true', // Enables caching values in Redis, reduce calls to adapter
-		CACHE_TTL: process.env.DB_CACHE_TTL! // Time to live of the values cached from the adapter
+		CACHE_TTL: process.env.DB_CACHE_TTL!, // Time to live of the values cached from the adapter
+		REMOTE_TD_TTL: process.env.DB_REMOTE_TD_TTL ? Number(process.env.DB_REMOTE_TD_TTL) : 86400, // Time to live of the remote TDs
+		LOCAL_TD_TTL: process.env.DB_LOCAL_TD_TTL ? Number(process.env.DB_LOCAL_TD_TTL) : 3600, // Time to live of the local TDs
 	},
 	WOT: {
 		ENABLED: process.env.WOT_ENABLED === 'true',
@@ -106,7 +108,9 @@ const testConfig = {
 		PORT: '6379',
 		PASSWORD: 'changeme',
 		CACHE: true,
-		CACHE_TTL: '60'
+		CACHE_TTL: '60',
+		REMOTE_TD_TTL: 86400, // Time to live of the remote TDs
+		LOCAL_TD_TTL: 3600, // Time to live of the local TDs
 	},
 	WOT: {
 		ENABLED: true,

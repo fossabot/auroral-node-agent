@@ -15,6 +15,7 @@ import { scheduledJobs } from './scheduler'
 import { storeMapping } from './mapping'
 import { sendInfoToNM } from './info'
 import { fillShacl } from './shacl'
+import { persistance } from '../persistance'
  
  /**
   * Initialization process of the agent module;
@@ -29,6 +30,9 @@ export const initialize = async function() {
     if (!Config.GATEWAY.ID || !Config.GATEWAY.PASSWORD) {
         throw new Error('Missing gateway id or credentials...')
     }
+    // clean TDs
+    logger.info('--- Cleaning old cached TDs')
+    await persistance.deleteAllTDsfromCache()
         
     // Get objects OIDs stored locally
     const registrations = await getItem('registrations') as string[]
@@ -65,7 +69,7 @@ export const initialize = async function() {
             await fillShacl()
             logger.info('--- SHACL validation is up and running')
         } catch (err) {
-            var error = errorHandler(err)
+            const error = errorHandler(err)
             logger.error('--- SHACL validation error: ' + error.message)
         }
 
@@ -101,7 +105,7 @@ export const initialize = async function() {
 
     // Scheduled tasks
     scheduledJobs.start()
-
+    
     // End of initialization
     logger.info(' ##### Agent startup completed!')
     // Send node info to NM

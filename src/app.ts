@@ -1,12 +1,12 @@
 import cors from 'cors'
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
+import path from 'path'
 import { responseBuilder, HttpStatusCode } from './utils'
 import { MainRouter } from './api/main/routes'
 import { ProxyRouter } from './api/proxy/routes'
 import { Config } from './config'
 import { logger } from './utils/logger'
-import path from 'path'
 
 import swaggerDocument from './docs/swagger.json'
 
@@ -48,8 +48,8 @@ app.use('/agent', express.json(), ProxyRouter)
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swagger_options))
 app.use('/ui', express.static('/app/ui'))
 app.use('/ui/assets', express.static('/app/ui/assets'))
-app.get('/ui/*', function (request, response) {
-  response.sendFile(path.resolve('/app/ui/' + 'index.html'));
+app.get('/ui/*', (request, response) => {
+  response.sendFile(path.resolve('/app/ui/index.html'));
 });
 /**
  * Not Found

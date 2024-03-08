@@ -352,17 +352,30 @@ export const reloadConfigInfo = async function(cid: string, name: string, nodes:
 // td:<oid>
 // tds: [ <oids> ]
 
-export const addTDtoCache = async function(key: string, data: string) {
+export const addTDtoCache = async function(key: string, data: string, remote: Boolean = false) {
     try {
-        await redisDb.set('td:' + key, data)
+        const ttl = remote ? Config.DB.REMOTE_TD_TTL : Config.DB.LOCAL_TD_TTL
+        await redisDb.set('td:' + key, data, ttl)
         await redisDb.sadd('thingdescriptions', key)
         logger.debug('Added TD to cache: ' + key)
-        return true
     } catch (err) {
         const error = errorHandler(err)
         logger.debug('Error adding TD to cache: ' + key)
         logger.error(error.message)
         return false
+    }
+}
+
+export const deleteAllTDsfromCache = async function() {
+    try {
+        const keys = await redisDb.smembers('thingdescriptions')
+        // logger.info(keys.toString())
+        for (let i = 0, len = keys.length; i < len; i++) {
+            logger.info('Removing TD from cache: td:' + keys[i])
+                await delTDfromCache(keys[i].toString())
+        }
+    } catch (err) {
+        logger.error('Error removing all TDs from cache')
     }
 }
 

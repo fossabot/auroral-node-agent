@@ -8,15 +8,22 @@ import { redisDb } from '../persistance/redis'
 import { getItem } from '../persistance/persistance'
 import { RegistrationNonSemantic } from '../persistance/models/registrations'
 
+// const thingMappingBase = 
+// `{ 
+// "@context": [ "https://auroralh2020.github.io/auroral-ontology-contexts/adapters/context.json",
+// { "om": "http://www.ontology-of-units-of-measure.org/resource/om-2/" },
+// { "oid": { "@id": "rdfs:label" }, "iid": { "@id": "rdfs:label" } }],
+// "@type": "saref:measurement",
+// "oid": "{{{id}}}",
+// "iid": "{{{iid}}}",
+// "measurement": {{{measurement}}}
+// }`
+
 const thingMappingBase = 
 `{ 
-"@context": [ "https://auroralh2020.github.io/auroral-ontology-contexts/adapters/context.json",
-{ "om": "http://www.ontology-of-units-of-measure.org/resource/om-2/" },
-{ "oid": { "@id": "rdfs:label" }, "iid": { "@id": "rdfs:label" } }],
+"@context": [ "https://auroralh2020.github.io/auroral-ontology-contexts/adapters/context.json"],
 "@type": "saref:measurement",
-"relates": "{{{@type}}}",
-"oid": "{{{id}}}",
-"iid": "{{{iid}}}",
+"@id": "{{{id}}}",
 "measurement": {{{measurement}}}
 }`
 
