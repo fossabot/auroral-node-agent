@@ -3,6 +3,7 @@
 ![GitHub issues](https://img.shields.io/github/issues-raw/AuroralH2020/auroral-node-agent)
 ![GitHub](https://img.shields.io/github/license/AuroralH2020/auroral-node-agent)
 [![Quality Gate Status](https://sonar.bavenir.eu/api/project_badges/measure?project=auroral-agent&metric=alert_status&token=squ_e64ed9495d1181d95b08bfa140900651abd56422)](https://sonar.bavenir.eu/dashboard?id=auroral-agent)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FAuroralH2020%2Fauroral-node-agent.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FAuroralH2020%2Fauroral-node-agent?ref=badge_shield)
 
 # AURORAL NODE AGENT #
 
@@ -50,3 +51,6 @@ Developed by bAvenir
 
 * jorge.almela@bavenir.eu
 * peter.drahovsky@bavenir.eu
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FAuroralH2020%2Fauroral-node-agent.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FAuroralH2020%2Fauroral-node-agent?ref=badge_large)
